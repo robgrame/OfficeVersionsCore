@@ -1,0 +1,59 @@
+{
+  "DataForNerds": {
+    "LastUpdatedUTC": "Saturday, September 23, 2023  8:58:15 PM",
+    "Source Page": [
+      "https://docs.microsoft.com/en-us/officeupdates/update-history-microsoft365-apps-by-date"
+    ],
+    "TimeElapsed (ms)": 669
+  },
+  "data": [
+    {
+      "channel": "Current Channel",
+      "version": "2308",
+      "build": "16731.20234",
+      "latestReleaseDate": "2023 Sep 12",
+      "firstAvailabilityDate": "2023 Aug 28",
+      "endOfService": "Version 2309 is released"
+    },
+    {
+      "channel": "Monthly Enterprise Channel",
+      "version": "2307",
+      "build": "16626.20208",
+      "latestReleaseDate": "2023 Sep 12",
+      "firstAvailabilityDate": "2023 Sep 11",
+      "endOfService": "2023 Nov 14"
+    },
+    {
+      "channel": "Monthly Enterprise Channel",
+      "version": "2306",
+      "build": "16529.20254",
+      "latestReleaseDate": "2023 Sep 12",
+      "firstAvailabilityDate": "2023 Aug 07",
+      "endOfService": "2023 Oct 10"
+    },
+    {
+      "channel": "Semi-Annual Enterprise Channel (Preview)",
+      "version": "2308",
+      "build": "16731.20234",
+      "latestReleaseDate": "2023 Sep 12",
+      "firstAvailabilityDate": "2023 Sep 08",
+      "endOfService": "2024 Mar 12"
+    },
+    {
+      "channel": "Semi-Annual Enterprise Channel",
+      "version": "2302",
+      "build": "16130.20766",
+      "latestReleaseDate": "2023 Sep 12",
+      "firstAvailabilityDate": "2023 Jul 08",
+      "endOfService": "2024 Sep 10"
+    },
+    {
+      "channel": "Semi-Annual Enterprise Channel",
+      "version": "2208",
+      "build": "15601.20772",
+      "latestReleaseDate": "2023 Sep 12",
+      "firstAvailabilityDate": "2023 Jan 07",
+      "endOfService": "2024 Mar 12"
+    }
+  ]
+}

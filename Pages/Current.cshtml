@@ -1,0 +1,252 @@
+﻿@page
+@model CurrentModel
+@{
+    ViewData["Title"] = "Current Channel";
+    ViewData["Description"] = "Microsoft 365 Apps Current Channel versions and release history.";
+}
+
+<div class="container">
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <div class="card-icon"><i class="bi bi-lightning-fill"></i></div>
+            <div>
+                <h1 class="card-title mb-1">Current Channel</h1>
+                <p class="text-muted mb-0">Newest Microsoft 365 Apps features as soon as they're production‑ready</p>
+            </div>
+        </div>
+        <div class="card-body pt-0">
+            <p class="mt-3 mb-2">
+                Current Channel is designed to deliver the <strong>fastest access to new features</strong> once Microsoft declares them ready for broad use. Unlike a strictly scheduled track, feature releases can appear multiple times per month.
+            </p>
+            <div class="row g-3 small">
+                <div class="col-md-6">
+                    <ul class="list-unstyled mb-0 channel-facts">
+                        <li><strong>Feature cadence:</strong> As soon as available (no fixed day).</li>
+                        <li><strong>Security updates:</strong> Monthly (Patch Tuesday) + out‑of‑band if required.</li>
+                        <li><strong>Non‑security fixes:</strong> As needed (often 2–3 total releases / month).</li>
+                        <li><strong>Staging depth:</strong> Minimal (broad validation occurs live).</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled mb-0 channel-facts">
+                        <li><strong>Ideal for:</strong> Pilot rings, power users, fast innovation teams.</li>
+                        <li><strong>Not ideal for:</strong> Highly regulated / change‑averse environments.</li>
+                        <li><strong>Typical use:</strong> First ring in a multi‑channel deployment strategy.</li>
+                        <li><strong>Risk profile:</strong> Highest pace of change.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="mt-3 mb-0 small text-muted">Summarized from Microsoft official guidance. See <a href="https://learn.microsoft.com/microsoft-365-apps/updates/overview-update-channels" target="_blank" rel="noopener">Update channels overview</a>.</p>
+        </div>
+    </div>
+
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon"><i class="bi bi-table"></i></div>
+            <div>
+                <h2 class="card-title mb-1">Release History</h2>
+                <p class="text-muted mb-0">Full version & build history for the Current Channel</p>
+            </div>
+        </div>
+
+        <div class="table-actions d-flex flex-wrap gap-2 align-items-center px-3 pt-3">
+            <div class="flex-grow-1">
+                <input id="versionFilter" type="text" class="form-control form-control-sm" placeholder="Filter versions or builds..." aria-label="Filter versions or builds">
+            </div>
+            <button id="toggleRecent" type="button" class="btn btn-sm btn-outline-secondary" aria-pressed="true" aria-label="Toggle between recent and full history">Show recent only</button>
+        </div>
+
+        <div class="modern-table-container">
+            <table id="currentChannelVersions" class="table modern-table" width="100%" cellspacing="0" aria-describedby="currentChannelCaption">
+                <caption id="currentChannelCaption" class="text-muted small px-2">Current Channel releases (UTC dates). Hover a date for local time and relative age.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Version</th>
+                        <th scope="col">Release Date</th>
+                        <th scope="col" class="d-none d-md-table-cell">Channel</th>
+                        <th scope="col">Full Build</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    /* Version badges - with Current Channel styling (green) */
+    .version-badge {
+        display: inline-block;
+        padding: .35rem .6rem;
+        font-weight: 600;
+        font-size: .9rem;
+        border-radius: .65rem;
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        letter-spacing: .5px;
+        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+        white-space: nowrap;
+    }
+    
+    /* Build code styling - with Current Channel styling (green) */
+    .build-code {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        padding: .2rem .4rem;
+        font-size: .9rem;
+        color: #10b981;
+        background-color: rgba(16, 185, 129, 0.08);
+        border-radius: .25rem;
+        white-space: nowrap;
+    }
+    
+    /* Release date styling */
+    .release-date-cell {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .release-date-cell.new {
+        color: #fff;
+        background: #10b981;
+        padding: .25rem .55rem;
+        border-radius: .6rem;
+        font-size: .9rem;
+        font-weight: 600;
+    }
+    
+    .release-date-cell.recent {
+        color: #10b981;
+    }
+    
+    .release-date-cell.stale {
+        color: #6c757d;
+        opacity: .85;
+    }
+    
+    /* Table styling */
+    #currentChannelVersions tbody tr td {
+        vertical-align: middle;
+    }
+    
+    #currentChannelVersions_wrapper .dataTables_paginate {
+        padding: .5rem 1rem;
+    }
+    
+    .table-actions {
+        border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+    }
+    
+    .channel-facts li {
+        position: relative;
+        padding-left: 1rem;
+        margin-bottom: .35rem;
+    }
+    
+    .channel-facts li:before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: var(--bs-primary, #0d6efd);
+    }
+</style>
+
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  const RECENT_LIMIT_DAYS = 120; // threshold for recent toggle
+  let showRecentOnly = false;
+
+  function formatVersion(v){
+    if(!v) return '';
+    return `<span class="version-badge" title="Version ${v}">${v}</span>`;
+  }
+  
+  function formatReleaseDate(dStr){
+    if(!dStr) return '';
+    const d = new Date(dStr);
+    if(isNaN(d)) return dStr;
+    const now = new Date();
+    const diffDays = Math.floor((now - d)/(1000*60*60*24));
+    let cls = 'release-date-cell';
+    if(diffDays <= 7) cls += ' new';
+    else if(diffDays <= 30) cls += ' recent';
+    else cls += ' stale';
+    const local = d.toLocaleString();
+    const rel = diffDays === 0 ? 'today' : diffDays + 'd ago';
+    return `<span class="${cls}" data-bs-toggle="tooltip" data-bs-title="${local} (${rel})">${d.toISOString().substring(0,10)}</span>`;
+  }
+  
+  function formatBuild(data){
+    if(!data) return '';
+    return `<code class="build-code" title="Build ${data}">${data}</code>`;
+  }
+  
+  function initTooltips(){
+    if(window.bootstrap && bootstrap.Tooltip){
+      document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el=>{ new bootstrap.Tooltip(el); });
+    }
+  }
+
+  const table = $('#currentChannelVersions').DataTable({
+    serverSide: false,
+    paging: true,
+    pageLength: 25,
+    lengthChange: false,
+    searching: true,
+    ordering: true,
+    info: true,
+    processing: true,
+    autoWidth: false,
+    ajax: {
+      url: '/api/M365AppsReleases/channel/Current%20Channel',
+      type: 'GET',
+      dataType: 'json',
+      dataSrc: '',
+      error: function(xhr, status, err){
+        console.error('Channel data load failed:', status, err, xhr.responseText);
+      }
+    },
+    columns: [
+      { data: 'version', render: function(data){ return formatVersion(data); } },
+      { data: 'releaseDate', render: function(data){ return formatReleaseDate(data); } },
+      { data: 'channel', className: 'd-none d-md-table-cell' },
+      {
+        data: 'fullBuild',
+        render: function(data, type, row) {
+          return formatBuild(data);
+        },
+        createdCell: function (td, cellData, rowData) {
+          if (rowData.url) {
+            $(td).html(`<a target="_blank" rel="noopener noreferrer" href="${rowData.url}" class="build-link">${formatBuild(rowData.fullBuild)}</a>`);
+          }
+        }
+      }
+    ],
+    order: [[ 1, 'desc' ]],
+    drawCallback: function(){ initTooltips(); }
+  });
+
+  $('#versionFilter').on('keyup change', function(){
+    table.search(this.value).draw();
+  });
+
+  $('#toggleRecent').on('click', function(){
+    showRecentOnly = !showRecentOnly;
+    $(this).text(showRecentOnly ? 'Show full history' : 'Show recent only');
+    $(this).attr('aria-pressed', showRecentOnly.toString());
+    table.draw();
+  });
+
+  $.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
+    if(settings.nTable.id !== 'currentChannelVersions') return true;
+    if(!showRecentOnly) return true;
+    const releaseDateIso = $(table.row(dataIndex).data()).prop('releaseDate') || table.row(dataIndex).data().releaseDate;
+    if(!releaseDateIso) return true;
+    const d = new Date(releaseDateIso);
+    if(isNaN(d)) return true;
+    const diffDays = Math.floor((Date.now() - d.getTime())/(1000*60*60*24));
+    return diffDays <= RECENT_LIMIT_DAYS;
+  });
+});
+</script>
+}

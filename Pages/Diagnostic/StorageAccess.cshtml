@@ -1,0 +1,73 @@
+@page
+@model OfficeVersionsCore.Pages.Diagnostic.StorageAccessModel
+@{
+    ViewData["Title"] = "Storage Access Diagnostic";
+}
+
+<div class="container">
+    <h1>Storage Access Diagnostic</h1>
+    <p>This page tests access to Azure Storage using @(Model.IsUsingAzurite ? "Azurite local storage emulator" : "managed identity").</p>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Storage Connection Details</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Storage Account:</strong> @Model.StorageAccountName</p>
+            <p><strong>Container Name:</strong> @Model.ContainerName</p>
+            <p><strong>Container Exists:</strong> @Model.ContainerExists</p>
+            <p><strong>Blob Endpoint:</strong> @Model.BlobEndpoint</p>
+            <p><strong>Using Azurite:</strong> @Model.IsUsingAzurite</p>
+        </div>
+    </div>
+    
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Error</h4>
+            <p>@Model.ErrorMessage</p>
+        </div>
+    }
+    
+    <div class="card">
+        <div class="card-header">
+            <h2>Blob Listing</h2>
+        </div>
+        <div class="card-body">
+            @if (Model.BlobNames.Count > 0)
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Blob Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var blob in Model.BlobNames)
+                        {
+                            <tr>
+                                <td>@blob</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (Model.ContainerExists)
+            {
+                <div class="alert alert-warning">
+                    No blobs found in the container.
+                </div>
+            }
+            
+            @if (Model.IsUsingAzurite && Model.ContainerExists)
+            {
+                <div class="mt-3">
+                    <h3>Azurite Testing</h3>
+                    <p>Since you're using Azurite, you can test creating a blob by running the Office365VersionScraper background service.</p>
+                    <p>The scraper will run automatically if enabled in appsettings.json (Office365Scraper:Enabled = true).</p>
+                    <p>After the scraper runs, refresh this page to see the new blobs.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,994 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps releases across all update channels. Track Office 365 versions, build numbers, and release dates.";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content fade-in-up">
+            <h1 class="hero-title">Office 365 Versions</h1>
+            <p class="hero-subtitle">
+                Stay updated with the latest Microsoft 365 Apps releases across all update channels
+            </p>
+            
+            <div class="hero-stats" id="hero-stats">
+                <!-- First row with two stats side by side -->
+                <div class="hero-stats-row">
+                    <div class="stat-item">
+                        <span class="stat-number" id="total-channels">-</span>
+                        <span class="stat-label">Update Channels</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="latest-version">-</span>
+                        <span class="stat-label">Latest Version</span>
+                    </div>
+                </div>
+                
+                <!-- Second row with timestamp spanning full width -->
+                <div class="hero-stats-row timestamp-row">
+                    <div class="stat-item timestamp-stat">
+                        <div class="timestamp-container" id="timestamp-display">
+                            <!-- Live indicator above timestamp for better centered appearance -->
+                            <div class="live-indicator"><span class="pulse"></span></div>
+                            <div class="timestamp-date">-</div>
+                            <div class="timestamp-time">-</div>
+                        </div>                                                       
+                        <span class="stat-label">Last Updated</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Important Notice -->
+    <div class="modern-alert alert-warning">
+        <div class="alert-icon">!</div>
+        <div>
+            <strong>Important Notice</strong>
+            <p class="mb-0">
+                This site is <strong>not affiliated</strong> with Microsoft Corporation. Information is sourced from official Microsoft documentation and may include personal considerations. Refer to <a href="https://docs.microsoft.com/en-us/officeupdates/" target="_blank" class="text-decoration-none">Microsoft's official documentation</a> for authoritative information.
+            </p>
+        </div>
+    </div>
+    
+    <!-- About This Site (now full width) -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">About This Site</h3>
+                        <p class="text-muted mb-0">Purpose, scope, and context</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">This site tracks Microsoft 365 Apps (formerly Office 365 ProPlus) releases across the main update channels. It provides a consolidated view of version numbers, builds, and key lifecycle dates so you can quickly assess currency and plan deployment rings.</p>
+                    <div class="row g-3 mb-0">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0 about-points">
+                                <li><strong>What you get:</strong> Latest version per channel + full channel histories</li>
+                                <li><strong>Data freshness:</strong> Timestamp shown (UTC + local tooltip)</li>
+                                <li><strong>JSON API:</strong> Simple endpoints for automation / dashboards</li>
+                                <li><strong>Visual cues:</strong> Relative recency indicators & styled tags</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0 about-points">
+                                <li><strong>Use cases:</strong> Patch status checks, tenant hygiene reviews</li>
+                                <li><strong>Audience:</strong> IT admins, deployment engineers, security teams</li>
+                                <li><strong>Approach:</strong> Read‑only aggregation of Microsoft‑published data</li>
+                                <li><strong>Scope:</strong> Client channel metadata (not feature release notes)</li>
+                            </ul>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <!-- Enhanced Note section with icon and better visual separation -->
+                            <div class="info-callout">
+                                <div class="info-callout-header">
+                                    <i class="bi bi-lightbulb-fill"></i>
+                                    <span>Key Concept: Update Channels</span>
+                                </div>
+                                <div class="info-callout-body">
+                                    <p class="mb-0"><strong>"Microsoft 365 Apps"</strong> is the subscription, continuously serviced edition of the Office desktop apps. Update channels exist so organizations can balance speed of feature delivery vs predictability and validation time.</p>
+                                    <div class="text-end mt-2">
+                                        <a href="https://learn.microsoft.com/microsoft-365-apps/updates/overview-update-channels" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-book me-1"></i>Learn more about update channels
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Versions Table -->
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-table"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Latest Office 365 Versions</h2>
+                <p class="text-muted mb-0">Current releases across all update channels</p>
+            </div>
+        </div>
+
+        <div class="modern-table-container table-responsive">
+            <table id="m365LatestVersions" class="table modern-table" width="100%">
+                <thead>
+                    <tr>
+                        <th class="channel-version-col"><i class="bi bi-tag me-2"></i>Channel / Details</th>
+                        <th class="d-none d-md-table-cell"><i class="bi bi-hash me-2"></i>Version</th>
+                        <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Build</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Latest Release</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-calendar-plus me-2"></i>First Available</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-calendar-x me-2"></i>End of Service</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Channel Overview -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-lightning-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Current Channel</h3>
+                        <p class="text-muted mb-0">Latest features as soon as ready</p>
+                    </div>
+                </div>
+                <p>Get the newest Office features as soon as they're released. Updated multiple times per month.</p>
+                <a asp-page="/Current" class="btn-modern btn-primary">
+                    <i class="bi bi-arrow-right"></i>
+                    View Current Channel
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-calendar-month"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Monthly Enterprise</h3>
+                        <p class="text-muted mb-0">Predictable monthly updates</p>
+                    </div>
+                </div>
+                <p>New features once a month on a predictable schedule for enterprise environments.</p>
+                <a asp-page="/Monthly" class="btn-modern btn-primary">
+                    <i class="bi bi-arrow-right"></i>
+                    View Monthly Enterprise
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-calendar-range"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Semi-Annual Enterprise</h3>
+                        <p class="text-muted mb-0">Twice yearly updates</p>
+                    </div>
+                </div>
+                <p>Feature updates twice per year for organizations that need extended testing periods.</p>
+                <a asp-page="/SemiAnnual" class="btn-modern btn-primary">
+                    <i class="bi bi-arrow-right"></i>
+                    View Semi-Annual
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Information -->
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-code-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Developer API</h3>
+                        <p class="text-muted mb-0">Programmatic access to version data</p>
+                    </div>
+                </div>
+                <p>Access Office 365 version data programmatically through our REST API.</p>
+                <div class="d-flex gap-2">
+                    <a href="/swagger" target="_blank" class="btn-modern btn-primary">
+                        <i class="bi bi-book"></i>
+                        API Documentation
+                    </a>
+                    <a href="/api/M365AppsReleases" target="_blank" class="btn-modern btn-secondary">
+                        <i class="bi bi-download"></i>
+                        JSON Data
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Data Sources</h3>
+                        <p class="text-muted mb-0">Official Microsoft documentation</p>
+                    </div>
+                </div>
+                <p>All information is sourced from official Microsoft release notes and update documentation.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="https://docs.microsoft.com/en-us/deployoffice/overview-update-channels" target="_blank" class="btn-modern btn-secondary">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        Update Channels
+                    </a>
+                    <a href="https://docs.microsoft.com/en-us/officeupdates/update-history-microsoft365-apps-by-date" target="_blank" class="btn-modern btn-secondary">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        Update History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script type="text/javascript">
+$(document).ready(function() {
+    // Main table initialization
+    const table = $('#m365LatestVersions').DataTable({
+        processing: true,
+        serverSide: false,
+        paging: false,
+        searching: false,
+        ordering: true,
+        info: false,
+        ajax: {
+            url: '/api/M365AppsReleases/data',
+            type: 'GET',
+            dataType: 'json',
+            dataSrc: '',
+            error: function(xhr, error, code) {
+                console.error('DataTable AJAX error:', error, code, xhr.responseText);
+                showError('Failed to load Office 365 versions data. Please try again later.');
+            }
+        },
+        columns: [
+            { 
+                data: 'channel',
+                className: 'channel-column',
+                render: function(data, type, row) {
+                    if(!data) return '';
+                    
+                    let tagClass = 'channel-tag';
+                    const lower = data.toLowerCase();
+                    if (lower.includes('current')) tagClass += ' current';
+                    else if (lower.includes('monthly')) tagClass += ' monthly';
+                    else if (lower.includes('semi')) tagClass += ' semiannual';
+                    
+                    // For mobile display: combine Channel, Version and Build in first column
+                    let detailsHtml = '';
+                    
+                    if (row.version || row.build) {
+                        detailsHtml += '<div class="mobile-details d-md-none mt-2">';
+                        
+                        // Version badge
+                        if (row.version) {
+                            let badgeClass = 'version-badge';
+                            if (lower.includes('current')) badgeClass += ' version-current';
+                            else if (lower.includes('monthly')) badgeClass += ' version-monthly';
+                            else if (lower.includes('semi')) badgeClass += ' version-semiannual';
+                            
+                            detailsHtml += `<div class="mobile-version">
+                                <span class="detail-label">Version:</span> 
+                                <span class="${badgeClass}" title="Version ${row.version}">${row.version}</span>
+                            </div>`;
+                        }
+                        
+                        // Build code
+                        if (row.build) {
+                            let codeClass = 'build-code';
+                            if (lower.includes('current')) codeClass += ' build-current';
+                            else if (lower.includes('monthly')) codeClass += ' build-monthly';
+                            else if (lower.includes('semi')) codeClass += ' build-semiannual';
+                            
+                            detailsHtml += `<div class="mobile-build mt-1">
+                                <span class="detail-label">Build:</span> 
+                                <code class="${codeClass}" title="Build ${row.build}">${row.build}</code>
+                            </div>`;
+                        }
+                        
+                        detailsHtml += '</div>';
+                    }
+                    
+                    return `<span class="${tagClass}">${data}</span>${detailsHtml}`;
+                }
+            },
+            { 
+                data: 'version',
+                className: 'version-column d-none d-md-table-cell',
+                render: function(data, type, row) {
+                    if (!data) return '';
+                    
+                    // Determine channel type for badge styling
+                    let badgeClass = 'version-badge';
+                    if (row.channel) {
+                        const lower = row.channel.toLowerCase();
+                        if (lower.includes('current')) badgeClass += ' version-current';
+                        else if (lower.includes('monthly')) badgeClass += ' version-monthly';
+                        else if (lower.includes('semi')) badgeClass += ' version-semiannual';
+                    }
+                    
+                    return `<span class="${badgeClass}" title="Version ${data}">${data}</span>`;
+                }
+            },
+            { 
+                data: 'build',
+                className: 'build-column d-none d-md-table-cell', 
+                render: function(data, type, row) {
+                    if (!data) return '';
+                    
+                    // Determine channel type for build styling
+                    let codeClass = 'build-code';
+                    if (row.channel) {
+                        const lower = row.channel.toLowerCase();
+                        if (lower.includes('current')) codeClass += ' build-current';
+                        else if (lower.includes('monthly')) codeClass += ' build-monthly';
+                        else if (lower.includes('semi')) codeClass += ' build-semiannual';
+                    }
+                    
+                    return `<code class="${codeClass}" title="Build ${data}">${data}</code>`;
+                }
+            },
+            { 
+                data: 'latestReleaseDate',
+                className: 'release-date-column',
+                render: function(data) {
+                    if (!data) return '';
+                    const date = new Date(data);
+                    if (isNaN(date)) return data;
+                    
+                    const now = new Date();
+                    const diffDays = Math.floor((now - date)/(1000*60*60*24));
+                    let cls = 'date-cell';
+                    
+                    if (diffDays <= 7) cls += ' new';
+                    else if (diffDays <= 30) cls += ' recent';
+                    
+                    const localDate = date.toLocaleString();
+                    const relativeTime = diffDays === 0 ? 'today' : diffDays + 'd ago';
+                    
+                    return `<span class="${cls}" data-bs-toggle="tooltip" title="${localDate} (${relativeTime})">${date.toISOString().substring(0,10)}</span>`;
+                }
+            },
+            { 
+                data: 'firstAvailabilityDate',
+                className: 'first-avail-column d-none d-lg-table-cell',
+                render: function(data) {
+                    if (!data) return '';
+                    const date = new Date(data);
+                    return isNaN(date) ? data : date.toISOString().substring(0,10);
+                }
+            },
+            { 
+                data: 'endOfService',
+                className: 'eos-column d-none d-lg-table-cell',
+                render: function(data) {
+                    if (!data) return '-';
+                    const date = new Date(data);
+                    if (isNaN(date)) return data;
+                    
+                    const now = new Date();
+                    const diffDays = Math.floor((date - now)/(1000*60*60*24));
+                    
+                    let cls = 'eos-cell';
+                    if (diffDays < 0) cls += ' expired';
+                    else if (diffDays <= 45) cls += ' expiring-soon';
+                    
+                    return `<span class="${cls}" data-bs-toggle="tooltip" title="${diffDays < 0 ? 'Expired' : diffDays + ' days remaining'}">${date.toISOString().substring(0,10)}</span>`;
+                }
+            }
+        ],
+        order: [[ 3, 'desc' ]],
+        responsive: {
+            details: false // Disable the automatic responsive details as we're handling it manually
+        },
+        drawCallback: function() { 
+            $('#m365LatestVersions tbody tr').addClass('fade-in-up');
+            // Initialize tooltips
+            if (window.bootstrap && bootstrap.Tooltip) {
+                const tooltips = document.querySelectorAll('#m365LatestVersions [data-bs-toggle="tooltip"]');
+                tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+            }
+        }
+    });
+
+    // Set fallback values for development mode
+    const devMode = false; // Set to false in production
+    if (devMode) {
+        document.getElementById('total-channels').textContent = '3';
+        document.getElementById('latest-version').textContent = '16.0.16130.20342';
+        // Use current date for timestamp
+        const now = new Date();
+        updateTimestamp(now.toISOString());
+    }
+    
+    // Load the actual data
+    loadHeroStats();
+    
+    function loadHeroStats() {
+        fetch('/api/M365AppsReleases')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update channel count
+                if (data.data && Array.isArray(data.data)) {
+                    const channels = [...new Set(data.data.map(item => item.channel))];
+                    document.getElementById('total-channels').textContent = channels.length;
+                    
+                    // Find latest version
+                    const sorted = [...data.data].sort((a, b) => 
+                        new Date(b.latestReleaseDate) - new Date(a.latestReleaseDate));
+                    
+                    if (sorted.length > 0) {
+                        document.getElementById('latest-version').textContent = sorted[0].version || '-';
+                    }
+                }
+                
+                // Get the timestamp directly from the DataForNerds property
+                let timestamp = null;
+                if (data.dataForNerds && data.dataForNerds.lastUpdatedUTC) {
+                    timestamp = data.dataForNerds.lastUpdatedUTC;
+                } else if (data.DataForNerds && data.DataForNerds.LastUpdatedUTC) {
+                    timestamp = data.DataForNerds.LastUpdatedUTC;
+                }
+                
+                if (!timestamp) {
+                    // Fall back to searching for timestamp in the object structure
+                    timestamp = findTimestampInObject(data);
+                }
+                
+                if (timestamp) {
+                    console.log("Found timestamp:", timestamp);
+                    updateTimestamp(timestamp);
+                    // Show or hide live indicator based on data freshness
+                    toggleLiveIndicator(timestamp);
+                } else {
+                    console.warn('No timestamp found in API response');
+                    // Keep fallback timestamp if in dev mode, otherwise show error
+                    if (!devMode) {
+                        updateTimestamp(null);
+                    }
+                }
+            })
+            .catch(error => { 
+                console.error('Error loading data:', error);
+                // Keep fallback timestamp if in dev mode, otherwise show error
+                if (!devMode) {
+                    updateTimestamp(null, true);
+                }
+            });
+    }
+    
+    // Deep search function to find timestamp in any nested object
+    function findTimestampInObject(obj, depth = 0) {
+        // Prevent infinite recursion
+        if (depth > 5) return null;
+        
+        if (!obj || typeof obj !== 'object') return null;
+        
+        // Direct property checks
+        const directProps = [
+            'LastUpdatedUTC', 'lastUpdatedUTC', 
+            'LastUpdated', 'lastUpdated',
+            'UpdatedAt', 'updatedAt'
+        ];
+        
+        for (const prop of directProps) {
+            if (obj[prop] && typeof obj[prop] === 'string') {
+                return obj[prop];
+            }
+        }
+        
+        // Check in DataForNerds or similar properties
+        const metaProps = [
+            'DataForNerds', 'dataForNerds', 
+            'Metadata', 'metadata',
+            'Meta', 'meta'
+        ];
+        
+        for (const metaProp of metaProps) {
+            if (obj[metaProp] && typeof obj[metaProp] === 'object') {
+                const result = findTimestampInObject(obj[metaProp], depth + 1);
+                if (result) return result;
+                
+                // Check direct access to LastUpdatedUTC in this metadata object
+                for (const prop of directProps) {
+                    if (obj[metaProp][prop] && typeof obj[metaProp][prop] === 'string') {
+                        return obj[metaProp][prop];
+                    }
+                }
+            }
+        }
+        
+        // Legacy structure: look for Office365Versions.LastUpdatedUTC
+        if (obj.Office365Versions && typeof obj.Office365Versions === 'object') {
+            if (obj.Office365Versions.LastUpdatedUTC && typeof obj.Office365Versions.LastUpdatedUTC === 'string') {
+                return obj.Office365Versions.LastUpdatedUTC;
+            }
+        }
+        
+        // If we have an array, check first few items
+        if (Array.isArray(obj) && obj.length > 0) {
+            // Check if items have timestamps
+            for (let i = 0; i < Math.min(3, obj.length); i++) {
+                if (obj[i] && typeof obj[i] === 'object') {
+                    for (const prop of directProps) {
+                        if (obj[i][prop] && typeof obj[i][prop] === 'string') {
+                            return obj[i][prop];
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    // Toggle the visibility of the live indicator based on data freshness
+    function toggleLiveIndicator(timestamp) {
+        const indicator = document.querySelector('.live-indicator');
+        if (!indicator) return;
+        
+        try {
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) {
+                // Try to handle non-standard date formats
+                indicator.style.display = 'none';
+                return;
+            }
+            
+            const now = new Date();
+            const diffHours = (now - date) / (1000 * 60 * 60); // Difference in hours
+            
+            // Show live indicator only if data is less than 24 hours old
+            if (diffHours <= 24) {
+                indicator.style.display = 'flex';
+                
+                // Add title attribute with freshness information
+                let freshText = '';
+                if (diffHours < 1) {
+                    freshText = 'Data updated within the last hour';
+                } else if (diffHours < 4) {
+                    freshText = 'Data updated within the last few hours';
+                } else {
+                    freshText = `Data updated ${Math.floor(diffHours)} hours ago`;
+                }
+                indicator.setAttribute('title', freshText);
+            } else {
+                indicator.style.display = 'none';
+            }
+        } catch (e) {
+            console.error('Error in toggleLiveIndicator:', e);
+            indicator.style.display = 'none';
+        }
+    }
+    
+    function updateTimestamp(timestamp, isError = false) {
+        const container = document.getElementById('timestamp-display');
+        const dateEl = container.querySelector('.timestamp-date');
+        const timeEl = container.querySelector('.timestamp-time');
+        
+        if (isError) {
+            dateEl.textContent = 'Error';
+            timeEl.textContent = 'loading data';
+            return;
+        }
+        
+        if (!timestamp) {
+            dateEl.textContent = 'No data';
+            timeEl.textContent = 'available';
+            return;
+        }
+        
+        try {
+            // First, try parsing as a standard ISO date
+            let date = new Date(timestamp);
+            
+            // If that fails, try other formats
+            if (isNaN(date.getTime()) && typeof timestamp === 'string') {
+                // Try to extract date components from formats like "2023 April 12 | 14:30:00 UTC"
+                const parts = timestamp.split('|');
+                if (parts.length === 2) {
+                    // Try to parse the date part
+                    const datePart = parts[0].trim();
+                    const timePart = parts[1].trim().replace(' UTC', '');
+                    date = new Date(`${datePart} ${timePart}`);
+                    
+                    // If still invalid, just display the raw string
+                    if (isNaN(date.getTime())) {
+                        dateEl.textContent = datePart;
+                        timeEl.textContent = timePart + ' UTC';
+                        return;
+                    }
+                } else {
+                    // For any other format, just show the raw string
+                    const parts = timestamp.split(' ');
+                    if (parts.length >= 3) {
+                        dateEl.textContent = parts.slice(0, 3).join(' ');
+                        timeEl.textContent = parts.slice(3).join(' ');
+                    } else {
+                        dateEl.textContent = timestamp;
+                        timeEl.textContent = '';
+                    }
+                    return;
+                }
+            }
+            
+            // If we have a valid date object, format it
+            if (!isNaN(date.getTime())) {
+                // Format: YYYY-MM-DD
+                const dateStr = date.toISOString().substring(0, 10);
+                dateEl.textContent = dateStr;
+                
+                // Format: HH:MM:SS (UTC)
+                const timeStr = date.toISOString().substring(11, 19);
+                timeEl.textContent = timeStr + ' UTC';
+                
+                // Add tooltip with local time
+                const localTime = date.toLocaleString();
+                container.setAttribute('title', `Local time: ${localTime}`);
+                container.setAttribute('data-bs-toggle', 'tooltip'); 
+                container.setAttribute('data-bs-placement', 'top');
+                
+                // Initialize Bootstrap tooltip if available
+                if (window.bootstrap && bootstrap.Tooltip) {
+                    new bootstrap.Tooltip(container);
+                }
+            } else {
+                // Fallback for unparseable dates
+                dateEl.textContent = 'Date format';
+                timeEl.textContent = 'unknown';
+            }
+        } 
+        catch (e) {
+            console.error('Error formatting timestamp:', e, 'Raw value:', timestamp);
+            // Just display the raw timestamp if we can't parse it
+            if (typeof timestamp === 'string') {
+                const parts = timestamp.split(' ');
+                if (parts.length >= 3) {
+                    dateEl.textContent = parts.slice(0, 3).join(' ');
+                    timeEl.textContent = parts.slice(3).join(' ');
+                } else {
+                    dateEl.textContent = timestamp;
+                    timeEl.textContent = '';
+                }
+            } else {
+                dateEl.textContent = 'Format';
+                timeEl.textContent = 'error';
+            }
+        }
+    }
+    
+    function showError(message) { 
+        const errorHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `; 
+        $('.container').prepend(errorHtml); 
+    }
+});
+</script>
+
+<style>
+    /* Hero stats layout */
+    .hero-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 500px; 
+        margin: 0 auto;
+    }
+    
+    .hero-stats-row {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        gap: 2rem;
+    }
+    
+    .hero-stats-row .stat-item {
+        flex: 1;
+        text-align: center;
+    }
+    
+    /* Timestamp specific styling */
+    .timestamp-row {
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .timestamp-stat {
+        max-width: 280px;
+        margin: 0 auto;
+    }
+    
+    .timestamp-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0.2rem;
+        line-height: 1.1;
+        cursor: help;
+    }
+    
+    .timestamp-date {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.1rem;
+    }
+    
+    .timestamp-time {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.95);
+        font-weight: 500;
+    }
+    
+    /* Live indicator with pulse effect - now bolder and centered */
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 0.6rem;
+    }
+    
+    .pulse {
+        display: inline-block;
+        width: 12px; /* Bolder dot */
+        height: 12px; /* Bolder dot */
+        border-radius: 50%;
+        background-color: #10b981; /* Green color */
+        box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+        animation: pulse-animation 2s infinite;
+    }
+    
+    /* Enhanced table styling */
+    .version-badge {
+        display: inline-block;
+        padding: .35rem .6rem;
+        font-weight: 600;
+        font-size: .85rem;
+        border-radius: .65rem;
+        letter-spacing: .5px;
+        white-space: nowrap;
+        box-shadow: 0 0 0 1px rgba(0,0,0,.1);
+    }
+    
+    /* Color variations for version badges based on channel */
+    .version-badge.version-current {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+    }
+    
+    .version-badge.version-monthly {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+    }
+    
+    .version-badge.version-semiannual {
+        background-color: rgba(124, 58, 237, 0.15);
+        color: #7c3aed;
+        box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2);
+    }
+    
+    /* Default style if no channel is matched */
+    .version-badge:not(.version-current):not(.version-monthly):not(.version-semiannual) {
+        background-color: var(--bs-primary-bg-subtle, #e6f0ff);
+        color: var(--bs-primary, #0d6efd);
+        box-shadow: 0 0 0 1px rgba(13,110,253,.15);
+    }
+    
+    /* Channel tag styling */
+    .channel-tag {
+        display: inline-block;
+        padding: 0.3rem 0.7rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    
+    .channel-tag.current {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+    
+    .channel-tag.monthly {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+    }
+    
+    .channel-tag.semiannual {
+        background-color: rgba(124, 58, 237, 0.15);
+        color: #7c3aed;
+    }
+    
+    /* Base build code styling */
+    .build-code {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        padding: .2rem .4rem;
+        font-size: .85rem;
+        border-radius: .25rem;
+        white-space: nowrap;
+    }
+    
+    /* Color variations for build code based on channel */
+    .build-code.build-current {
+        color: #10b981;
+        background-color: rgba(16, 185, 129, 0.08);
+    }
+    
+    .build-code.build-monthly {
+        color: #3b82f6;
+        background-color: rgba(59, 130, 246, 0.08);
+    }
+    
+    .build-code.build-semiannual {
+        color: #7c3aed;
+        background-color: rgba(124, 58, 237, 0.08);
+    }
+    
+    /* Default style if no channel is matched */
+    .build-code:not(.build-current):not(.build-monthly):not(.build-semiannual) {
+        color: var(--bs-primary, #0d6efd);
+        background-color: rgba(13,110,253,.1);
+    }
+    
+    .date-cell {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .date-cell.new {
+        color: #fff;
+        background: #0d6efd;
+        padding: .25rem .55rem;
+        border-radius: .6rem;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+    
+    .date-cell.recent {
+        color: #0d6efd;
+    }
+    
+    .eos-cell {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .eos-cell.expired {
+        color: #dc3545;
+    }
+    
+    .eos-cell.expiring-soon {
+        color: #fd7e14;
+    }
+    
+    .modern-table td {
+        vertical-align: middle;
+    }
+    
+    /* Mobile details styling for expanded information in first column */
+    .mobile-details {
+        padding: 0.5rem;
+        background-color: rgba(0,0,0,0.02);
+        border-radius: 0.5rem;
+        border-left: 3px solid rgba(0,0,0,0.1);
+    }
+    
+    .detail-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgba(0,0,0,0.5);
+        margin-right: 0.25rem;
+    }
+    
+    /* Info Callout styling for the enhanced note section */
+    .info-callout {
+        border: 1px solid rgba(13,110,253,.25);
+        border-radius: 0.5rem;
+        background-color: rgba(13,110,253,.05);
+        overflow: hidden;
+    }
+    
+    .info-callout-header {
+        padding: 0.75rem 1rem;
+        background-color: rgba(13,110,253,.1);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--bs-primary);
+        border-bottom: 1px solid rgba(13,110,253,.15);
+    }
+    
+    .info-callout-header i {
+        font-size: 1.25rem;
+        color: var(--bs-primary);
+    }
+    
+    .info-callout-body {
+        padding: 1rem;
+    }
+    
+    /* Responsive table adjustments */
+    @@media (max-width: 767.98px) {
+        .channel-version-col {
+            min-width: 180px;
+            width: 60%;
+        }
+        
+        /* Add spacing between channel and version when stacked */
+        .channel-tag + div {
+            margin-top: 0.5rem;
+        }
+    }
+    
+    /* Other existing styles */
+    .about-points li {position:relative;padding-left:1rem;margin-bottom:.4rem;}
+    .about-points li:before {content:"•";position:absolute;left:0;color:var(--bs-primary,#0d6efd);}
+</style>
+
+<style>
+    /* Keyframes definition for pulse animation */
+    @@keyframes pulse-animation {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+</style>
+}

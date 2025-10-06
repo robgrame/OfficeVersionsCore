@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /ads.txt
+
+# Disallow access to diagnostic pages
+Disallow: /Diagnostic/
+Disallow: /Error
+Disallow: /ads
+
+# Sitemap location
+Sitemap: https://www.office365versions.com/sitemap.xml

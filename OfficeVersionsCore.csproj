@@ -1,0 +1,84 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <GenerateSwaggerOnPublish>true</GenerateSwaggerOnPublish>
+  </PropertyGroup>
+
+  <!-- Remove certain directories -->
+  <ItemGroup>
+    <Compile Remove="CommandLine\**" />
+    <Compile Remove="Functions\**" />
+    <Compile Remove="Logs\**" />
+    <Content Remove="CommandLine\**" />
+    <Content Remove="Functions\**" />
+    <Content Remove="Logs\**" />
+    <EmbeddedResource Remove="CommandLine\**" />
+    <EmbeddedResource Remove="Functions\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <None Remove="CommandLine\**" />
+    <None Remove="Functions\**" />
+    <None Remove="Logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Swashbuckle packages (version 6.5.0 is compatible with .NET 8) -->
+    <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.22.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.22.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
+    
+    <!-- Azure Storage -->
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.25.1" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.0" />
+    <PackageReference Include="Azure.Identity" Version="1.16.0" />
+    
+    <!-- Application Insights -->
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
+    
+    <!-- Serilog logging (aligned versions) -->
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+  </ItemGroup>
+  
+  <!-- Create a swagger.json file during build -->
+  <Target Name="GenerateSwaggerFile" AfterTargets="Build">
+    <PropertyGroup>
+      <SwaggerOutputDir>$(OutputPath)</SwaggerOutputDir>
+      <SwaggerWwwRootDir>wwwroot\swagger\v1\</SwaggerWwwRootDir>
+    </PropertyGroup>
+    
+    <!-- Create directory structure if it doesn't exist -->
+    <MakeDir Directories="$(SwaggerWwwRootDir)" Condition="!Exists('$(SwaggerWwwRootDir)')" />
+    
+    <!-- Write a basic swagger definition -->
+    <WriteLinesToFile File="$(SwaggerWwwRootDir)swagger.json" Lines="{&#xD;&#xA;  &quot;openapi&quot;: &quot;3.0.1&quot;,&#xD;&#xA;  &quot;info&quot;: {&#xD;&#xA;    &quot;title&quot;: &quot;Office Versions API&quot;,&#xD;&#xA;    &quot;version&quot;: &quot;v1&quot;,&#xD;&#xA;    &quot;description&quot;: &quot;API for Office 365 version tracking&quot;&#xD;&#xA;  },&#xD;&#xA;  &quot;paths&quot;: {},&#xD;&#xA;  &quot;components&quot;: {}&#xD;&#xA;}" Overwrite="true" />
+      
+    <!-- Copy the swagger file to output for publishing -->
+    <Copy SourceFiles="$(SwaggerWwwRootDir)swagger.json" DestinationFolder="$(SwaggerOutputDir)" SkipUnchangedFiles="true" ContinueOnError="true" />
+  </Target>
+
+  <!-- Ensure all Swagger files are included in published output -->
+  <ItemGroup>
+    <Content Update="$(OutputPath)swagger.json" CopyToPublishDirectory="PreserveNewest" />
+    <Content Update="wwwroot\**\swagger.json" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  
+  <!-- Create directory structure if it doesn't exist -->
+  <Target Name="EnsureSwaggerDirectoryExists" BeforeTargets="Build">
+    <MakeDir Directories="wwwroot\swagger\v1" Condition="!Exists('wwwroot\swagger\v1')" />
+  </Target>
+
+</Project>

@@ -1,0 +1,487 @@
+@charset "UTF-8";
+
+#mainwrapper {
+	/* Container of all content */
+	width: 90%;
+	overflow: auto;
+	margin-left: 5%;
+    margin-right: 5%;
+}
+
+#mainContent {
+	/* Container for the blog post in individal blog view */
+	width: 70%;
+	float: left;
+	padding-right: 1%;
+    padding-left: 1%;
+	padding-top: 41px;
+}
+#mainwrapper #content #sidebar {
+	/* Sidebar*/
+	width: 26%;
+	padding-left: 1%;
+	padding-right: 1%;
+	float:left;
+	background-color: rgba(102,103,171,0.30);
+	margin-top: 105px;
+	padding-top: 32px;
+}
+
+#mainwrapper #content #sidebar input {
+	/* Search box in sidebar */
+	width: 100%;
+	height: 32px;
+}
+
+#mainwrapper header {
+    /*Header */
+    overflow: auto;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+    font-size: large;
+    font-style: normal;
+    font-weight: 400;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(102,103,171,0.8);
+    padding-top: 10px;
+    padding-left: 30px;
+}
+
+
+
+
+#mainwrapper header #logo {
+    /* Company Logo text */
+    width: 28%;
+    float: left;
+    padding-left: 2%;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    color: rgba(146,146,146,1.00);
+
+}
+#mainwrapper header nav {
+	/*Nav bar containing links in header */
+	text-align: left;
+	padding-top: 12px;
+	padding-bottom: 12px;
+	padding-right: 2%;
+	width: 68%;
+	float: left;
+	color: rgba(146,146,146,1.00);
+
+}
+
+#timestamp {
+	color: rgba(146,146,146,1.00);
+    font-family: "Segoe", "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+    font-variant: small-caps;
+    font-style: normal;
+    text-align: left;
+	font-weight: bold ;
+}
+
+
+header nav a {
+	/* Links in header */
+	padding-right: 2%;
+}
+
+#content #mainContent h1.SiteTitle {
+    /* Styling for main headings */
+    color: rgba(102,103,171,1);
+    text-transform: capitalize;
+    font-size: 45pt;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+	font-variant: normal;
+    font-style: normal;
+    text-align: left;
+    text-shadow: 4px 4px 7px #A8A8A8;
+    letter-spacing: 3pt;
+    word-spacing: 10pt;
+    font-weight: 500;
+}
+
+
+#content #mainContent h1 {
+    /* Styling for main headings */
+    font-size: larger;
+    color: rgba(0,0,0,1.00);
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-style: normal;
+    font-variant: small-caps;
+    font-weight: bold;
+    text-align: left;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#content #mainContent h2 {
+    /* Styling for main headings */
+    color: rgba(102,103,171,1);
+    letter-spacing: 2pt;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-style: normal;
+    font-variant: small-caps;
+    font-weight: bolder;
+    text-decoration: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 18pt;
+
+}
+
+#content #mainContent h3 {
+	/*Captions ot Taglines */
+	font-family: source-sans-pro, sans-serif;
+	font-style: normal;
+	font-weight: 200;
+	color: rgba(146,146,146,1.00);
+    padding-bottom: 10px;
+}
+#content #mainContent #bannerImage {
+	/*Container for main banner image */
+	width: 100%;
+	background-color: rgba(208,207,207,1.00);
+}
+#content #mainContent p {
+    /* All paragraphs under maincontent */
+    color: rgba(0,0,0,1.0);
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-style: normal;
+    font-size: medium;
+    text-align: justify;
+}
+
+#content #mainContent table {
+    width: 100%;  
+    font-variant:normal;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-size: 11pt;
+    font-style: normal;
+}
+
+table #latestversions td {
+    font-weight: bold;
+}
+
+#content #mainContent thead tr th {
+    background-color: rgba(102,103,171,0.80);
+    color: rgba(255,255,255,0.90);
+    font-variant:normal;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-size: 11pt;
+    font-style: normal;
+    font-weight: 300pt;
+}
+
+
+#content #mainContent #m365LatestVersions thead th.dt-center {
+    width: 100%; 
+    color: white;
+    text-align: center;
+    background-color: rgba(102,103,171,0.8);
+    font-size: 12pt;
+    font-weight: 300pt;
+    font-style: normal;
+    font-variant:normal;
+    vertical-align: middle;
+    
+}
+
+#content #mainContent #m365LatestVersions td.dt-center{
+    vertical-align: middle;
+    
+}
+#content #mainContent td.dt-center.first-column {
+    font-size: 12pt;
+    font-weight: bold;
+    
+}
+
+#content #mainContent td em {
+    font-weight: normal;	
+}
+
+#content #mainContent #noteinfo {
+	/* Author info section */
+    background-color: rgba(102,103,171,0.80);
+}
+#content #mainContent #noteinfo h2 {
+    color: rgba(255,255,255,1.00);
+    font-: expanded;
+    padding-left: 5%;
+    padding-top: 11px;
+}
+#content #mainContent #noteinfo p {
+	color: rgba(255,255,255,1.00);
+	padding-left: 2%;
+	padding-top: 0px;
+	padding-bottom: 11px;
+	padding-right: 2%;
+}
+
+#content #mainContent #noteinfo ul {
+	color: rgba(255,255,255,1.00);
+    padding-top: 5px;
+    padding-bottom: 15px;
+}
+
+
+#content #mainContent #notice {
+	/* Author info section */
+    background-color: rgba(255, 201, 5, 0.95);
+}
+#content #mainContent #notice h2 {
+    color: rgba(255,255,255,1.00);
+    font-: expanded;
+    padding-left: 5%;
+    padding-top: 11px;
+}
+#content #mainContent #notice p {
+	color: rgba(255,255,255,1.00);
+	padding-left: 2%;
+	padding-top: 0px;
+	padding-bottom: 11px;
+	padding-right: 2%;
+}
+
+#content #mainContent #notice ul {
+	color: rgba(255,255,255,1.00);
+    padding-top: 5px;
+    padding-bottom: 15px;
+}
+
+
+
+footer article {
+	/* Footer articles */
+	width: 48%;
+	float: left;
+	padding-left: 2%;
+	padding-right: 2%;
+    padding-top: 10px;
+
+}
+
+footer h2 {
+	/* Footer article titles */
+    color: rgba(102,103,171,1);
+    letter-spacing: 2pt;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-style: normal;
+    font-variant: small-caps;
+    font-weight: 700;
+    text-decoration: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 18pt;
+}
+
+footer article h3 {
+	/* Footer article titles */
+	text-align: center;
+	font-weight: 500;
+    color: rgba(102,103,171,1);
+    letter-spacing: 2pt;
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+    font-style: normal;
+    font-variant: small-caps;
+    text-decoration: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 15pt;
+}
+
+footer article p {
+	/* Footer article titles */
+	text-align: justify;
+	font-family:Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+	font-style: normal;
+	color: rgba(0,0,0,1.00);
+}
+
+#content #sidebar input {
+	/* Search box in sidebar */
+	width: 98%;
+	height: 32px;
+}
+#content #sidebar #adimage {
+	/* Container for Image in sidebar */
+	width: 100%;
+	background-color: rgba(208,207,207,1.00);
+	margin-top: 46px;
+	float: none;
+	overflow: auto;
+}
+nav ul li {
+	list-style-type: none;
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+nav ul {
+	padding-left: 0%;
+}
+nav ul li a {
+	color: rgba(0,0,0,1.00);
+	text-decoration: none;
+    font-weight: 400;
+}
+
+a.nav-link {
+    font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, "sans-serif";
+    font-size: 13pt;
+}
+#footerbar {
+	/* Footer bar at the bottom of the page */
+	height: 50px;
+	clear: both;
+    background-color: rgba(102,103,171,0.80);
+	width: 100%;
+}
+footer {
+	/* Container for footer artices */
+	width: 74%;
+	padding-left: 2%;
+	padding-right: 2%;
+}
+.notOnDesktop {
+	/*element to be displayed only in mobile view and tabet view */
+	display: none;
+}
+#mainContent #bannerImage img {
+	/* Actual banner image */
+	width: 100%;
+}
+#sidebar #adimage img {
+	/* Image in sidebar */
+	width: 100%;
+	float: left;
+}
+#mainwrapper header nav a {
+	/* Links in header */
+	color: rgba(255,255,255,1.00);
+	text-decoration: none;
+}
+
+/* Tablet view */
+@media screen and (max-width:769px) {
+.notOnDesktop {
+	/* Search box shown only in mobile view and Tablet view */
+	display: block;
+	text-align: right;
+	padding-right: 8px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	width: 96%;
+}
+#content .notOnDesktop input {
+	height: 28px;
+}
+
+.notOnMobile{
+	display: none;
+}
+#mainContent {
+	/* Container for the blog post */
+	padding-top: 0px;
+	float: none;
+	width: 96%;
+}
+#sidebar input {
+	/* Search box in sidebar */
+	display: none;
+}
+#mainwrapper #content #sidebar {
+	/* Sidebar*/
+	float: none;
+	width: 92%;
+	padding-top: 13px;
+	overflow: auto;
+	margin-top: 3px;
+	margin-left: 2%;
+	padding-bottom: 13px;
+}
+#content #sidebar #adimage {
+	/* Image in sidebar */
+	width: 60%;
+	margin-top: 0px;
+	float: left;
+}
+#content #sidebar nav {
+	/* Navigation links in sidebar */
+	width: 36%;
+	float: left;
+	padding-left: 4%;
+}
+#sidebar nav ul {
+	margin-top: 0px;
+}
+footer {
+	/* Footer region */
+	width: 96%;
+	padding-left: 2%;
+	padding-right: 2%;
+}
+#content footer article {
+	/*Each footer article */
+	width: 46%;
+}
+#mainwrapper header {
+	/* Header */
+	width: 100%;
+}
+}
+
+/* Mobile view */
+@media screen and (max-width:480px) {
+#mainwrapper header #logo {
+	/* Company Logo text in header */
+	width: 96%;
+	margin-left: 2%;
+}
+#mainwrapper header nav {
+	/*navigation links in header */
+	text-align: center;
+	background-color: rgba(255,255,255,1.00);
+	width: 98%;
+}
+#content #sidebar #adimage {
+	/* Container for image in sidebar */
+	width: 100%;
+}
+#content #sidebar nav {
+	/* Navigation bar for links in sidebar */
+	width: 96%;
+	padding-top: 7px;
+}
+#sidebar nav ul li {
+	display: inline-block;
+	width: 32%;
+	text-align: center;
+}
+#mainwrapper #content #sidebar {
+	/* sidebar */
+	padding-bottom: 0px;
+}
+#content .notOnDesktop {
+	/* Search box shown only in mobile and tablet view */
+	width: 100%;
+	text-align: center;
+	padding-left: 0px;
+	padding-right: 0px;
+}
+#content .notOnDesktop input {
+	width: 80%;
+	text-align: center;
+}
+#content #mainContent h3 {
+	/* Title under maincontent, if any */
+	font-size: 14px;
+}
+#content footer article {
+	/* Each foter article */
+	width: 96%;
+    float: none;
+}
+}

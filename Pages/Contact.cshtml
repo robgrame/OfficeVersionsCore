@@ -1,0 +1,252 @@
+@page
+@model ContactModel
+@{
+    ViewData["Title"] = "Contact Us";
+    ViewData["Description"] = "Contact the Office 365 Versions team for questions, feedback, or support requests.";
+}
+
+<div class="container">
+    <!-- Contact Header -->
+    <div class="privacy-header">
+        <div class="privacy-header-icon">
+            <i class="bi bi-envelope"></i>
+        </div>
+        <h1>@ViewData["Title"]</h1>
+        <p>We'd love to hear from you</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Contact Container -->
+            <div class="privacy-container">
+                <!-- Introduction -->
+                <div class="privacy-section">
+                    <h2><i class="bi bi-chat-dots me-2"></i>Get in Touch</h2>
+                    <p>
+                        Thank you for using Office 365 Versions! We value your feedback and are here to help with any questions or concerns.
+                        You can reach us through any of the methods below.
+                    </p>
+                </div>
+
+                <!-- Contact Methods -->
+                <div class="row">
+                    <!-- Email Contact -->
+                    <div class="col-md-4 mb-4">
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-envelope-fill"></i>
+                            </div>
+                            <h3>Email Us</h3>
+                            <p>For general inquiries and support</p>
+                            <a href="mailto:info@office365versions.com" class="contact-link">info@office365versions.com</a>
+                            
+                            <p class="mt-3">For privacy related questions</p>
+                            <a href="mailto:privacy@officeversions.com" class="contact-link">privacy@officeversions.com</a>
+                        </div>
+                    </div>
+                    
+                    <!-- GitHub -->
+                    <div class="col-md-4 mb-4">
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-github"></i>
+                            </div>
+                            <h3>GitHub</h3>
+                            <p>Report issues or contribute to the project</p>
+                            <a href="https://github.com/rgp-net/OfficeVersions" target="_blank" class="contact-link">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>GitHub Repository
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Social -->
+                    <div class="col-md-4 mb-4">
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-share"></i>
+                            </div>
+                            <h3>Connect</h3>
+                            <p>Follow us on social media</p>
+                            <div class="social-links">
+                                <a href="https://twitter.com/office365ver" target="_blank" class="social-link" title="Twitter">
+                                    <i class="bi bi-twitter"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/company/office365versions" target="_blank" class="social-link" title="LinkedIn">
+                                    <i class="bi bi-linkedin"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ -->
+                <div class="privacy-section mt-4">
+                    <h2><i class="bi bi-question-circle me-2"></i>Frequently Asked Questions</h2>
+                    
+                    <div class="accordion" id="contactFaq">
+                        <!-- Question 1 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How often is the Office 365 version data updated?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#contactFaq">
+                                <div class="accordion-body">
+                                    Our data is updated multiple times daily to ensure you have the most current information. The timestamp displayed on the site indicates when data was last refreshed.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 2 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Can I use the API in my own projects?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#contactFaq">
+                                <div class="accordion-body">
+                                    Yes! Our API is available for use in your projects. Check out our <a href="/swagger">API documentation</a> for details on endpoints and usage. If you have specific integration questions, please contact us directly.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 3 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Is there a way to get notified about new Office 365 releases?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#contactFaq">
+                                <div class="accordion-body">
+                                    While we don't currently offer direct notifications, you can subscribe to our RSS feed or follow us on social media for updates. We're also working on an email notification system that will be available soon.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 4 -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    How can I contribute to this project?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#contactFaq">
+                                <div class="accordion-body">
+                                    We welcome contributions! Visit our <a href="https://github.com/rgp-net/OfficeVersions" target="_blank">GitHub repository</a> to submit issues, feature requests, or code contributions. If you have suggestions but aren't familiar with GitHub, feel free to email us directly.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* Contact Page Specific Styles */
+        .contact-card {
+            padding: 2rem;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .contact-icon {
+            background-color: var(--bs-primary-bg-subtle, rgba(13,110,253,0.1));
+            color: var(--bs-primary);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-link {
+            display: inline-block;
+            color: var(--bs-primary);
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .contact-link:hover {
+            color: var(--bs-primary-hover);
+            text-decoration: underline;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .social-link {
+            background-color: var(--bs-light);
+            color: var(--bs-dark);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            background-color: var(--bs-primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* Accordion styling */
+        .accordion-item {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color, rgba(0,0,0,0.1));
+        }
+        
+        .accordion-button {
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            background-color: var(--card-bg);
+        }
+        
+        .accordion-button:not(.collapsed) {
+            color: var(--bs-primary);
+            background-color: var(--bs-primary-bg-subtle, rgba(13,110,253,0.1));
+            box-shadow: none;
+        }
+        
+        .accordion-body {
+            padding: 1rem 1.25rem;
+            background-color: var(--card-bg);
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--bs-primary);
+        }
+    </style>
+}

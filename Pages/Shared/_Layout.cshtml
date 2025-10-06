@@ -1,0 +1,233 @@
+﻿@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="google-adsense-account" content="ca-pub-3802051443065874">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="@ViewData["Description"] ?? " Modern Office 365 versions tracker - Stay updated with the latest Microsoft 365 Apps releases"" />
+    <meta name="keywords" content="Office 365, Office 365 Versions, What Is the Latest Version of Microsoft Office, Microsoft 365 Changelog, Office 365 News and Updates, Definition of Microsoft Office versions, What's new in Microsoft 365, Office 365: A guide to the updates, What's the difference between Microsoft 365 and Office 2021,Latest version of Microsoft office, Office 365: A guide to the updates, Update history for Microsoft 365 Apps (listed by date),latest office version, 16.0.16626.20208, 16.0.16130.20766,16.0.16731.20234, 2310, 2308, 2302, 2208, office version history, Update history for Microsoft 365 Apps, Microsoft Office Versions, latest office 365 version,office 365 latest version,version office 365,office 365 release notes,microsoft office 365 release date, Office 365 Sürümleri, Office 365-Versionen, Versiones de Office 365, Versions d'Office 365,Microsoft 365 apps, Microsoft, 365, Office, versions, Office 365 versions, Excel, Word, Powerpoint, Publisher, Access, OneNote, Windows 10, Windows 11, Windows, work, smartworking, online, simple, easy, tools, releases, Outlook, Exchange, howto, how to, FAQ, add-ins, Outlook 2019, Outlook 2016, Outlook 2013, Outlook 2010, Outlook 2007, Outlook 2003, Outlook 2002, XP, mail, e-mail, email, message" />
+    <meta name="robots" content="all" />
+    <meta name="language" content="en-US" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="@ViewData["Title"] ?? " Office 365 Versions - Modern Tracker"">
+    <meta property="og:image" content="~/images/red_old_tv.webp" />
+    <meta property="og:description" content="@ViewData["Description"] ?? " Stay updated with the latest Microsoft 365 Apps releases across all update channels"">
+    <meta property="og:url" content="https://www.office365versions.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Office 365 Versions">
+
+    <!-- Author and Contact -->
+    <meta name="author" content="Office 365 Versions Admin" />
+    <meta name="contact" content="info@office365versions.com" />
+
+    <!-- Title and Favicon -->
+    <title>@ViewData["Title"] - Office 365 Versions</title>
+    <link rel="icon" type="image/svg+xml" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/icons/windows.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+
+    <!-- Custom Modern Styles -->
+    <link href="~/css/modern-styles.css" rel="stylesheet" type="text/css">
+
+    <!-- Google Tag Manager -->
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','@Configuration["Google:Tag"]');</script>
+    <!-- End Google Tag Manager -->
+    
+    <!-- Pulse Animation Style -->
+    <style>
+        @@keyframes pulse-animation {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .nav-pulse {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #10b981; /* Green color */
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+            animation: pulse-animation 2s infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="site-container">
+        <!-- Google Tag Manager (noscript) -->
+        <noscript>
+            <iframe src="https://www.googletagmanager.com/gtm.ns.html?id=@Configuration["Google:Tag"]"
+                    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        </noscript>
+
+        <!-- Modern Navigation -->
+        <nav class="navbar navbar-expand-lg modern-navbar">
+            <div class="container">
+                <a class="navbar-brand-modern" href="/">
+                    <div class="brand-icon">
+                        <i class="bi bi-microsoft"></i>
+                    </div>
+                    <span>Office 365 Versions</span>
+                </a>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Index">
+                                <i class="bi bi-house-door me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-arrow-repeat me-1"></i>Update Channels
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Current">
+                                        <i class="bi bi-lightning me-2"></i>Current Channel
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Monthly">
+                                        <i class="bi bi-calendar-month me-2"></i>Monthly Enterprise
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/SemiAnnual">
+                                        <i class="bi bi-calendar-range me-2"></i>Semi-Annual Enterprise
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/AllChannels">
+                                        <i class="bi bi-list-ul me-2"></i>All Channels
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/About">
+                                <i class="bi bi-info-circle me-1"></i>About
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Contact">
+                                <i class="bi bi-envelope me-1"></i>Contact
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Privacy">
+                                <i class="bi bi-shield-lock me-1"></i>Privacy
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/swagger" target="_blank">
+                                <i class="bi bi-code-square me-1"></i>API
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Live Data Indicator with Pulse - Simplified -->
+                <div class="d-none d-lg-block ms-3">
+                    <small class="text-muted">
+                        <span class="nav-pulse"></span>
+                        <span>Live Data</span>
+                    </small>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            @RenderBody()
+        </main>
+
+        <!-- Modern Footer -->
+        <footer class="modern-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-links">
+                        <a asp-page="/Index">Home</a>
+                        <a asp-page="/About">About</a>
+                        <a asp-page="/Contact">Contact</a>
+                        <a asp-page="/Privacy">Privacy</a>
+                        <a href="/swagger" target="_blank">API Docs</a>
+                        <a href="https://github.com/robgrame/OfficeVersions" target="_blank">
+                            <i class="bi bi-github me-1"></i>GitHub
+                        </a>
+                    </div>
+                    <p class="mb-2">
+                        <strong>Disclaimer:</strong> This site is not affiliated with Microsoft Corporation.
+                        All trademarks are property of their respective owners.
+                    </p>
+                    <p class="mb-0">
+                        &copy; 2025 Office 365 Versions - Built with ❤️ for the IT community
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- Global Scripts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Add scrolled class to navbar
+            const navbar = document.querySelector('.modern-navbar');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 10) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+
+            // Initialize tooltips
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>
