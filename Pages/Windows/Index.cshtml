@@ -390,6 +390,13 @@ $(document).ready(function() {
     .hero-stats-row .stat-item {
         flex: 1;
         text-align: center;
+        min-width: 0;
+        overflow: hidden;
+    }
+    
+    .hero-stats-row .stat-item .stat-number {
+        font-size: clamp(1.2rem, 5vw, 2rem);
+        overflow-wrap: break-word;
     }
     
     .timestamp-row {
@@ -490,7 +497,7 @@ $(document).ready(function() {
     }
     
     .about-points li:before {
-        content: "•";
+        content: "ï¿½";
         position: absolute;
         left: 0;
         color: var(--bs-primary);
@@ -505,6 +512,22 @@ $(document).ready(function() {
         }
         100% {
             box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+    
+    /* Responsive adjustments for hero stats on smaller screens */
+    @@media (max-width: 480px) {
+        .hero-stats {
+            max-width: 100%;
+            padding: 0 0.5rem;
+        }
+        
+        .hero-stats-row {
+            gap: 1rem;
+        }
+        
+        .hero-stats-row .stat-item .stat-number {
+            font-size: clamp(1rem, 4vw, 1.2rem);
         }
     }
 </style>
