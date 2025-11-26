@@ -569,6 +569,49 @@ namespace OfficeVersionsCore.Controllers
         }
 
         /// <summary>
+        /// Gets the latest versions for Windows 10 and 11 (for hero stats)
+        /// </summary>
+        /// <returns>Latest version and build for each OS</returns>
+        [HttpGet("latest-versions")]
+        public async Task<ActionResult<object>> GetLatestVersions()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching latest versions for Windows 10 and 11");
+
+                var win10Response = await _windowsService.GetLatestVersionAsync(WindowsEdition.Windows10);
+                var win11Response = await _windowsService.GetLatestVersionAsync(WindowsEdition.Windows11);
+
+                var result = new
+                {
+                    windows10 = win10Response.Success && win10Response.Data != null ? new
+                    {
+                        version = win10Response.Data.Version,
+                        build = win10Response.Data.Build,
+                        releaseDate = win10Response.Data.ReleaseDate
+                    } : null,
+                    windows11 = win11Response.Success && win11Response.Data != null ? new
+                    {
+                        version = win11Response.Data.Version,
+                        build = win11Response.Data.Build,
+                        releaseDate = win11Response.Data.ReleaseDate
+                    } : null
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving latest versions");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Gets the last update timestamp
         /// </summary>
         /// <returns>The last time data was updated</returns>

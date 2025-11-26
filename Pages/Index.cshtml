@@ -612,7 +612,7 @@ $(document).ready(function() {
             });
         
         // Load Windows data
-        fetch('/api/WindowsVersions/releases')
+        fetch('/api/WindowsVersions/latest-versions')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error ${response.status}`);
@@ -620,22 +620,18 @@ $(document).ready(function() {
                 return response.json();
             })
             .then(data => {
-                if (Array.isArray(data)) {
-                    // Filter for Windows 11 and Windows 10
-                    const win11 = data.filter(item => item.product && item.product.includes('Windows 11'));
-                    const win10 = data.filter(item => item.product && item.product.includes('Windows 10'));
-                    
-                    // Get latest version for Windows 11
-                    if (win11.length > 0) {
-                        const latestWin11 = win11[0];
-                        document.getElementById('windows-latest-version').textContent = latestWin11.version || '-';
-                    }
-                    
-                    // Get latest version for Windows 10
-                    if (win10.length > 0) {
-                        const latestWin10 = win10[0];
-                        document.getElementById('windows10-latest-version').textContent = latestWin10.version || '-';
-                    }
+                // Update Windows 11
+                if (data.windows11) {
+                    const version = data.windows11.version || '-';
+                    const build = data.windows11.build ? ` (${data.windows11.build})` : '';
+                    document.getElementById('windows-latest-version').textContent = version + build;
+                }
+                
+                // Update Windows 10
+                if (data.windows10) {
+                    const version = data.windows10.version || '-';
+                    const build = data.windows10.build ? ` (${data.windows10.build})` : '';
+                    document.getElementById('windows10-latest-version').textContent = version + build;
                 }
             })
             .catch(error => { 
