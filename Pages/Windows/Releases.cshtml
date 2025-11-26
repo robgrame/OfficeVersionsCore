@@ -57,6 +57,11 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+    // Register custom sorting type for Windows versions
+    $.fn.dataTable.ext.type.order['windows-version-pre'] = function(version) {
+        return getWindowsVersionSortValue(version);
+    };
+
     $('#allWindowsReleases').DataTable({
         processing: true,
         serverSide: false,
@@ -73,7 +78,7 @@ $(document).ready(function() {
             { data: 'product', className: 'product-column' },
             {
                 data: 'version',
-                type: 'windows-version',
+                type: 'windows-version-pre',
                 className: 'version-column',
                 render: function(data) {
                     return data ? `<span class="version-badge">${data}</span>` : '';
