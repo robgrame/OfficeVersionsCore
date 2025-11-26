@@ -1,11 +1,8 @@
 using OfficeVersionsCore.Services;
 using OfficeVersionsCore.Services.BackgroundTasks;
 using Serilog;
-using Azure.Identity;
-using Azure.Storage.Blobs;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using Microsoft.Extensions.Azure;
 using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Rewrite;
@@ -22,11 +19,7 @@ builder.Host.UseSerilog((ctx, services, config) =>
 {
     config
         .ReadFrom.Configuration(ctx.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console(
-            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}",
-            theme: AnsiConsoleTheme.Code);
+        .ReadFrom.Services(services);
 
     // Add Application Insights sink if running in Azure (non-Development)
     if (!ctx.HostingEnvironment.IsDevelopment())
@@ -43,34 +36,6 @@ builder.Host.UseSerilog((ctx, services, config) =>
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
-// Add Azure clients with configuration based on environment
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    // Check if we should use Azurite for local development
-    var useAzurite = builder.Environment.IsDevelopment() && 
-                     builder.Configuration.GetValue<bool>("AzuriteStorage:UseAzurite", false);
-    
-    if (useAzurite)
-    {
-        // Use Azurite for local development
-        var azuriteConnectionString = builder.Configuration["AzuriteStorage:ConnectionString"] ?? "UseDevelopmentStorage=true";
-        clientBuilder.AddBlobServiceClient(azuriteConnectionString);
-        
-        // Log that we're using Azurite
-        Console.WriteLine("Using Azurite for local storage development");
-    }
-    else
-    {
-        // Use managed identity for Azure environments
-        var storageAccountName = builder.Configuration["StorageAccountName"] ?? "officeversionscorestrg";
-        var blobUri = new Uri($"https://{storageAccountName}.blob.core.windows.net");
-        
-        // Add BlobServiceClient using DefaultAzureCredential
-        clientBuilder.AddBlobServiceClient(blobUri);
-        clientBuilder.UseCredential(new DefaultAzureCredential());
-    }
-});
-
 // HttpClient factory (can extend later with proxy/timeout logic)
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient("Office365Scraper", client =>
@@ -78,9 +43,21 @@ builder.Services.AddHttpClient("Office365Scraper", client =>
     client.DefaultRequestHeaders.Add("User-Agent", "Office365VersionScraper");
     client.Timeout = TimeSpan.FromMinutes(2);
 });
+builder.Services.AddHttpClient("WindowsScraper", client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "WindowsVersionsScraper");
+    client.Timeout = TimeSpan.FromMinutes(2);
+});
+
+// Register Storage Service for local file system storage
+// Must be Singleton because BackgroundServices (HostedServices) are Singleton and consume it
+builder.Services.AddSingleton<IStorageService, LocalStorageService>();
 
 // Register Office 365 service
 builder.Services.AddScoped<IOffice365Service, Office365Service>();
+
+// Register Windows versions service
+builder.Services.AddScoped<IWindowsVersionsService, WindowsVersionsService>();
 
 // Register the background service for Office 365 version scraping
 // Only register if enabled in configuration
@@ -89,8 +66,12 @@ if (builder.Configuration.GetValue<bool>("Office365Scraper:Enabled", false))
     builder.Services.AddHostedService<Office365VersionScraper>();
 }
 
-// Add storage container initializer service
-builder.Services.AddHostedService<StorageContainerInitializer>();
+// Register the background service for Windows version scraping
+// Only register if enabled in configuration
+if (builder.Configuration.GetValue<bool>("WindowsScraper:Enabled", false))
+{
+    builder.Services.AddHostedService<WindowsVersionsScraper>();
+}
 
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
@@ -98,9 +79,9 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Office Versions API",
+        Title = "Office & Windows Versions API",
         Version = "v1",
-        Description = "API for Office 365 version tracking",
+        Description = "API for Office 365 and Windows version tracking",
         Contact = new OpenApiContact
         {
             Name = "Office Versions Core",

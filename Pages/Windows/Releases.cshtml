@@ -1,0 +1,172 @@
+@page
+@model OfficeVersionsCore.Pages.Windows.ReleasesModel
+@{
+    ViewData["Title"] = "All Windows Releases";
+    ViewData["Description"] = "Complete history of Windows 10 and Windows 11 releases and build numbers.";
+}
+
+<div class="container">
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-card-list"></i>
+            </div>
+            <div>
+                <h1 class="card-title">All Windows Releases</h1>
+                <p class="text-muted mb-0">Complete release history across all Windows products</p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4 ps-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/releases10" role="tab">Windows 10</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/releases11" role="tab">Windows 11</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" href="/windows/releases" role="tab">All Releases</a>
+            </li>
+        </ul>
+
+        <div class="modern-table-container table-responsive">
+            <table id="allWindowsReleases" class="table modern-table" width="100%">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-windows me-2"></i>Product</th>
+                        <th><i class="bi bi-tag me-2"></i>Version</th>
+                        <th><i class="bi bi-hash me-2"></i>Build</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                        <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<link rel="stylesheet" href="https://cdn.datatables.net/searchbuilder/1.6.0/css/searchBuilder.bootstrap5.min.css">
+<script src="~/js/windows-version-sort.js"></script>
+<script src="https://cdn.datatables.net/searchbuilder/1.6.0/js/dataTables.searchBuilder.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#allWindowsReleases').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: '/api/WindowsVersions/releases',
+            type: 'GET',
+            dataType: 'json',
+            dataSrc: '',
+            error: function(xhr, error, code) {
+                console.error('DataTable AJAX error:', error, code);
+            }
+        },
+        columns: [
+            { data: 'product', className: 'product-column' },
+            {
+                data: 'version',
+                type: 'windows-version',
+                className: 'version-column',
+                render: function(data) {
+                    return data ? `<span class="version-badge">${data}</span>` : '';
+                }
+            },
+            {
+                data: 'buildNumber',
+                className: 'build-column',
+                render: function(data) {
+                    return data ? `<code class="build-code">${data}</code>` : '';
+                }
+            },
+            {
+                data: 'releaseDate',
+                className: 'release-date-column',
+                render: function(data) {
+                    if (!data) return '';
+                    const date = new Date(data);
+                    return isNaN(date) ? data : date.toISOString().substring(0,10);
+                }
+            },
+            {
+                data: 'servicingOption',
+                className: 'd-none d-md-table-cell'
+            },
+            {
+                data: 'kb',
+                className: 'd-none d-lg-table-cell',
+                render: function(data, type, row) {
+                    if (!data) return '-';
+                    if (row.url) {
+                        return `<a href="${row.url}" target="_blank">${data}</a>`;
+                    }
+                    return data;
+                }
+            }
+        ],
+        order: [[ 0, 'asc' ], [ 1, 'desc' ], [ 3, 'desc' ]],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        dom: 'QBlfrtip',
+        searchBuilder: {
+            columns: [1, 2, 5]
+        },
+        drawCallback: function() {
+            if (window.bootstrap && bootstrap.Tooltip) {
+                const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+            }
+        }
+    });
+});
+</script>
+
+<style>
+    .version-badge {
+        display: inline-block;
+        padding: .35rem .6rem;
+        font-weight: 600;
+        font-size: .85rem;
+        border-radius: .65rem;
+        background-color: rgba(13,110,253,.15);
+        color: var(--bs-primary);
+    }
+    
+    .build-code {
+        font-family: monospace;
+        padding: .2rem .4rem;
+        font-size: .85rem;
+        border-radius: .25rem;
+        background-color: rgba(13,110,253,.1);
+        color: var(--bs-primary);
+    }
+    
+    .nav-tabs .nav-link.active {
+        border-bottom: 3px solid var(--bs-primary);
+        font-weight: 600;
+    }
+    
+    .dtsb-titleRow {
+        background-color: rgba(13, 110, 253, 0.08);
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        border-left: 3px solid var(--bs-primary);
+    }
+    
+    .dtsb-logicalOperator {
+        background-color: rgba(108, 117, 125, 0.05);
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 0.9rem;
+        color: var(--bs-gray-700);
+    }
+</style>
+}

@@ -1,23 +1,21 @@
 @page
 @model OfficeVersionsCore.Pages.Diagnostic.StorageAccessModel
 @{
-    ViewData["Title"] = "Storage Access Diagnostic";
+    ViewData["Title"] = "Local Storage Access Diagnostic";
 }
 
 <div class="container">
-    <h1>Storage Access Diagnostic</h1>
-    <p>This page tests access to Azure Storage using @(Model.IsUsingAzurite ? "Azurite local storage emulator" : "managed identity").</p>
+    <h1>Local Storage Access Diagnostic</h1>
+    <p>This page tests access to local file system storage.</p>
     
     <div class="card mb-4">
         <div class="card-header">
-            <h2>Storage Connection Details</h2>
+            <h2>Storage Paths</h2>
         </div>
         <div class="card-body">
-            <p><strong>Storage Account:</strong> @Model.StorageAccountName</p>
-            <p><strong>Container Name:</strong> @Model.ContainerName</p>
-            <p><strong>Container Exists:</strong> @Model.ContainerExists</p>
-            <p><strong>Blob Endpoint:</strong> @Model.BlobEndpoint</p>
-            <p><strong>Using Azurite:</strong> @Model.IsUsingAzurite</p>
+            <p><strong>Base Storage Path:</strong> @Model.StoragePath</p>
+            <p><strong>Office 365 Storage Path:</strong> @Model.StoragePath@Model.OfficeVersionsPath</p>
+            <p><strong>Windows Storage Path:</strong> @Model.StoragePath@Model.WindowsVersionsPath</p>
         </div>
     </div>
     
@@ -31,43 +29,43 @@
     
     <div class="card">
         <div class="card-header">
-            <h2>Blob Listing</h2>
+            <h2>Files in Storage</h2>
         </div>
         <div class="card-body">
-            @if (Model.BlobNames.Count > 0)
+            @if (Model.FileNames.Count > 0)
             {
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Blob Name</th>
+                            <th>File Path</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var blob in Model.BlobNames)
+                        @foreach (var file in Model.FileNames)
                         {
                             <tr>
-                                <td>@blob</td>
+                                <td>@file</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             }
-            else if (Model.ContainerExists)
+            else
             {
                 <div class="alert alert-warning">
-                    No blobs found in the container.
+                    No files found in the storage directories. The scrapers will create files when they run.
                 </div>
             }
             
-            @if (Model.IsUsingAzurite && Model.ContainerExists)
-            {
-                <div class="mt-3">
-                    <h3>Azurite Testing</h3>
-                    <p>Since you're using Azurite, you can test creating a blob by running the Office365VersionScraper background service.</p>
-                    <p>The scraper will run automatically if enabled in appsettings.json (Office365Scraper:Enabled = true).</p>
-                    <p>After the scraper runs, refresh this page to see the new blobs.</p>
-                </div>
-            }
+            <div class="mt-3">
+                <h3>Testing Local Storage</h3>
+                <p>Files will be created in the local storage directories when:</p>
+                <ul>
+                    <li>The Office 365 Version Scraper runs (if enabled in appsettings.json with Office365Scraper:Enabled = true)</li>
+                    <li>The Windows Version Scraper runs (if enabled in appsettings.json with WindowsScraper:Enabled = true)</li>
+                </ul>
+                <p>After the scrapers run, refresh this page to see the new files.</p>
+            </div>
         </div>
     </div>
 </div>

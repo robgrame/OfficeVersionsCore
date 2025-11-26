@@ -1,0 +1,511 @@
+@page
+@model OfficeVersionsCore.Pages.Windows.IndexModel
+@{
+    ViewData["Title"] = "Windows Versions";
+    ViewData["Description"] = "Track Windows 10 and Windows 11 releases, build numbers, and update information.";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content fade-in-up">
+            <h1 class="hero-title">Windows Versions</h1>
+            <p class="hero-subtitle">
+                Stay updated with the latest Windows 10 and Windows 11 releases and build numbers
+            </p>
+            
+            <div class="hero-stats" id="hero-stats">
+                <div class="hero-stats-row">
+                    <div class="stat-item">
+                        <span class="stat-number" id="total-products">-</span>
+                        <span class="stat-label">Windows Products</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="latest-build">-</span>
+                        <span class="stat-label">Latest Build</span>
+                    </div>
+                </div>
+                
+                <div class="hero-stats-row timestamp-row">
+                    <div class="stat-item timestamp-stat">
+                        <div class="timestamp-container" id="timestamp-display">
+                            <div class="live-indicator"><span class="pulse"></span></div>
+                            <div class="timestamp-date">-</div>
+                            <div class="timestamp-time">-</div>
+                        </div>
+                        <span class="stat-label">Last Updated</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Important Notice -->
+    <div class="modern-alert alert-warning">
+        <div class="alert-icon">!</div>
+        <div>
+            <strong>Important Notice</strong>
+            <p class="mb-0">
+                This site is <strong>not affiliated</strong> with Microsoft Corporation. Information is sourced from official Microsoft documentation. Refer to <a href="https://learn.microsoft.com/en-us/windows/release-health/" target="_blank" class="text-decoration-none">Microsoft's official documentation</a> for authoritative information.
+            </p>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">About Windows Versions</h3>
+                        <p class="text-muted mb-0">Track Windows update releases</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">This page tracks Windows 10 and Windows 11 releases across different servicing channels. It provides build numbers, release dates, and KB article references for system administrators and IT professionals.</p>
+                    <div class="row g-3 mb-0">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0 about-points">
+                                <li><strong>Windows 11:</strong> Latest consumer and enterprise releases</li>
+                                <li><strong>Windows 10:</strong> All supported versions and builds</li>
+                                <li><strong>Servicing Channels:</strong> General Availability and Preview</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0 about-points">
+                                <li><strong>Build Numbers:</strong> Complete version and revision tracking</li>
+                                <li><strong>KB Articles:</strong> Direct links to Microsoft KB articles</li>
+                                <li><strong>Release Dates:</strong> Historical and current release information</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Versions Table -->
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-table"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Latest Windows Versions</h2>
+                <p class="text-muted mb-0">Current releases across Windows products</p>
+            </div>
+        </div>
+
+        <div class="modern-table-container table-responsive">
+            <table id="windowsLatestVersions" class="table modern-table" width="100%">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-windows me-2"></i>Product</th>
+                        <th><i class="bi bi-tag me-2"></i>Version</th>
+                        <th><i class="bi bi-hash me-2"></i>Build</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-card-list"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">All Releases</h3>
+                        <p class="text-muted mb-0">Complete release history</p>
+                    </div>
+                </div>
+                <p>View the complete history of all Windows releases across all versions.</p>
+                <a asp-page="/Windows/Releases" class="btn-modern btn-primary">
+                    <i class="bi bi-arrow-right"></i>
+                    View All Releases
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-code-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Developer API</h3>
+                        <p class="text-muted mb-0">Programmatic access</p>
+                    </div>
+                </div>
+                <p>Access Windows version data through our REST API.</p>
+                <div class="d-flex gap-2">
+                    <a href="/swagger" target="_blank" class="btn-modern btn-primary">
+                        <i class="bi bi-book"></i>
+                        API Docs
+                    </a>
+                    <a href="/api/WindowsVersions" target="_blank" class="btn-modern btn-secondary">
+                        <i class="bi bi-download"></i>
+                        JSON Data
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script type="text/javascript">
+$(document).ready(function() {
+    // Main table initialization
+    const table = $('#windowsLatestVersions').DataTable({
+        processing: true,
+        serverSide: false,
+        paging: false,
+        searching: false,
+        ordering: true,
+        info: false,
+        ajax: {
+            url: '/api/WindowsVersions/data',
+            type: 'GET',
+            dataType: 'json',
+            dataSrc: 'data',
+            error: function(xhr, error, code) {
+                console.error('DataTable AJAX error:', error, code, xhr.responseText);
+                showError('Failed to load Windows versions data. Please try again later.');
+            }
+        },
+        columns: [
+            {
+                data: 'product',
+                className: 'product-column',
+                render: function(data) {
+                    if (!data) return '';
+                    let iconClass = data.includes('11') ? 'bi-windows' : 'bi-laptop';
+                    return `<i class="bi ${iconClass} me-2"></i><strong>${data}</strong>`;
+                }
+            },
+            {
+                data: 'latestVersion',
+                className: 'version-column',
+                render: function(data) {
+                    if (!data) return '';
+                    return `<span class="version-badge">${data}</span>`;
+                }
+            },
+            {
+                data: 'latestBuild',
+                className: 'build-column',
+                render: function(data) {
+                    if (!data) return '';
+                    return `<code class="build-code">${data}</code>`;
+                }
+            },
+            {
+                data: 'latestReleaseDate',
+                className: 'release-date-column',
+                render: function(data) {
+                    if (!data) return '';
+                    const date = new Date(data);
+                    if (isNaN(date)) return data;
+                    
+                    const now = new Date();
+                    const diffDays = Math.floor((now - date)/(1000*60*60*24));
+                    let cls = 'date-cell';
+                    
+                    if (diffDays <= 7) cls += ' new';
+                    else if (diffDays <= 30) cls += ' recent';
+                    
+                    const localDate = date.toLocaleString();
+                    const relativeTime = diffDays === 0 ? 'today' : diffDays + 'd ago';
+                    
+                    return `<span class="${cls}" data-bs-toggle="tooltip" title="${localDate} (${relativeTime})">${date.toISOString().substring(0,10)}</span>`;
+                }
+            },
+            {
+                data: 'servicingChannels',
+                className: 'd-none d-lg-table-cell',
+                render: function(data) {
+                    if (!data || !Array.isArray(data) || data.length === 0) return '-';
+                    return data.join(', ');
+                }
+            }
+        ],
+        order: [[ 3, 'desc' ]],
+        drawCallback: function() {
+            $('#windowsLatestVersions tbody tr').addClass('fade-in-up');
+            if (window.bootstrap && bootstrap.Tooltip) {
+                const tooltips = document.querySelectorAll('#windowsLatestVersions [data-bs-toggle="tooltip"]');
+                tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+            }
+        }
+    });
+
+    // Load hero stats
+    loadHeroStats();
+    
+    function loadHeroStats() {
+        fetch('/api/WindowsVersions')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.data && Array.isArray(data.data)) {
+                    document.getElementById('total-products').textContent = data.data.length;
+                    
+                    const sorted = [...data.data].sort((a, b) =>
+                        new Date(b.latestReleaseDate) - new Date(a.latestReleaseDate));
+                    
+                    if (sorted.length > 0) {
+                        document.getElementById('latest-build').textContent = sorted[0].latestBuild || '-';
+                    }
+                }
+                
+                let timestamp = null;
+                if (data.dataForNerds && data.dataForNerds.lastUpdatedUTC) {
+                    timestamp = data.dataForNerds.lastUpdatedUTC;
+                } else if (data.DataForNerds && data.DataForNerds.LastUpdatedUTC) {
+                    timestamp = data.DataForNerds.LastUpdatedUTC;
+                }
+                
+                if (timestamp) {
+                    updateTimestamp(timestamp);
+                    toggleLiveIndicator(timestamp);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+            });
+    }
+    
+    function toggleLiveIndicator(timestamp) {
+        const indicator = document.querySelector('.live-indicator');
+        if (!indicator) return;
+        
+        try {
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) {
+                indicator.style.display = 'none';
+                return;
+            }
+            
+            const now = new Date();
+            const diffHours = (now - date) / (1000 * 60 * 60);
+            
+            if (diffHours <= 24) {
+                indicator.style.display = 'flex';
+                let freshText = diffHours < 1 ? 'Data updated within the last hour' :
+                               diffHours < 4 ? 'Data updated within the last few hours' :
+                               `Data updated ${Math.floor(diffHours)} hours ago`;
+                indicator.setAttribute('title', freshText);
+            } else {
+                indicator.style.display = 'none';
+            }
+        } catch (e) {
+            indicator.style.display = 'none';
+        }
+    }
+    
+    function updateTimestamp(timestamp) {
+        const container = document.getElementById('timestamp-display');
+        const dateEl = container.querySelector('.timestamp-date');
+        const timeEl = container.querySelector('.timestamp-time');
+        
+        if (!timestamp) {
+            dateEl.textContent = 'No data';
+            timeEl.textContent = 'available';
+            return;
+        }
+        
+        try {
+            let date = new Date(timestamp);
+            
+            if (!isNaN(date.getTime())) {
+                dateEl.textContent = date.toISOString().substring(0, 10);
+                timeEl.textContent = date.toISOString().substring(11, 19) + ' UTC';
+                
+                const localTime = date.toLocaleString();
+                container.setAttribute('title', `Local time: ${localTime}`);
+                container.setAttribute('data-bs-toggle', 'tooltip');
+                
+                if (window.bootstrap && bootstrap.Tooltip) {
+                    new bootstrap.Tooltip(container);
+                }
+            } else {
+                dateEl.textContent = 'Date format';
+                timeEl.textContent = 'unknown';
+            }
+        } catch (e) {
+            dateEl.textContent = 'Format';
+            timeEl.textContent = 'error';
+        }
+    }
+    
+    function showError(message) {
+        const errorHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        $('.container').prepend(errorHtml);
+    }
+});
+</script>
+
+<style>
+    /* Reuse Office365 styles */
+    .hero-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .hero-stats-row {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        gap: 2rem;
+    }
+    
+    .hero-stats-row .stat-item {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .timestamp-row {
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .timestamp-stat {
+        max-width: 280px;
+        margin: 0 auto;
+    }
+    
+    .timestamp-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0.2rem;
+        line-height: 1.1;
+        cursor: help;
+    }
+    
+    .timestamp-date {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.1rem;
+    }
+    
+    .timestamp-time {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.95);
+        font-weight: 500;
+    }
+    
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 0.6rem;
+    }
+    
+    .pulse {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #10b981;
+        box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+        animation: pulse-animation 2s infinite;
+    }
+    
+    .version-badge {
+        display: inline-block;
+        padding: .35rem .6rem;
+        font-weight: 600;
+        font-size: .85rem;
+        border-radius: .65rem;
+        letter-spacing: .5px;
+        white-space: nowrap;
+        background-color: rgba(13,110,253,.15);
+        color: var(--bs-primary);
+        box-shadow: 0 0 0 1px rgba(13,110,253,.2);
+    }
+    
+    .build-code {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        padding: .2rem .4rem;
+        font-size: .85rem;
+        border-radius: .25rem;
+        white-space: nowrap;
+        color: var(--bs-primary);
+        background-color: rgba(13,110,253,.1);
+    }
+    
+    .date-cell {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    
+    .date-cell.new {
+        color: #fff;
+        background: #0d6efd;
+        padding: .25rem .55rem;
+        border-radius: .6rem;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+    
+    .date-cell.recent {
+        color: #0d6efd;
+    }
+    
+    .about-points li {
+        position: relative;
+        padding-left: 1rem;
+        margin-bottom: .4rem;
+    }
+    
+    .about-points li:before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: var(--bs-primary);
+    }
+    
+    @@keyframes pulse-animation {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+</style>
+}

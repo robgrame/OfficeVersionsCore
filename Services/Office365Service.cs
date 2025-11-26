@@ -2,8 +2,6 @@ using OfficeVersionsCore.Models;
 using System.Text.Json;
 using System.Diagnostics; // added for Stopwatch
 using System.Collections.Concurrent;
-using Azure.Storage.Blobs;
-using Azure.Identity;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.Hosting;
@@ -32,8 +30,8 @@ namespace OfficeVersionsCore.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly ILogger<Office365Service> _logger;
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly IWebHostEnvironment _environment;
+        private readonly IStorageService _storageService;
+        private readonly string _office365StoragePath;
 
         // Cache for aggregated latest versions data with expiration (original behavior)
         private Office365VersionsData? _cachedData;
@@ -43,45 +41,21 @@ namespace OfficeVersionsCore.Services
         // Per-endpoint cache for channel release history
         private readonly ConcurrentDictionary<string, (Office365VersionsData Data, DateTime Expiry)> _endpointCache = new();
 
-        // Storage access settings
-        private readonly bool _usePrivateStorage;
-        private readonly string _containerName;
-        private readonly bool _useAzurite;
-
         public Office365Service(
             HttpClient httpClient, 
             IConfiguration configuration, 
             ILogger<Office365Service> logger,
-            BlobServiceClient blobServiceClient,
-            IWebHostEnvironment environment)
+            IStorageService storageService)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _logger = logger;
-            _blobServiceClient = blobServiceClient;
-            _environment = environment;
+            _storageService = storageService;
             
-            // Check if we should use private storage access with Azure Identity
-            _usePrivateStorage = _configuration.GetValue<bool>("Office365:UsePrivateStorage", false);
-            _containerName = _configuration["SEC_STOR_StorageCon"] ?? "jsonrepository";
-            _useAzurite = _environment.IsDevelopment() && 
-                          _configuration.GetValue<bool>("AzuriteStorage:UseAzurite", false);
+            // Storage path from configuration (Office365:StoragePath), default to "officeversions"
+            _office365StoragePath = _configuration["Office365:StoragePath"] ?? "officeversions";
             
-            if (_useAzurite)
-            {
-                _logger.LogInformation("Office365Service initialized with Azurite local storage. Container: {Container}", 
-                    _containerName);
-            }
-            else if (_usePrivateStorage)
-            {
-                _logger.LogInformation("Office365Service initialized with managed identity for storage access. Container: {Container}", 
-                    _containerName);
-            }
-            else
-            {
-                _logger.LogInformation("Office365Service initialized with HTTP access. Container: {Container}",
-                    _containerName);
-            }
+            _logger.LogInformation("Office365Service initialized with local storage path: {Path}", _office365StoragePath);
         }
 
         /// <summary>
@@ -209,47 +183,8 @@ namespace OfficeVersionsCore.Services
             
             string jsonContent;
             
-            // Determine storage access method based on configuration
-            if (_useAzurite)
-            {
-                _logger.LogInformation("Using Azurite for local storage. Blob: {BlobName}", blobName);
-                jsonContent = await FetchJsonFromStorageAsync(blobName);
-            }
-            else if (_usePrivateStorage)
-            {
-                _logger.LogInformation("Using managed identity to access storage. Blob: {BlobName}", blobName);
-                jsonContent = await FetchJsonFromStorageAsync(blobName);
-            }
-            else
-            {
-                _logger.LogInformation("Starting fetch for Office 365 versions via HTTP. URL={Url} Timeout={Timeout}s", 
-                    dataUrl, _httpClient.Timeout.TotalSeconds);
-
-                var swRequest = Stopwatch.StartNew();
-                HttpResponseMessage response;
-                try
-                {
-                    response = await _httpClient.GetAsync(dataUrl, HttpCompletionOption.ResponseHeadersRead);
-                }
-                catch (TaskCanceledException tce) when (!tce.CancellationToken.IsCancellationRequested)
-                {
-                    _logger.LogError(tce, "HTTP request to {Url} timed out after ~{Timeout}s (TaskCanceledException)", 
-                        dataUrl, _httpClient.Timeout.TotalSeconds);
-                    throw; // escalate
-                }
-
-                swRequest.Stop();
-                _logger.LogInformation("Received HTTP headers from {Url} in {Elapsed} ms StatusCode={StatusCode} Version={Version}", 
-                    dataUrl, swRequest.ElapsedMilliseconds, (int)response.StatusCode, response.Version);
-
-                response.EnsureSuccessStatusCode();
-
-                var swRead = Stopwatch.StartNew();
-                jsonContent = await response.Content.ReadAsStringAsync();
-                swRead.Stop();
-                _logger.LogInformation("Read response body ({Length} chars) in {Elapsed} ms (total so far {Total} ms)", 
-                    jsonContent.Length, swRead.ElapsedMilliseconds, swTotal.ElapsedMilliseconds);
-            }
+            _logger.LogInformation("Fetching Office 365 versions from local storage. File: {BlobName}", blobName);
+            jsonContent = await FetchJsonFromStorageAsync(blobName);
 
             var swDeserialize = Stopwatch.StartNew();
             Office365VersionsData? data = null;
@@ -330,98 +265,36 @@ namespace OfficeVersionsCore.Services
         }
 
         /// <summary>
-        /// Unified method to fetch JSON from storage (works with both Azurite and Azure Storage)
+        /// Unified method to fetch JSON from local storage
         /// </summary>
         private async Task<string> FetchJsonFromStorageAsync(string blobName)
         {
             var stopwatch = Stopwatch.StartNew();
-            _logger.LogInformation("Starting blob fetch for blob {BlobName} from container {Container}", 
-                blobName, _containerName);
+            var fileName = $"{_office365StoragePath}/{blobName}";
+            _logger.LogInformation("Starting fetch for file {FileName} from local storage", fileName);
             
             try
             {
-                // Get container client using the injected BlobServiceClient
-                var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-                
-                // Create container if it doesn't exist (mainly for Azurite)
-                await containerClient.CreateIfNotExistsAsync();
-                
-                // Get blob client and download content
-                var blobClient = containerClient.GetBlobClient(blobName);
-                
-                // Check if blob exists
-                if (!await blobClient.ExistsAsync())
+                if (await _storageService.ExistsAsync(fileName))
                 {
-                    // If using Azurite, create an empty JSON file structure
-                    if (_useAzurite)
-                    {
-                        _logger.LogInformation("Blob {BlobName} does not exist in Azurite. Creating a default placeholder...", blobName);
-                        
-                        // Create default content
-                        var defaultData = new Office365VersionsData
-                        {
-                            DataForNerds = new DataForNerds
-                            {
-                                LastUpdatedUTC = $"{DateTime.UtcNow.ToLongDateString()} | {DateTime.UtcNow.ToLongTimeString()} UTC",
-                                SourcePage = new List<string> { "Local Development" },
-                                TimeElapsedMs = 0
-                            },
-                            Data = new List<Office365Version>
-                            {
-                                new Office365Version
-                                {
-                                    Channel = "Current Channel",
-                                    Version = "2304",
-                                    Build = "16501.20040",
-                                    LatestReleaseDate = "2023 May 09",
-                                    FirstAvailabilityDate = "2023 Apr 26",
-                                    EndOfService = "2023 Oct 11"
-                                }
-                            }
-                        };
-                        
-                        // Serialize and upload
-                        var jsonContent = JsonSerializer.Serialize(defaultData, new JsonSerializerOptions
-                        {
-                            WriteIndented = true,
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                        });
-                        
-                        // Upload the content
-                        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(jsonContent);
-                        using var ms = new MemoryStream(bytes);
-                        await blobClient.UploadAsync(ms, overwrite: true);
-                        
-                        _logger.LogInformation("Created default placeholder for {BlobName}", blobName);
-                        
-                        return jsonContent;
-                    }
-                    else
-                    {
-                        _logger.LogError("Blob {BlobName} not found in container {Container}", blobName, _containerName);
-                        throw new FileNotFoundException($"Blob {blobName} not found in container {_containerName}");
-                    }
+                    var content = await _storageService.ReadAsync(fileName);
+                    stopwatch.Stop();
+                    _logger.LogInformation("Successfully read file {FileName} from local storage in {Elapsed}ms. Content length: {Length}", 
+                        fileName, stopwatch.ElapsedMilliseconds, content.Length);
+                    return content;
                 }
-                
-                // Download blob content
-                using var memoryStream = new MemoryStream();
-                await blobClient.DownloadToAsync(memoryStream);
-                memoryStream.Position = 0;
-                
-                using var streamReader = new StreamReader(memoryStream, Encoding.UTF8);
-                var content = await streamReader.ReadToEndAsync();
-                
-                stopwatch.Stop();
-                _logger.LogInformation("Successfully downloaded blob {BlobName} from {Container} in {Elapsed}ms. Content length: {Length}", 
-                    blobName, _containerName, stopwatch.ElapsedMilliseconds, content.Length);
-                
-                return content;
+                else
+                {
+                    stopwatch.Stop();
+                    _logger.LogError("File {FileName} not found in local storage", fileName);
+                    throw new FileNotFoundException($"File {fileName} not found in local storage");
+                }
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                _logger.LogError(ex, "Error accessing blob {BlobName} from {Container} after {Elapsed}ms", 
-                    blobName, _containerName, stopwatch.ElapsedMilliseconds);
+                _logger.LogError(ex, "Error reading file {FileName} from local storage after {Elapsed}ms", 
+                    fileName, stopwatch.ElapsedMilliseconds);
                 throw;
             }
         }

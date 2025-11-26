@@ -1,6 +1,6 @@
 # OfficeVersionsCore
 
-Open-source .NET 8 Razor Pages web app and lightweight API for tracking Microsoft 365 (Office 365) client versions. It provides a modern UI, endpoints for programmatic access, and operational telemetry/logging.
+Open-source .NET 8 Razor Pages web app and lightweight API for tracking Microsoft 365 (Office 365) client versions and Windows releases. It provides a modern UI, endpoints for programmatic access, and operational telemetry/logging.
 
 - Live API docs: navigate to `/swagger` when running locally
 - GitHub repository: https://github.com/robgrame/OfficeVersionsCore
@@ -10,6 +10,8 @@ Open-source .NET 8 Razor Pages web app and lightweight API for tracking Microsof
 
 - Razor Pages frontend (ASP.NET Core, .NET 8)
 - API with Swagger UI documentation at `/swagger`
+- **Office 365 version tracking** across all update channels
+- **Windows version tracking** for Windows 10 and Windows 11 releases
 - Azure Storage (Blobs) integration for data persistence
 - First-class Azure auth using `Azure.Identity` (Managed Identity or Service Principal)
 - Telemetry with Application Insights
@@ -112,6 +114,11 @@ If running in Azure with Managed Identity, no secrets are required.
 ## Project structure (high-level)
 
 - `Pages/` — Razor Pages UI (`.cshtml` and PageModels)
+  - `Pages/Windows/` — Windows version tracking pages
+- `Models/` — Data models for Office365 and Windows versions
+- `Services/` — Business logic services
+  - `Services/BackgroundTasks/` — Background scrapers for data collection
+- `Controllers/` — API controllers for Office365 and Windows data
 - `wwwroot/` — static assets and `swagger` folder
 - `Program.cs` — application startup
 - `appsettings*.json` — configuration

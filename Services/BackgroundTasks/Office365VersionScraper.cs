@@ -1,7 +1,6 @@
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,13 +13,10 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
         private readonly ILogger<Office365VersionScraper> _logger;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly IWebHostEnvironment _environment;
+        private readonly IStorageService _storageService;
+        private readonly string _office365StoragePath;
         private readonly string _rootUrl = "https://docs.microsoft.com/en-us/officeupdates/";
         private readonly string _rootPage = "https://learn.microsoft.com/en-us/officeupdates/update-history-microsoft365-apps-by-date";
-        
-        private readonly string _storageContainerName;
-        private readonly bool _useAzurite;
         
         private readonly TimeSpan _interval;
 
@@ -28,20 +24,16 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
             ILogger<Office365VersionScraper> logger,
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
-            BlobServiceClient blobServiceClient,
-            IWebHostEnvironment environment)
+            IStorageService storageService)
         {
             _logger = logger;
             _configuration = configuration;
             _httpClient = httpClientFactory.CreateClient("Office365Scraper");
             _httpClient.Timeout = TimeSpan.FromMinutes(2);
-            _blobServiceClient = blobServiceClient;
-            _environment = environment;
-
-            // Get configuration values
-            _storageContainerName = _configuration["SEC_STOR_StorageCon"] ?? "jsonrepository";
-            _useAzurite = _environment.IsDevelopment() && 
-                         _configuration.GetValue<bool>("AzuriteStorage:UseAzurite", false);
+            _storageService = storageService;
+            
+            // Storage path from configuration (Office365:StoragePath), default to "officeversions"
+            _office365StoragePath = _configuration["Office365:StoragePath"] ?? "officeversions";
             
             // Default to 5 minutes if not configured, can be set in minutes in appsettings.json
             int intervalMinutes;
@@ -51,16 +43,8 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
             }
             _interval = TimeSpan.FromMinutes(intervalMinutes);
 
-            if (_useAzurite)
-            {
-                _logger.LogInformation("Office 365 Version Scraper initialized with interval: {Interval} minutes. Using Azurite for local storage.", 
-                    _interval.TotalMinutes);
-            }
-            else
-            {
-                _logger.LogInformation("Office 365 Version Scraper initialized with interval: {Interval} minutes. Using managed identity for storage access.", 
-                    _interval.TotalMinutes);
-            }
+            _logger.LogInformation("Office 365 Version Scraper initialized with interval: {Interval} minutes. Using local storage path: {Path}", 
+                _interval.TotalMinutes, _office365StoragePath);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -379,7 +363,7 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
         {
             try
             {
-                _logger.LogInformation("Preparing to upload {FileName}", fileName);
+                _logger.LogInformation("Preparing to upload {FileName} to local storage", fileName);
                 
                 // Convert data to JSON - match PowerShell indentation and casing
                 var jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions
@@ -388,62 +372,14 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
                 
-                // Create temporary file
-                var tempFilePath = Path.GetTempFileName();
-                await File.WriteAllTextAsync(tempFilePath, jsonData, cancellationToken);
+                var fullFileName = $"{_office365StoragePath}/{fileName}";
+                await _storageService.WriteAsync(fullFileName, jsonData);
                 
-                _logger.LogInformation("JSON data written to temporary file: {TempFile}", tempFilePath);
-                
-                try
-                {
-                    // Use the injected BlobServiceClient with managed identity or Azurite
-                    var containerClient = _blobServiceClient.GetBlobContainerClient(_storageContainerName);
-                    
-                    // Ensure container exists - especially important for Azurite
-                    await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
-                    
-                    // Upload the file - Using 'using' statement to ensure FileStream is properly disposed
-                    var blobClient = containerClient.GetBlobClient(fileName);
-                    using (var fileStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.Read))
-                    {
-                        await blobClient.UploadAsync(fileStream, overwrite: true, cancellationToken);
-                    }
-                    
-                    if (_useAzurite)
-                    {
-                        _logger.LogInformation("Successfully uploaded {FileName} to Azurite local storage", fileName);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Successfully uploaded {FileName} to blob storage using managed identity", fileName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error uploading to blob storage. Trying to save locally as fallback.");
-                    
-                    // Write to a local file as fallback
-                    var localFilePath = Path.Combine(Path.GetTempPath(), fileName);
-                    await File.WriteAllTextAsync(localFilePath, jsonData, cancellationToken);
-                    _logger.LogWarning("As a fallback, data has been written to local file: {LocalFilePath}", localFilePath);
-                }
-                finally
-                {
-                    try
-                    {
-                        // Clean up temporary file
-                        File.Delete(tempFilePath);
-                        _logger.LogInformation("Deleted temporary file: {TempFile}", tempFilePath);
-                    }
-                    catch (IOException ioEx)
-                    {
-                        _logger.LogWarning(ioEx, "Could not delete temporary file immediately: {TempFile}. File will be deleted later by the OS.", tempFilePath);
-                    }
-                }
+                _logger.LogInformation("Successfully wrote {FileName} to local storage at {Path}", fileName, fullFileName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in JSON upload process for {FileName}", fileName);
+                _logger.LogError(ex, "Error writing {FileName} to local storage", fileName);
                 throw;
             }
         }

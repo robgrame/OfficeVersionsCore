@@ -1,121 +1,106 @@
-using Azure.Storage.Blobs;
+using OfficeVersionsCore.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text.Json;
 
 namespace OfficeVersionsCore.Pages.Diagnostic
 {
     public class StorageAccessModel : PageModel
     {
-        private readonly BlobServiceClient _blobServiceClient;
+        private readonly IStorageService _storageService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<StorageAccessModel> _logger;
-        private readonly IWebHostEnvironment _environment;
 
-        public List<string> BlobNames { get; set; } = new();
+        public List<string> FileNames { get; set; } = new();
         public string? ErrorMessage { get; set; }
-        public string? ContainerName { get; set; }
-        public bool ContainerExists { get; set; }
-        public string StorageAccountName { get; set; } = string.Empty;
-        public bool IsUsingAzurite { get; set; }
-        public string BlobEndpoint { get; set; } = string.Empty;
+        public string StoragePath { get; set; } = string.Empty;
+        public string OfficeVersionsPath { get; set; } = string.Empty;
+        public string WindowsVersionsPath { get; set; } = string.Empty;
 
         public StorageAccessModel(
-            BlobServiceClient blobServiceClient,
+            IStorageService storageService,
             IConfiguration configuration,
-            ILogger<StorageAccessModel> logger,
-            IWebHostEnvironment environment)
+            ILogger<StorageAccessModel> logger)
         {
-            _blobServiceClient = blobServiceClient;
+            _storageService = storageService;
             _configuration = configuration;
             _logger = logger;
-            _environment = environment;
         }
 
         public async Task OnGetAsync()
         {
-            // Determine if using Azurite
-            IsUsingAzurite = _environment.IsDevelopment() && 
-                             _configuration.GetValue<bool>("AzuriteStorage:UseAzurite", false);
-
-            // Get storage account and container name from configuration
-            StorageAccountName = _configuration["StorageAccountName"] ?? 
-                                (IsUsingAzurite ? "devstoreaccount1" : "officeversionscorestrg");
-            ContainerName = _configuration["SEC_STOR_StorageCon"] ?? "jsonrepository";
-            BlobEndpoint = IsUsingAzurite ? 
-                _configuration["AzuriteStorage:BlobEndpoint"] ?? "http://127.0.0.1:10000/devstoreaccount1" :
-                $"https://{StorageAccountName}.blob.core.windows.net";
+            _logger.LogInformation("Testing local storage access");
+            
+            OfficeVersionsPath = _configuration["Office365:StoragePath"] ?? "officeversions";
+            WindowsVersionsPath = _configuration["WindowsVersions:StoragePath"] ?? "windowsversions";
+            StoragePath = "wwwroot/content/";
 
             try
             {
-                if (IsUsingAzurite)
+                // List files in both storage directories
+                var officeFiles = await ListStorageFilesAsync($"{OfficeVersionsPath}");
+                var windowsFiles = await ListStorageFilesAsync($"{WindowsVersionsPath}");
+                
+                FileNames.AddRange(officeFiles.Select(f => $"Office/{f}"));
+                FileNames.AddRange(windowsFiles.Select(f => $"Windows/{f}"));
+                
+                if (FileNames.Count > 0)
                 {
-                    _logger.LogInformation("Testing Azurite local storage access");
+                    _logger.LogInformation("Found {Count} files in storage directories", FileNames.Count);
                 }
                 else
                 {
-                    _logger.LogInformation("Testing Azure Storage access with managed identity");
-                }
-                
-                var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
-                
-                // For Azurite, try to create the container if it doesn't exist
-                if (IsUsingAzurite)
-                {
-                    await containerClient.CreateIfNotExistsAsync();
-                }
-                
-                ContainerExists = await containerClient.ExistsAsync();
-                
-                if (ContainerExists)
-                {
-                    _logger.LogInformation("Container {Container} exists in storage account {Account}", 
-                        ContainerName, StorageAccountName);
-                    
-                    await foreach (var blob in containerClient.GetBlobsAsync())
-                    {
-                        BlobNames.Add(blob.Name);
-                        _logger.LogInformation("Found blob: {BlobName}", blob.Name);
-                    }
-                    
-                    // For Azurite, create a sample blob if none exist
-                    if (BlobNames.Count == 0 && IsUsingAzurite)
-                    {
-                        _logger.LogInformation("No blobs found in Azurite container. Creating a sample blob...");
-                        
-                        var sampleBlobClient = containerClient.GetBlobClient("sample.json");
-                        var sampleJson = "{ \"message\": \"This is a sample blob created by the diagnostic page\" }";
-                        
-                        using var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(sampleJson));
-                        await sampleBlobClient.UploadAsync(ms, overwrite: true);
-                        
-                        _logger.LogInformation("Created sample blob 'sample.json'");
-                        BlobNames.Add("sample.json");
-                    }
-                    else if (BlobNames.Count == 0)
-                    {
-                        _logger.LogWarning("Container exists but no blobs were found");
-                    }
-                }
-                else
-                {
-                    ErrorMessage = $"Container '{ContainerName}' does not exist in storage account '{StorageAccountName}'";
-                    _logger.LogWarning(ErrorMessage);
-                    
-                    // Try to create it for Azurite
-                    if (IsUsingAzurite)
-                    {
-                        _logger.LogInformation("Attempting to create container '{ContainerName}' in Azurite", ContainerName);
-                        await containerClient.CreateAsync();
-                        ContainerExists = true;
-                        ErrorMessage = null;
-                    }
+                    _logger.LogWarning("No files found in storage directories");
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Error accessing storage: {ex.Message}";
+                ErrorMessage = $"Error accessing local storage: {ex.Message}";
                 _logger.LogError(ex, "Error testing storage access");
             }
+        }
+        
+        private async Task<List<string>> ListStorageFilesAsync(string directoryPath)
+        {
+            var files = new List<string>();
+            
+            try
+            {
+                // Try to list files by checking for known file patterns
+                var knownFiles = new[]
+                {
+                    "m365LatestVersions.json",
+                    "m365CurrentReleases.json",
+                    "m365MonthlyReleases.json",
+                    "m365SACReleases.json",
+                    "m365SACPreviewReleases.json",
+                    "m365releases.json",
+                    "windows10-versions.json",
+                    "windows10-updates.json",
+                    "windows10-feature-updates.json",
+                    "windows11-versions.json",
+                    "windows11-updates.json",
+                    "windows11-feature-updates.json",
+                    "last-update.json"
+                };
+                
+                foreach (var fileName in knownFiles)
+                {
+                    var fullPath = $"{directoryPath}/{fileName}";
+                    if (await _storageService.ExistsAsync(fullPath))
+                    {
+                        files.Add(fileName);
+                    }
+                }
+                
+                _logger.LogInformation("Found {Count} files in path: {Path}", files.Count, directoryPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listing files in path: {Path}", directoryPath);
+            }
+            
+            return files;
         }
     }
 }
