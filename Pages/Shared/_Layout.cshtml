@@ -74,6 +74,34 @@
             vertical-align: middle;
             margin-right: 6px;
         }
+
+        /* Brand text styling */
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            line-height: 1.2;
+        }
+
+        .brand-primary {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .brand-secondary {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.65);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive brand text */
+        @@media (max-width: 991.98px) {
+            .brand-secondary {
+                display: none; /* Hide subtitle on mobile */
+            }
+        }
     </style>
 </head>
 
@@ -92,7 +120,10 @@
                     <div class="brand-icon">
                         <i class="bi bi-microsoft"></i>
                     </div>
-                    <span>Office 365 Versions</span>
+                    <div class="brand-text">
+                        <span class="brand-primary">Office 365 Versions</span>
+                        <span class="brand-secondary">& Windows Tracker</span>
+                    </div>
                 </a>
 
                 <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
