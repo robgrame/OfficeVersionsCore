@@ -6,7 +6,7 @@ using Serilog.Sinks.SystemConsole.Themes;
 using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
