@@ -15,19 +15,46 @@
             </p>
             
             <div class="hero-stats" id="hero-stats">
-                <!-- First row with two stats side by side -->
-                <div class="hero-stats-row">
-                    <div class="stat-item">
-                        <span class="stat-number" id="total-channels">-</span>
-                        <span class="stat-label">Update Channels</span>
+                <!-- Microsoft 365 Apps Stats Column -->
+                <div class="hero-stats-section">
+                    <div class="section-header">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Microsoft 365 Apps</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="latest-version">-</span>
-                        <span class="stat-label">Latest Version</span>
+                    <div class="hero-stats-row">
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-channels">-</span>
+                            <span class="stat-label">Update Channels</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="m365-latest-version">-</span>
+                            <span class="stat-label">Latest Version</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="stats-divider"></div>
+
+                <!-- Windows Releases Stats Column -->
+                <div class="hero-stats-section">
+                    <div class="section-header">
+                        <i class="bi bi-windows"></i>
+                        <span>Windows Releases</span>
+                    </div>
+                    <div class="hero-stats-row">
+                        <div class="stat-item">
+                            <span class="stat-number" id="windows-latest-version">-</span>
+                            <span class="stat-label">Latest Windows 11</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="windows10-latest-version">-</span>
+                            <span class="stat-label">Latest Windows 10</span>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Second row with timestamp spanning full width -->
+                <!-- Timestamp row spanning full width -->
                 <div class="hero-stats-row timestamp-row">
                     <div class="stat-item timestamp-stat">
                         <div class="timestamp-container" id="timestamp-display">
@@ -537,6 +564,7 @@ $(document).ready(function() {
     loadHeroStats();
     
     function loadHeroStats() {
+        // Load Office 365 data
         fetch('/api/M365AppsReleases')
             .then(response => {
                 if (!response.ok) {
@@ -555,7 +583,7 @@ $(document).ready(function() {
                         new Date(b.latestReleaseDate) - new Date(a.latestReleaseDate));
                     
                     if (sorted.length > 0) {
-                        document.getElementById('latest-version').textContent = sorted[0].version || '-';
+                        document.getElementById('m365-latest-version').textContent = sorted[0].version || '-';
                     }
                 }
                 
@@ -577,20 +605,41 @@ $(document).ready(function() {
                     updateTimestamp(timestamp);
                     // Show or hide live indicator based on data freshness
                     toggleLiveIndicator(timestamp);
-                } else {
-                    console.warn('No timestamp found in API response');
-                    // Keep fallback timestamp if in dev mode, otherwise show error
-                    if (!devMode) {
-                        updateTimestamp(null);
+                }
+            })
+            .catch(error => { 
+                console.error('Error loading Office 365 data:', error);
+            });
+        
+        // Load Windows data
+        fetch('/api/WindowsVersions/releases')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    // Filter for Windows 11 and Windows 10
+                    const win11 = data.filter(item => item.product && item.product.includes('Windows 11'));
+                    const win10 = data.filter(item => item.product && item.product.includes('Windows 10'));
+                    
+                    // Get latest version for Windows 11
+                    if (win11.length > 0) {
+                        const latestWin11 = win11[0];
+                        document.getElementById('windows-latest-version').textContent = latestWin11.version || '-';
+                    }
+                    
+                    // Get latest version for Windows 10
+                    if (win10.length > 0) {
+                        const latestWin10 = win10[0];
+                        document.getElementById('windows10-latest-version').textContent = latestWin10.version || '-';
                     }
                 }
             })
             .catch(error => { 
-                console.error('Error loading data:', error);
-                // Keep fallback timestamp if in dev mode, otherwise show error
-                if (!devMode) {
-                    updateTimestamp(null, true);
-                }
+                console.error('Error loading Windows data:', error);
             });
     }
     
@@ -808,79 +857,136 @@ $(document).ready(function() {
 </script>
 
 <style>
-    /* Hero stats layout */
+/* Hero stats layout */
+.hero-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 700px; 
+    margin: 0 auto;
+}
+    
+/* Hero stats section (Office 365 or Windows) */
+.hero-stats-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+    
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+    
+.section-header i {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.9);
+}
+    
+/* Stats divider */
+.stats-divider {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+    margin: 0.5rem 0;
+}
+    
+.hero-stats-row {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+    
+.hero-stats-row .stat-item {
+    flex: 0 1 150px;
+    text-align: center;
+    min-width: 120px;
+}
+    
+/* Responsive adjustments for smaller screens */
+@@media (max-width: 768px) {
     .hero-stats {
-        display: flex;
-        flex-direction: column;
+        max-width: 100%;
         gap: 1rem;
-        width: 100%;
-        max-width: 500px; 
-        margin: 0 auto;
     }
-    
+        
+    .hero-stats-section {
+        padding: 0.5rem 0;
+    }
+        
     .hero-stats-row {
-        display: flex;
-        width: 100%;
-        justify-content: center;
-        gap: 2rem;
+        gap: 1.5rem;
     }
-    
+        
     .hero-stats-row .stat-item {
-        flex: 1;
-        text-align: center;
+        flex: 0 1 120px;
     }
+        
+    .section-header {
+        font-size: 0.85rem;
+    }
+}
     
-    /* Timestamp specific styling */
-    .timestamp-row {
-        margin-top: 0.5rem;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
+/* Timestamp specific styling */
+.timestamp-row {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
     
-    .timestamp-stat {
-        max-width: 280px;
-        margin: 0 auto;
-    }
+.timestamp-stat {
+    max-width: 280px;
+    margin: 0 auto;
+}
     
-    .timestamp-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 0.2rem;
-        line-height: 1.1;
-        cursor: help;
-    }
+.timestamp-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0.2rem;
+    line-height: 1.1;
+    cursor: help;
+}
     
-    .timestamp-date {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 0.1rem;
-    }
+.timestamp-date {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+}
     
-    .timestamp-time {
-        font-size: 1.2rem;
-        color: rgba(255,255,255,0.95);
-        font-weight: 500;
-    }
+.timestamp-time {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.95);
+    font-weight: 500;
+}
     
-    /* Live indicator with pulse effect - now bolder and centered */
-    .live-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        margin-bottom: 0.6rem;
-    }
+/* Live indicator with pulse effect - now bolder and centered */
+.live-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 0.6rem;
+}
     
-    .pulse {
-        display: inline-block;
-        width: 12px; /* Bolder dot */
-        height: 12px; /* Bolder dot */
-        border-radius: 50%;
-        background-color: #10b981; /* Green color */
-        box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-        animation: pulse-animation 2s infinite;
-    }
+.pulse {
+    display: inline-block;
+    width: 12px; /* Bolder dot */
+    height: 12px; /* Bolder dot */
+    border-radius: 50%;
+    background-color: #10b981; /* Green color */
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: pulse-animation 2s infinite;
+}
     
     /* Enhanced table styling */
     .version-badge {
