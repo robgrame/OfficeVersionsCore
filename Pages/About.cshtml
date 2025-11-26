@@ -2,7 +2,7 @@
 @model AboutModel
 @{
     ViewData["Title"] = "About";
-    ViewData["Description"] = "About Office 365 Versions - Information about this site, data sources, and version tracking methodology.";
+    ViewData["Description"] = "About Microsoft Software Releases - Information about tracking Microsoft 365 Apps, Windows 10, and Windows 11 versions, data sources, and version tracking methodology.";
 }
 
 <div class="container">
@@ -12,35 +12,43 @@
                 <i class="bi bi-info-circle"></i>
             </div>
             <div>
-                <h1 class="card-title">About Office 365 Versions</h1>
-                <p class="text-muted mb-0">Project information and methodology</p>
+                <h1 class="card-title">About Microsoft Software Releases</h1>
+                <p class="text-muted mb-0">Track Microsoft 365 Apps, Windows 10, and Windows 11 versions</p>
             </div>
         </div>
         <div class="card-body">
             <h3 class="mt-0 mb-3">Project Overview</h3>
-            <p>This site provides a consolidated view of Microsoft 365 Apps versions across different update channels. It was created to help IT professionals and Microsoft 365 admins track version history, build numbers, and release schedules.</p>
+            <p>This site provides a consolidated view of <strong>Microsoft 365 Apps</strong> versions across different update channels, as well as <strong>Windows 10</strong> and <strong>Windows 11</strong> operating system releases. It was created to help IT professionals and Microsoft 365 admins track version history, build numbers, and release schedules across all Microsoft client software.</p>
             
-            <p>Office 365 Versions is designed to answer common questions like:</p>
+            <p>Microsoft Software Releases is designed to answer common questions like:</p>
             <ul>
                 <li>What's the latest Current Channel version?</li>
                 <li>When was the last Monthly Enterprise Channel release?</li>
                 <li>Which build number corresponds to a specific version?</li>
                 <li>What's the end-of-service date for a particular release?</li>
+                <li>What's the latest Windows 11 or Windows 10 version available?</li>
+                <li>What build number is currently deployed on Windows?</li>
             </ul>
             
             <h3 class="mb-3">Data Sources</h3>
             <p>All information on this site is derived exclusively from official Microsoft documentation:</p>
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <ul>
+                    <h5><i class="bi bi-file-earmark-text me-1"></i>Microsoft 365 Apps</h5>
+                    <ul class="small">
                         <li><a href="https://learn.microsoft.com/deployoffice/overview-update-channels" target="_blank" rel="noopener">Overview of update channels</a></li>
                         <li><a href="https://learn.microsoft.com/officeupdates/update-history-microsoft365-apps-by-date" target="_blank" rel="noopener">Update history (listed by date)</a></li>
+                        <li><a href="https://learn.microsoft.com/deployoffice/update-channels-changes" target="_blank" rel="noopener">Update channel changes</a></li>
+                        <li><a href="https://learn.microsoft.com/officeupdates/" target="_blank" rel="noopener">Release notes</a></li>
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <ul>
-                        <li><a href="https://learn.microsoft.com/deployoffice/update-channels-changes" target="_blank" rel="noopener">Update channel changes</a></li>
-                        <li><a href="https://learn.microsoft.com/officeupdates/" target="_blank" rel="noopener">Release notes</a></li>
+                    <h5><i class="bi bi-windows me-1"></i>Windows Operating System</h5>
+                    <ul class="small">
+                        <li><a href="https://support.microsoft.com/en-us/help/13853" target="_blank" rel="noopener">Windows 10 release information</a></li>
+                        <li><a href="https://support.microsoft.com/en-us/help/15254" target="_blank" rel="noopener">Windows 11 release information</a></li>
+                        <li><a href="https://learn.microsoft.com/windows/release-health/release-information" target="_blank" rel="noopener">Windows release information</a></li>
+                        <li><a href="https://learn.microsoft.com/windows/deployment/update/windows-update-overview" target="_blank" rel="noopener">Windows Update overview</a></li>
                     </ul>
                 </div>
             </div>
@@ -49,21 +57,21 @@
             <div class="row g-4">
                 <div class="col-lg-6">
                     <h4><i class="bi bi-calendar3 me-2"></i>Release Tracking</h4>
-                    <p>Version data is collected from Microsoft's official documentation and organized by channel type. Each version entry includes:</p>
+                    <p>Version data is collected from Microsoft's official documentation and organized by product type (Microsoft 365 Apps vs Windows). Each version entry includes:</p>
                     <ul>
-                        <li>Version number (e.g., 16.0.16130.20342)</li>
+                        <li>Version number (e.g., 16.0.16130.20342 or 25H2)</li>
                         <li>Release date</li>
                         <li>Build information</li>
-                        <li>Channel designation</li>
+                        <li>Channel designation (for Microsoft 365) or servicing status (for Windows)</li>
                     </ul>
                 </div>
                 <div class="col-lg-6">
                     <h4><i class="bi bi-clock-history me-2"></i>Update Frequency</h4>
-                    <p>Our database is updated regularly to reflect the latest releases across all channels:</p>
+                    <p>Our database is updated regularly to reflect the latest releases across all products and channels:</p>
                     <ul>
-                        <li>Current Channel: Multiple times per month</li>
-                        <li>Monthly Enterprise Channel: Monthly</li>
-                        <li>Semi-Annual Enterprise Channel: Twice yearly plus security updates</li>
+                        <li><strong>Microsoft 365 Apps:</strong> Multiple times per month (Current), Monthly (Monthly Enterprise), Twice yearly (Semi-Annual Enterprise)</li>
+                        <li><strong>Windows 10:</strong> Monthly security updates plus periodic feature updates</li>
+                        <li><strong>Windows 11:</strong> Monthly feature and quality updates</li>
                     </ul>
                 </div>
             </div>
@@ -96,9 +104,9 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <h4><i class="bi bi-github me-2"></i>Open Source</h4>
-                    <p>Office 365 Versions is an open-source project, with the full source code available on GitHub:</p>
+                    <p>Microsoft Software Releases is an open-source project, with the full source code available on GitHub:</p>
                     <div class="d-flex justify-content-center">
-                        <a href="https://github.com/rgp-net/OfficeVersions" target="_blank" rel="noopener" class="btn-modern btn-secondary">
+                        <a href="https://github.com/robgrame/OfficeVersionsCore" target="_blank" rel="noopener" class="btn-modern btn-secondary">
                             <i class="bi bi-github"></i>
                             View GitHub Repository
                         </a>
@@ -160,7 +168,7 @@
             </div>
             
             <div class="text-center mt-4">
-                <p class="text-muted small mb-0">&copy; @DateTime.Now.Year Office 365 Versions - Built with ?? for the IT community</p>
+                <p class="text-muted small mb-0">&copy; @DateTime.Now.Year Microsoft Software Releases - Built with ?? for the IT community</p>
             </div>
         </div>
     </div>
