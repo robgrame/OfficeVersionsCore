@@ -5,8 +5,6 @@ VisualStudioVersion = 18.0.11018.127
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeVersionsCore", "OfficeVersionsCore.csproj", "{618A8354-2738-F819-C782-C2B0A9AA07DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsVersionsCore", "..\WindowsVersionsCore\WindowsVersionsCore.csproj", "{64E77992-1747-2833-EDD3-072D6A2ED30E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{618A8354-2738-F819-C782-C2B0A9AA07DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{618A8354-2738-F819-C782-C2B0A9AA07DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{618A8354-2738-F819-C782-C2B0A9AA07DA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{64E77992-1747-2833-EDD3-072D6A2ED30E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{64E77992-1747-2833-EDD3-072D6A2ED30E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{64E77992-1747-2833-EDD3-072D6A2ED30E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{64E77992-1747-2833-EDD3-072D6A2ED30E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
