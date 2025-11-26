@@ -2,16 +2,16 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home";
-    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps releases across all update channels. Track Office 365 versions, build numbers, and release dates.";
+    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps, Windows 10, and Windows 11 releases. Track versions, build numbers, and release dates across all platforms.";
 }
 
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
         <div class="hero-content fade-in-up">
-            <h1 class="hero-title">Office 365 Versions</h1>
+            <h1 class="hero-title">Microsoft Software Releases</h1>
             <p class="hero-subtitle">
-                Stay updated with the latest Microsoft 365 Apps releases across all update channels
+                Track the latest Microsoft 365 Apps, Windows 10, and Windows 11 releases with version numbers, builds, and key dates
             </p>
             
             <div class="hero-stats" id="hero-stats">
@@ -71,11 +71,11 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="mb-3">This site tracks Microsoft 365 Apps (formerly Office 365 ProPlus) releases across the main update channels. It provides a consolidated view of version numbers, builds, and key lifecycle dates so you can quickly assess currency and plan deployment rings.</p>
+                    <p class="mb-3">This site tracks Microsoft 365 Apps (formerly Office 365 ProPlus) releases across the main update channels, as well as Windows 10 and Windows 11 operating system releases. It provides a consolidated view of version numbers, builds, and key lifecycle dates so you can quickly assess currency and plan deployment rings.</p>
                     <div class="row g-3 mb-0">
                         <div class="col-md-6">
                             <ul class="list-unstyled mb-0 about-points">
-                                <li><strong>What you get:</strong> Latest version per channel + full channel histories</li>
+                                <li><strong>What you get:</strong> Latest versions per channel/product + full release histories</li>
                                 <li><strong>Data freshness:</strong> Timestamp shown (UTC + local tooltip)</li>
                                 <li><strong>JSON API:</strong> Simple endpoints for automation / dashboards</li>
                                 <li><strong>Visual cues:</strong> Relative recency indicators & styled tags</li>
@@ -83,10 +83,10 @@
                         </div>
                         <div class="col-md-6">
                             <ul class="list-unstyled mb-0 about-points">
-                                <li><strong>Use cases:</strong> Patch status checks, tenant hygiene reviews</li>
+                                <li><strong>Use cases:</strong> Patch status checks, tenant hygiene reviews, OS deployment planning</li>
                                 <li><strong>Audience:</strong> IT admins, deployment engineers, security teams</li>
                                 <li><strong>Approach:</strong> Read‑only aggregation of Microsoft‑published data</li>
-                                <li><strong>Scope:</strong> Client channel metadata (not feature release notes)</li>
+                                <li><strong>Scope:</strong> Client app channels + Windows OS releases</li>
                             </ul>
                         </div>
                         <div class="col-12 mt-4">
@@ -203,6 +203,61 @@
         </div>
     </div>
 
+    <!-- Windows Releases Overview -->
+    <div class="row mb-5 mt-5">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-windows" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Windows Operating System Releases</h3>
+                        <p class="text-muted mb-0">Track Windows 10 and Windows 11 versions and updates</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">In addition to Microsoft 365 Apps, this site also tracks Windows 10 and Windows 11 releases. Monitor version numbers, build updates, and servicing timelines for both operating systems.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="modern-card h-100 border-start border-primary border-2">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">
+                                        <i class="bi bi-window" style="color: #0d47a1;"></i>
+                                        Windows 10
+                                    </h5>
+                                    <p class="card-text small mb-3">Access comprehensive version history and build information for Windows 10, including all major releases and servicing updates.</p>
+                                    <a asp-page="/Windows/Releases10" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-right"></i>
+                                        View Windows 10 Releases
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="modern-card h-100 border-start border-primary border-2">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">
+                                        <i class="bi bi-window" style="color: #0d47a1;"></i>
+                                        Windows 11
+                                    </h5>
+                                    <p class="card-text small mb-3">Explore Windows 11 release information, including the latest versions, builds, and upcoming updates with advanced filtering options.</p>
+                                    <a asp-page="/Windows/Releases11" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-right"></i>
+                                        View Windows 11 Releases
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <p class="small text-muted mb-0"><strong>Need all versions?</strong> Visit the <a asp-page="/Windows/Releases">consolidated Windows releases page</a> to see both Windows 10 and Windows 11 data together.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- API Information -->
     <div class="row mt-5">
         <div class="col-md-6">
@@ -216,16 +271,38 @@
                         <p class="text-muted mb-0">Programmatic access to version data</p>
                     </div>
                 </div>
-                <p>Access Office 365 version data programmatically through our REST API.</p>
-                <div class="d-flex gap-2">
-                    <a href="/swagger" target="_blank" class="btn-modern btn-primary">
-                        <i class="bi bi-book"></i>
-                        API Documentation
-                    </a>
-                    <a href="/api/M365AppsReleases" target="_blank" class="btn-modern btn-secondary">
-                        <i class="bi bi-download"></i>
-                        JSON Data
-                    </a>
+                <p>Access Office 365 and Windows release data programmatically through our REST API.</p>
+                <div class="d-flex gap-2 flex-column mb-3">
+                    <div>
+                        <strong class="text-sm">Microsoft 365 Apps Endpoints:</strong>
+                        <div class="d-flex gap-2 flex-wrap mt-1">
+                            <a href="/api/M365AppsReleases" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i>
+                                Latest Versions
+                            </a>
+                            <a href="/swagger" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-book"></i>
+                                Full Docs
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <strong class="text-sm">Windows Releases Endpoints:</strong>
+                        <div class="d-flex gap-2 flex-wrap mt-1">
+                            <a href="/api/WindowsVersions/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i>
+                                All Releases
+                            </a>
+                            <a href="/api/WindowsVersions/windows10/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i>
+                                Windows 10
+                            </a>
+                            <a href="/api/WindowsVersions/windows11/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i>
+                                Windows 11
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -242,15 +319,33 @@
                     </div>
                 </div>
                 <p>All information is sourced from official Microsoft release notes and update documentation.</p>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="https://docs.microsoft.com/en-us/deployoffice/overview-update-channels" target="_blank" class="btn-modern btn-secondary">
-                        <i class="bi bi-box-arrow-up-right"></i>
-                        Update Channels
-                    </a>
-                    <a href="https://docs.microsoft.com/en-us/officeupdates/update-history-microsoft365-apps-by-date" target="_blank" class="btn-modern btn-secondary">
-                        <i class="bi bi-box-arrow-up-right"></i>
-                        Update History
-                    </a>
+                <div class="d-flex gap-2 flex-wrap flex-column">
+                    <div>
+                        <strong class="text-sm">Microsoft 365 Sources:</strong>
+                        <div class="d-flex gap-2 flex-wrap mt-1">
+                            <a href="https://docs.microsoft.com/en-us/deployoffice/overview-update-channels" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                Update Channels
+                            </a>
+                            <a href="https://docs.microsoft.com/en-us/officeupdates/update-history-microsoft365-apps-by-date" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                Update History
+                            </a>
+                        </div>
+                    </div>
+                    <div>
+                        <strong class="text-sm">Windows Sources:</strong>
+                        <div class="d-flex gap-2 flex-wrap mt-1">
+                            <a href="https://support.microsoft.com/en-us/help/13853" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                Windows 10 Updates
+                            </a>
+                            <a href="https://support.microsoft.com/en-us/help/15254" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                Windows 11 Updates
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
