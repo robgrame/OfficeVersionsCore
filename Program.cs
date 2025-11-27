@@ -22,7 +22,11 @@ builder.Host.UseSerilog((ctx, services, config) =>
 {
     config
         .ReadFrom.Configuration(ctx.Configuration)
-        .ReadFrom.Services(services);
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "OfficeVersionsCore")
+        .Enrich.WithProperty("Environment", ctx.HostingEnvironment.EnvironmentName)
+        .Enrich.WithProperty("Version", "1.0.0");
 
     // Add Application Insights sink if running in Azure (non-Development)
     if (!ctx.HostingEnvironment.IsDevelopment())
@@ -56,6 +60,27 @@ builder.Services.AddHttpClient("WindowsScraper", client =>
 // Must be Singleton because BackgroundServices (HostedServices) are Singleton and consume it
 builder.Services.AddSingleton<IStorageService, LocalStorageService>();
 
+// Add Distributed Caching (Redis-ready with in-memory fallback)
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    var redisConnection = builder.Configuration.GetConnectionString("Redis");
+    if (!string.IsNullOrEmpty(redisConnection))
+    {
+        options.Configuration = redisConnection;
+    }
+    else
+    {
+        // Use a default local Redis connection string for development
+        options.Configuration = "localhost:6379";
+    }
+});
+
+// Add in-memory cache as fallback
+builder.Services.AddMemoryCache();
+
+// Register cache service
+builder.Services.AddScoped<ICacheService, DistributedCacheService>();
+
 // Register Office 365 service
 builder.Services.AddScoped<IOffice365Service, Office365Service>();
 
@@ -80,11 +105,12 @@ if (builder.Configuration.GetValue<bool>("WindowsScraper:Enabled", false))
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    // Generate swagger docs for v1
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Office & Windows Versions API",
         Version = "v1",
-        Description = "API for Office 365 and Windows version tracking",
+        Description = "API for Office 365 and Windows version tracking (v1)",
         Contact = new OpenApiContact
         {
             Name = "Office Versions Core",
