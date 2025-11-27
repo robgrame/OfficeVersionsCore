@@ -75,21 +75,14 @@ public class GoogleSearchConsoleService : IGoogleSearchConsoleService
         try
         {
             using var reader = new StreamReader(csvStream);
-            string? line;
-            int lineNumber = 0;
+            var csvContent = await reader.ReadToEndAsync(cancellationToken);
+            
+            // Parse the entire CSV content at once to handle multi-line quoted fields
+            var records = ParseCsvContent(csvContent);
 
-            while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
+            foreach (var record in records)
             {
-                lineNumber++;
-
-                // Skip header row
-                if (lineNumber == 1)
-                    continue;
-
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                var query = ParseCsvLine(line);
+                var query = ParseCsvRecord(record);
                 if (query != null)
                 {
                     data.AllQueries.Add(query);
@@ -194,6 +187,138 @@ public class GoogleSearchConsoleService : IGoogleSearchConsoleService
             $"Find information about {query}. Latest version numbers and release details.",
             query
         );
+    }
+
+    /// <summary>
+    /// Parse CSV content handling multi-line quoted fields
+    /// </summary>
+    private List<List<string>> ParseCsvContent(string csvContent)
+    {
+        var records = new List<List<string>>();
+        var lines = csvContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        
+        var currentRecord = new List<string>();
+        var currentField = new System.Text.StringBuilder();
+        bool insideQuotes = false;
+        bool isFirstLine = true;
+
+        foreach (var line in lines)
+        {
+            // Skip empty lines
+            if (string.IsNullOrWhiteSpace(line) && !insideQuotes)
+                continue;
+
+            // Skip header row
+            if (isFirstLine && line.StartsWith("Query"))
+            {
+                isFirstLine = false;
+                continue;
+            }
+            isFirstLine = false;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                var c = line[i];
+
+                if (c == '"')
+                {
+                    insideQuotes = !insideQuotes;
+                }
+                else if (c == ',' && !insideQuotes)
+                {
+                    currentRecord.Add(currentField.ToString().Trim());
+                    currentField.Clear();
+                }
+                else
+                {
+                    currentField.Append(c);
+                }
+            }
+
+            // If we're not inside quotes, the line is complete
+            if (!insideQuotes)
+            {
+                if (currentField.Length > 0 || currentRecord.Count > 0)
+                {
+                    currentRecord.Add(currentField.ToString().Trim());
+                    if (currentRecord.Count >= 5) // Valid record has at least 5 fields
+                    {
+                        records.Add(new List<string>(currentRecord));
+                    }
+                    currentRecord.Clear();
+                    currentField.Clear();
+                }
+            }
+            else
+            {
+                // Still inside quotes, add newline continuation
+                currentField.Append("\n");
+            }
+        }
+
+        // Handle any remaining data
+        if (currentField.Length > 0)
+        {
+            currentRecord.Add(currentField.ToString().Trim());
+        }
+        if (currentRecord.Count >= 5)
+        {
+            records.Add(currentRecord);
+        }
+
+        return records;
+    }
+
+    /// <summary>
+    /// Parse a CSV record (list of fields) into QueryPerformance object
+    /// Expected format: ["Query", "Clicks", "Impressions", "CTR", "Position"]
+    /// </summary>
+    private QueryPerformance? ParseCsvRecord(List<string> fields)
+    {
+        try
+        {
+            if (fields.Count < 5)
+            {
+                _logger.LogDebug($"Invalid CSV record (insufficient fields): {string.Join(",", fields)}");
+                return null;
+            }
+
+            var query = fields[0].Replace("\"", "").Trim();
+            var clicks = int.TryParse(fields[1], out var c) ? c : 0;
+            var impressions = int.TryParse(fields[2], out var i) ? i : 0;
+
+            // Handle CTR - might be in percentage format (3.46%) or decimal (0.0346)
+            var ctrString = fields[3].Replace("%", "").Replace("\"", "").Trim();
+            decimal ctr = decimal.TryParse(ctrString, NumberStyles.Float, CultureInfo.InvariantCulture, out var ctrVal) ? ctrVal : 0;
+
+            // If CTR looks like decimal (< 1), convert to percentage
+            if (ctr < 1 && ctr > 0)
+                ctr *= 100;
+
+            var positionString = fields[4].Replace("\"", "").Trim();
+            decimal position = decimal.TryParse(positionString, NumberStyles.Float, CultureInfo.InvariantCulture, out var posVal) ? posVal : 0;
+
+            // Validate query
+            if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+            {
+                _logger.LogDebug($"Invalid query (too short or empty): '{query}'");
+                return null;
+            }
+
+            return new QueryPerformance
+            {
+                Query = query,
+                Clicks = clicks,
+                Impressions = impressions,
+                CTR = ctr,
+                Position = position
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, $"Error parsing CSV record: {string.Join(",", fields)}");
+            return null;
+        }
     }
 
     /// <summary>
