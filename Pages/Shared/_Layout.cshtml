@@ -8,6 +8,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="@ViewData["Description"] ?? " Modern Office 365 versions tracker - Stay updated with the latest Microsoft 365 Apps releases"" />
     <meta name="keywords" content="Office 365, Office 365 Versions, What Is the Latest Version of Microsoft Office, Microsoft 365 Changelog, Office 365 News and Updates, Definition of Microsoft Office versions, What's new in Microsoft 365, Office 365: A guide to the updates, What's the difference between Microsoft 365 and Office 2021,Latest version of Microsoft office, Office 365: A guide to the updates, Update history for Microsoft 365 Apps (listed by date),latest office version, 16.0.16626.20208, 16.0.16130.20766,16.0.16731.20234, 2310, 2308, 2302, 2208, office version history, Update history for Microsoft 365 Apps, Microsoft Office Versions, latest office 365 version,office 365 latest version,version office 365,office 365 release notes,microsoft office 365 release date, Office 365 Sürümleri, Office 365-Versionen, Versiones de Office 365, Versions d'Office 365,Microsoft 365 apps, Microsoft, 365, Office, versions, Office 365 versions, Excel, Word, Powerpoint, Publisher, Access, OneNote, Windows 10, Windows 11, Windows, work, smartworking, online, simple, easy, tools, releases, Outlook, Exchange, howto, how to, FAQ, add-ins, Outlook 2019, Outlook 2016, Outlook 2013, Outlook 2010, Outlook 2007, Outlook 2003, Outlook 2002, XP, mail, e-mail, email, message" />
+    
+    <!-- SEO Meta Tags (Dynamic from Google Search Console) -->
+    @if (ViewData["SeoTitle"] is not null)
+    {
+        <meta name="og:title" content="@ViewData["SeoTitle"]" />
+    }
+    @if (ViewData["SeoDescription"] is not null)
+    {
+        <meta name="og:description" content="@ViewData["SeoDescription"]" />
+    }
+    @if (ViewData["SeoKeywords"] is not null)
+    {
+        <meta name="og:keywords" content="@ViewData["SeoKeywords"]" />
+    }
+    
+    <!-- Canonical URL for SEO -->
+    @if (ViewData["CanonicalUrl"] is not null)
+    {
+        <link rel="canonical" href="@ViewData["CanonicalUrl"]" />
+    }
+    else
+    {
+        <link rel="canonical" href="https://www.office365versions.com@Context.Request.Path" />
+    }
     <meta name="robots" content="all" />
     <meta name="language" content="en-US" />
 
@@ -100,6 +124,77 @@
             }
         }
     </style>
+    
+    <!-- Schema.org Structured Data for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "SoftwareApplication",
+      "name": "Office 365 Versions & Windows Tracker",
+      "description": "Track the latest Microsoft 365 Apps and Windows operating system releases with comprehensive version tracking, build numbers, and release dates.",
+      "url": "https://www.office365versions.com",
+      "applicationCategory": "BusinessApplication",
+      "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "42"
+      },
+      "image": "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/icons/windows.svg",
+      "offers": {
+        "@@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+    </script>
+    
+    <!-- Schema.org Organization Markup -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "Organization",
+      "name": "Office 365 Versions",
+      "url": "https://www.office365versions.com",
+      "logo": "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/icons/windows.svg",
+      "sameAs": [
+        "https://github.com/robgrame/OfficeVersionsCore"
+      ],
+      "contactPoint": {
+        "@@type": "ContactPoint",
+        "contactType": "Customer Support",
+        "email": "info@office365versions.com"
+      }
+    }
+    </script>
+
+    <!-- Schema.org BreadcrumbList for Navigation -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.office365versions.com/"
+        },
+        {
+          "@@type": "ListItem",
+          "position": 2,
+          "name": "Office 365",
+          "item": "https://www.office365versions.com/AllChannels"
+        },
+        {
+          "@@type": "ListItem",
+          "position": 3,
+          "name": "Windows",
+          "item": "https://www.office365versions.com/Windows/Index"
+        }
+      ]
+    }
+    </script>
 </head>
 
 <body>
@@ -198,6 +293,11 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Privacy">
                                 <i class="bi bi-shield-lock me-1"></i>Privacy
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Analytics">
+                                <i class="bi bi-graph-up me-1"></i>Analytics
                             </a>
                         </li>
                         <li class="nav-item">

@@ -1,6 +1,7 @@
 using OfficeVersionsCore.Services;
 using OfficeVersionsCore.Services.BackgroundTasks;
 using OfficeVersionsCore.HealthChecks;
+using OfficeVersionsCore.Infrastructure;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -80,6 +81,12 @@ builder.Services.AddMemoryCache();
 
 // Register cache service
 builder.Services.AddScoped<ICacheService, DistributedCacheService>();
+
+// Register Google Search Console service
+builder.Services.AddScoped<IGoogleSearchConsoleService, GoogleSearchConsoleService>();
+
+// Register GSC Initializer
+builder.Services.AddScoped<GoogleSearchConsoleInitializer>();
 
 // Register Office 365 service
 builder.Services.AddScoped<IOffice365Service, Office365Service>();
@@ -264,5 +271,17 @@ app.MapControllers();
 
 // Map Health Check endpoint
 app.MapHealthChecks("/health");
+
+// Initialize Google Search Console data
+try
+{
+    var gscInitializer = app.Services.CreateScope().ServiceProvider.GetRequiredService<GoogleSearchConsoleInitializer>();
+    await gscInitializer.InitializeAsync();
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Error initializing Google Search Console data on startup");
+    // Don't fail startup if GSC initialization fails
+}
 
 app.Run();
