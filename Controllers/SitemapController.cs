@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using OfficeVersionsCore.Services;
 
 namespace OfficeVersionsCore.Controllers
 {
     /// <summary>
     /// Controller for generating and serving sitemap.xml dynamically
+    /// Optimized with Google Search Console data for better ranking prioritization
     /// </summary>
     [Route("[controller]")]
     [ApiController]
@@ -17,11 +19,19 @@ namespace OfficeVersionsCore.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _environment;
+        private readonly IGoogleSearchConsoleService _gscService;
+        private readonly ILogger<SitemapController> _logger;
 
-        public SitemapController(IConfiguration configuration, IHostEnvironment environment)
+        public SitemapController(
+            IConfiguration configuration, 
+            IHostEnvironment environment,
+            IGoogleSearchConsoleService gscService,
+            ILogger<SitemapController> logger)
         {
             _configuration = configuration;
             _environment = environment;
+            _gscService = gscService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -92,6 +102,46 @@ namespace OfficeVersionsCore.Controllers
                     new XElement("priority", priority)
                 )
             );
+        }
+
+        /// <summary>
+        /// Calculate sitemap priority based on Google Search Console data
+        /// Higher clicks and lower position = higher priority
+        /// </summary>
+        private async Task<string> CalculatePriorityFromGscAsync(string pageName)
+        {
+            try
+            {
+                var gscData = await _gscService.GetCachedDataAsync();
+                if (gscData == null)
+                    return "0.5"; // Default priority
+
+                // Find queries related to the page name
+                var relevantQueries = gscData.AllQueries
+                    .Where(q => q.Query.ToLower().Contains(pageName.ToLower()))
+                    .ToList();
+
+                if (!relevantQueries.Any())
+                    return "0.5"; // Default if no relevant queries
+
+                // Calculate priority based on:
+                // - Average clicks (higher = higher priority)
+                // - Average position (lower = higher priority)
+                var avgClicks = relevantQueries.Average(q => q.Clicks);
+                var avgPosition = (double)relevantQueries.Average(q => q.Position);
+
+                // Priority formula: (clicks / 100) * (10 / position)
+                // Normalized to 0.1-1.0
+                var priority = Math.Min(1.0, Math.Max(0.1, (avgClicks / 100) * (10 / avgPosition)));
+                
+                _logger.LogInformation($"Calculated priority for '{pageName}': {priority:F2}");
+                return Math.Round(priority, 2).ToString("F2");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Error calculating priority from GSC for '{pageName}'");
+                return "0.5"; // Default priority on error
+            }
         }
     }
 }
