@@ -61,22 +61,9 @@ builder.Services.AddHttpClient("WindowsScraper", client =>
 // Must be Singleton because BackgroundServices (HostedServices) are Singleton and consume it
 builder.Services.AddSingleton<IStorageService, LocalStorageService>();
 
-// Add Distributed Caching (Redis-ready with in-memory fallback)
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    var redisConnection = builder.Configuration.GetConnectionString("Redis");
-    if (!string.IsNullOrEmpty(redisConnection))
-    {
-        options.Configuration = redisConnection;
-    }
-    else
-    {
-        // Use a default local Redis connection string for development
-        options.Configuration = "localhost:6379";
-    }
-});
-
-// Add in-memory cache as fallback
+// Add Distributed Caching - Using in-memory cache only (no Redis dependency)
+// If you want to enable Redis in the future, you can use:
+// builder.Services.AddStackExchangeRedisCache(options => { ... });
 builder.Services.AddMemoryCache();
 
 // Register cache service
