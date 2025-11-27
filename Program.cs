@@ -1,13 +1,16 @@
 using OfficeVersionsCore.Services;
 using OfficeVersionsCore.Services.BackgroundTasks;
+using OfficeVersionsCore.HealthChecks;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi;
 using System.Reflection;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,6 +137,23 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
 });
 
+// Add Rate Limiting for API endpoints (.NET 10 built-in)
+builder.Services.AddRateLimiter(rateLimiterOptions =>
+{
+    rateLimiterOptions.AddFixedWindowLimiter(policyName: "fixed", options =>
+    {
+        options.PermitLimit = 100;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 10;
+    });
+});
+
+// Add Health Checks
+builder.Services.AddHealthChecks()
+    .AddCheck<StorageHealthCheck>("storage")
+    .AddCheck<DataFreshnessHealthCheck>("data-freshness");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -197,6 +217,9 @@ app.Use(async (context, next) =>
 // Enable Response Compression
 app.UseResponseCompression();
 
+// Apply Rate Limiting middleware
+app.UseRateLimiter();
+
 // Setup URL rewrite rules for SEO optimization
 var rewriteOptions = new RewriteOptions();
 // Redirect /sitemap.xml to the SitemapController
@@ -212,5 +235,8 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+
+// Map Health Check endpoint
+app.MapHealthChecks("/health");
 
 app.Run();
