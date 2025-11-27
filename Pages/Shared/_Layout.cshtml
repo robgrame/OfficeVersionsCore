@@ -39,15 +39,12 @@
 
     <!-- Custom Modern Styles -->
     <link href="~/css/modern-styles.css" rel="stylesheet" type="text/css">
+    <link href="~/css/cookie-consent.css" rel="stylesheet" type="text/css">
 
-    <!-- Google Tag Manager -->
+    <!-- Pass GTM ID to Cookie Consent Manager -->
     <script>
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','@Configuration["Google:Tag"]');</script>
-    <!-- End Google Tag Manager -->
+        window.gtmId = '@Configuration["Google:Tag"]';
+    </script>
     
     <!-- Pulse Animation Style -->
     <style>
@@ -106,12 +103,7 @@
 </head>
 
 <body>
-    <div class="site-container">
-        <!-- Google Tag Manager (noscript) -->
-        <noscript>
-            <iframe src="https://www.googletagmanager.com/gtm.ns.html?id=@Configuration["Google:Tag"]"
-                    height="0" width="0" style="display:none;visibility:hidden"></iframe>
-        </noscript>
+<div class="site-container">
 
         <!-- Modern Navigation -->
         <nav class="navbar navbar-expand-lg modern-navbar">
@@ -262,6 +254,9 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Cookie Consent Manager (loads GTM conditionally) -->
+    <script src="~/js/cookie-consent.js"></script>
 
     <!-- Global Scripts -->
     <script>
