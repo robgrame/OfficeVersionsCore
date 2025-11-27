@@ -1,27 +1,32 @@
 # OfficeVersionsCore
 
-Open-source .NET 8 Razor Pages web app and lightweight API for tracking Microsoft 365 (Office 365) client versions and Windows releases. It provides a modern UI, endpoints for programmatic access, and operational telemetry/logging.
+Open-source .NET 10 Razor Pages web app and lightweight API for tracking Microsoft 365 (Office 365) client versions and Windows 10/11 releases. It provides a modern UI, endpoints for programmatic access, GDPR/CCPA compliance with cookie consent, and operational telemetry/logging.
 
-- Live API docs: navigate to `/swagger` when running locally
-- GitHub repository: https://github.com/robgrame/OfficeVersionsCore
+- ?? Live site: https://www.office365versions.com
+- ?? Live API docs: navigate to `/swagger` when running locally
+- ?? GitHub repository: https://github.com/robgrame/OfficeVersionsCore
+- ??? Privacy: GDPR/CCPA compliant with Cookie Consent Banner
 
 
 ## Features
 
-- Razor Pages frontend (ASP.NET Core, .NET 8)
-- API with Swagger UI documentation at `/swagger`
-- **Office 365 version tracking** across all update channels
-- **Windows version tracking** for Windows 10 and Windows 11 releases
-- Azure Storage (Blobs) integration for data persistence
-- First-class Azure auth using `Azure.Identity` (Managed Identity or Service Principal)
-- Telemetry with Application Insights
-- Structured logging with Serilog (console/file/Application Insights)
-- Responsive UI using Bootstrap 5 and DataTables.js
+- ?? Modern Razor Pages frontend (ASP.NET Core, .NET 10)
+- ?? RESTful API with Swagger UI documentation at `/swagger`
+- ?? **Office 365 version tracking** across all update channels (Current, Monthly, Semi-Annual)
+- ?? **Windows version tracking** for Windows 10 and Windows 11 releases with intelligent sorting
+- ?? **GDPR/CCPA Compliance** with Cookie Consent Banner
+- ?? Azure Storage (Blobs) integration for data persistence
+- ?? First-class Azure auth using `Azure.Identity` (Managed Identity or Service Principal)
+- ?? Telemetry with Application Insights
+- ?? Structured logging with Serilog (console/file/Application Insights)
+- ?? Responsive UI using Bootstrap 5, DataTables.js, and Bootstrap Icons
+- ? Performance optimized with GZIP compression
+- ?? Health check endpoint for monitoring
 
 
 ## Tech stack
 
-- .NET 8, C# 12
+- .NET 10, C# 14
 - ASP.NET Core Razor Pages
 - Azure SDKs: `Azure.Storage.Blobs`, `Microsoft.Extensions.Azure`, `Azure.Identity`
 - Observability: `Microsoft.ApplicationInsights.AspNetCore`
@@ -33,8 +38,8 @@ Open-source .NET 8 Razor Pages web app and lightweight API for tracking Microsof
 
 ### Prerequisites
 
-- .NET 8 SDK
-- Optional: Visual Studio 2022 (17.8+) or VS Code + C# Dev Kit
+- .NET 10 SDK
+- Optional: Visual Studio 2024 (17.10+) or VS Code + C# Dev Kit
 - Optional for cloud integration: Azure subscription (for Blob Storage and Application Insights)
 
 ### Clone
@@ -148,6 +153,19 @@ If running in Azure with Managed Identity, no secrets are required.
 - Open a pull request describing the change and testing steps
 
 Issues and feature requests are tracked here: https://github.com/robgrame/OfficeVersionsCore/issues
+
+
+## Privacy & Compliance
+
+This project is **GDPR and CCPA compliant**:
+
+- ?? **No personal data collected**: We do not collect name, email, phone number, or IP address
+- ?? **Technical data only**: Browser info, device info, usage patterns, and performance metrics (anonymous)
+- ?? **Cookie Consent Banner**: Users must consent before analytics tracking (Google Tag Manager)
+- ?? **Transparent Policy**: Full privacy policy available at `/Privacy`
+- ? **Verified compliance**: Security headers, HTTPS enforcement, and secure cookie handling
+
+See `Pages/Privacy.cshtml` for detailed privacy disclosures.
 
 
 ## Support and contact

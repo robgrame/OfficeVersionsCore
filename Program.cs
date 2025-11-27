@@ -127,6 +127,13 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add Response Compression (GZIP)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -163,11 +170,38 @@ app.UseSerilogRequestLogging(options =>
 
 app.UseHttpsRedirection();
 
+// Add Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    // Strict-Transport-Security: Enforce HTTPS for 1 year
+    context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+    
+    // X-Content-Type-Options: Prevent MIME type sniffing
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    
+    // X-Frame-Options: Prevent clickjacking
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    
+    // X-XSS-Protection: Enable browser XSS protection
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    
+    // Referrer-Policy: Control referrer information
+    context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+    
+    // Permissions-Policy: Control browser features
+    context.Response.Headers.Add("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    
+    await next();
+});
+
+// Enable Response Compression
+app.UseResponseCompression();
+
 // Setup URL rewrite rules for SEO optimization
-var options = new RewriteOptions();
+var rewriteOptions = new RewriteOptions();
 // Redirect /sitemap.xml to the SitemapController
-options.AddRedirect("^sitemap\\.xml$", "sitemap");
-app.UseRewriter(options);
+rewriteOptions.AddRedirect("^sitemap\\.xml$", "sitemap");
+app.UseRewriter(rewriteOptions);
 
 app.UseStaticFiles();
 
