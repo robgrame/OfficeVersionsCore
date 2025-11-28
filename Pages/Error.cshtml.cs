@@ -22,6 +22,27 @@ public class ErrorModel : PageModel
     public void OnGet()
     {
         RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+        
+        // Log the error details for diagnostics
+        var exceptionFeature = HttpContext.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (exceptionFeature != null)
+        {
+            _logger.LogError(exceptionFeature.Error, 
+                "Error occurred for request {RequestId}: {ErrorMessage}", 
+                RequestId, 
+                exceptionFeature.Error.Message);
+        }
+        else
+        {
+            var statusCodeFeature = HttpContext.Features.Get<Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature>();
+            if (statusCodeFeature != null)
+            {
+                _logger.LogWarning(
+                    "Status code {StatusCode} for path {OriginalPath}", 
+                    HttpContext.Response.StatusCode,
+                    statusCodeFeature.OriginalPath);
+            }
+        }
     }
 }
 

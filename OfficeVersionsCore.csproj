@@ -8,6 +8,13 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateSwaggerOnPublish>true</GenerateSwaggerOnPublish>
   </PropertyGroup>
+  
+  <!-- Azure Deployment Configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PlatformTarget>x64</PlatformTarget>
+    <SelfContained>false</SelfContained>
+    <PublishReadyToRun>false</PublishReadyToRun>
+  </PropertyGroup>
 
   <!-- Remove certain directories -->
   <ItemGroup>
@@ -71,10 +78,19 @@
     <Copy SourceFiles="$(SwaggerWwwRootDir)swagger.json" DestinationFolder="$(SwaggerOutputDir)" SkipUnchangedFiles="true" ContinueOnError="true" />
   </Target>
 
-  <!-- Ensure all Swagger files are included in published output -->
+  <!-- Ensure all Swagger files and data files are included in published output -->
   <ItemGroup>
     <Content Update="$(OutputPath)swagger.json" CopyToPublishDirectory="PreserveNewest" />
     <Content Update="wwwroot\**\swagger.json" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  
+  <!-- Explicitly include GSC CSV file in publish -->
+  <ItemGroup>
+    <None Include="Logs\.gitkeep" />
+    <None Include="wwwroot\data\gsc-export.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
   
   <!-- Create directory structure if it doesn't exist -->

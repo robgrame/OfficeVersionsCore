@@ -1,5 +1,7 @@
 ﻿@using Microsoft.Extensions.Configuration
+@using Microsoft.AspNetCore.Hosting
 @inject IConfiguration Configuration
+@inject IWebHostEnvironment Environment
 <!doctype html>
 <html lang="en">
 <head>
@@ -333,6 +335,12 @@
                         <a asp-page="/Contact">Contact</a>
                         <a asp-page="/Privacy">Privacy</a>
                         <a href="/swagger" target="_blank">API Docs</a>
+                        @if (Environment.IsDevelopment())
+                        {
+                            <a asp-page="/CookieTest" class="text-warning">
+                                <i class="bi bi-bug me-1"></i>Cookie Test
+                            </a>
+                        }
                         <a href="https://github.com/robgrame/OfficeVersions" target="_blank">
                             <i class="bi bi-github me-1"></i>GitHub
                         </a>

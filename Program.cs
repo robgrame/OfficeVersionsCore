@@ -13,10 +13,30 @@ using Microsoft.OpenApi;
 using System.Reflection;
 using System.Threading.RateLimiting;
 
-var builder = WebApplication.CreateBuilder(args);
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-// Add Application Insights
-builder.Services.AddApplicationInsightsTelemetry();
+// Early logging to console for startup diagnostics
+Console.WriteLine($"[STARTUP] Starting OfficeVersionsCore at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+Console.WriteLine($"[STARTUP] Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine($"[STARTUP] Content Root: {builder.Environment.ContentRootPath}");
+Console.WriteLine($"[STARTUP] Web Root: {builder.Environment.WebRootPath}");
+
+// Add Application Insights - only if ConnectionString is configured
+var aiConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+if (!string.IsNullOrWhiteSpace(aiConnectionString))
+{
+    Console.WriteLine("[STARTUP] Application Insights: ENABLED");
+    builder.Services.AddApplicationInsightsTelemetry(options =>
+    {
+        options.ConnectionString = aiConnectionString;
+    });
+}
+else
+{
+    Console.WriteLine("[STARTUP] Application Insights: DISABLED (no connection string found)");
+}
 
 // Configure Serilog early with Application Insights support
 builder.Host.UseSerilog((ctx, services, config) =>
@@ -30,13 +50,25 @@ builder.Host.UseSerilog((ctx, services, config) =>
         .Enrich.WithProperty("Version", "1.0.0");
 
     // Add Application Insights sink if running in Azure (non-Development)
+    // Only add if Application Insights is properly configured
     if (!ctx.HostingEnvironment.IsDevelopment())
     {
-        // This will use the Application Insights instrumentation key from configuration
-        config.WriteTo.ApplicationInsights(
-            services.GetRequiredService<Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration>(),
-            new TraceTelemetryConverter(),
-            LogEventLevel.Information);
+        try
+        {
+            var aiConfig = services.GetService<Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration>();
+            if (aiConfig != null && !string.IsNullOrEmpty(aiConfig.ConnectionString))
+            {
+                config.WriteTo.ApplicationInsights(
+                    aiConfig,
+                    new TraceTelemetryConverter(),
+                    LogEventLevel.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Fallback: log to console if Application Insights fails
+            Console.WriteLine($"Warning: Could not configure Application Insights logging: {ex.Message}");
+        }
     }
 });
 
@@ -176,6 +208,9 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+Console.WriteLine("[STARTUP] Application built successfully");
+Console.WriteLine($"[STARTUP] Is Development: {app.Environment.IsDevelopment()}");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -184,7 +219,8 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
+    // HSTS disabled - Azure handles this at load balancer level
+    // app.UseHsts();
 }
 
 // Enable Swagger
@@ -208,7 +244,11 @@ app.UseSerilogRequestLogging(options =>
     options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
 });
 
-app.UseHttpsRedirection();
+// HTTPS Redirection: Only in Development (Azure handles HTTPS at load balancer)
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Add Security Headers Middleware
 app.Use(async (context, next) =>
@@ -260,15 +300,59 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 // Initialize Google Search Console data
-try
+using (var scope = app.Services.CreateScope())
 {
-    var gscInitializer = app.Services.CreateScope().ServiceProvider.GetRequiredService<GoogleSearchConsoleInitializer>();
-    await gscInitializer.InitializeAsync();
+    try
+    {
+        Console.WriteLine("[STARTUP] Initializing Google Search Console data...");
+        var gscInitializer = scope.ServiceProvider.GetService<GoogleSearchConsoleInitializer>();
+        if (gscInitializer != null)
+        {
+            await gscInitializer.InitializeAsync();
+            app.Logger.LogInformation("Google Search Console data initialized successfully");
+            Console.WriteLine("[STARTUP] GSC initialization: SUCCESS");
+        }
+        else
+        {
+            app.Logger.LogWarning("GoogleSearchConsoleInitializer service not registered");
+            Console.WriteLine("[STARTUP] GSC initialization: SKIPPED (service not registered)");
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Error initializing Google Search Console data on startup - continuing anyway");
+        Console.WriteLine($"[STARTUP] GSC initialization: FAILED - {ex.Message}");
+        Console.WriteLine($"[STARTUP] GSC Stack Trace: {ex.StackTrace}");
+        // Don't fail startup if GSC initialization fails
+    }
+}
+
+Console.WriteLine("[STARTUP] Starting web server...");
+app.Run();
+Console.WriteLine("[STARTUP] Application stopped");
 }
 catch (Exception ex)
 {
-    app.Logger.LogError(ex, "Error initializing Google Search Console data on startup");
-    // Don't fail startup if GSC initialization fails
+    Console.WriteLine("[FATAL] Application failed to start!");
+    Console.WriteLine($"[FATAL] Exception Type: {ex.GetType().Name}");
+    Console.WriteLine($"[FATAL] Message: {ex.Message}");
+    Console.WriteLine($"[FATAL] Stack Trace:\n{ex.StackTrace}");
+    
+    if (ex.InnerException != null)
+    {
+        Console.WriteLine($"[FATAL] Inner Exception: {ex.InnerException.Message}");
+        Console.WriteLine($"[FATAL] Inner Stack Trace:\n{ex.InnerException.StackTrace}");
+    }
+    
+    // Log to Application Insights if available
+    try
+    {
+        Log.Fatal(ex, "Application failed to start");
+    }
+    catch
+    {
+        // Ignore logging failures during fatal error handling
+    }
+    
+    throw; // Re-throw to ensure Azure logs the error
 }
-
-app.Run();

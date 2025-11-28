@@ -1,0 +1,190 @@
+@page
+@model OfficeVersionsCore.Pages.CookieTestModel
+@{
+    ViewData["Title"] = "Cookie Consent Test";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-cookie me-2"></i>Cookie Consent Test Page
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Purpose:</strong> This page helps you test the cookie consent system.
+                        Open your browser's Developer Tools (F12) and check the Console tab for detailed logs.
+                    </div>
+
+                    <h4 class="mt-4">
+                        <i class="bi bi-check-circle text-success me-2"></i>Test Instructions
+                    </h4>
+                    <ol class="mb-4">
+                        <li class="mb-2">
+                            <strong>Open Developer Tools:</strong> Press <kbd>F12</kbd> or right-click and select "Inspect"
+                        </li>
+                        <li class="mb-2">
+                            <strong>Go to Console Tab:</strong> Click on the "Console" tab
+                        </li>
+                        <li class="mb-2">
+                            <strong>Filter for Cookie Consent:</strong> Type "Cookie Consent" in the filter box
+                        </li>
+                        <li class="mb-2">
+                            <strong>Reload the page:</strong> Press <kbd>Ctrl+F5</kbd> to see the initialization logs
+                        </li>
+                        <li class="mb-2">
+                            <strong>Check Application Tab:</strong> Go to Application > Cookies to see stored cookies
+                        </li>
+                    </ol>
+
+                    <h4 class="mt-4">
+                        <i class="bi bi-gear-fill text-primary me-2"></i>Current State
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>GTM ID</strong></td>
+                                    <td><code id="gtm-id-value">Loading...</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Cookie Consent Status</strong></td>
+                                    <td><code id="consent-status">Loading...</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>All Cookies</strong></td>
+                                    <td><code id="all-cookies">Loading...</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Banner Visible</strong></td>
+                                    <td><code id="banner-visible">Loading...</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>GTM Loaded</strong></td>
+                                    <td><code id="gtm-loaded">Loading...</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="mt-4">
+                        <i class="bi bi-tools text-warning me-2"></i>Test Actions
+                    </h4>
+                    <div class="btn-group mb-3" role="group">
+                        <button type="button" class="btn btn-primary" onclick="testAccept()">
+                            <i class="bi bi-check-circle me-1"></i>Simulate Accept
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="testReject()">
+                            <i class="bi bi-x-circle me-1"></i>Simulate Reject
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="clearConsent()">
+                            <i class="bi bi-trash me-1"></i>Clear Consent
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="refreshStatus()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh Status
+                        </button>
+                    </div>
+
+                    <h4 class="mt-4">
+                        <i class="bi bi-terminal text-success me-2"></i>Console Output
+                    </h4>
+                    <div class="alert alert-dark">
+                        <strong>Expected Console Messages:</strong>
+                        <ul class="mb-0 mt-2" style="font-family: monospace; font-size: 0.85rem;">
+                            <li>[Cookie Consent] Script loaded - waiting for DOM ready</li>
+                            <li>[Cookie Consent] DOM ready - creating CookieConsent instance</li>
+                            <li>[Cookie Consent] Initializing Cookie Consent Manager</li>
+                            <li>[Cookie Consent] Reading all cookies: ...</li>
+                            <li>[Cookie Consent] No consent found - showing banner</li>
+                            <li>[Cookie Consent] Creating and displaying banner</li>
+                            <li>[Cookie Consent] Banner inserted into DOM</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Test functions
+        function testAccept() {
+            console.log('[TEST] Simulating accept consent');
+            document.cookie = 'office365versions_cookie_consent=true;path=/;max-age=31536000;SameSite=Strict';
+            alert('Consent accepted! Reload the page to see the effect.');
+            refreshStatus();
+        }
+
+        function testReject() {
+            console.log('[TEST] Simulating reject consent');
+            document.cookie = 'office365versions_cookie_consent=false;path=/;max-age=31536000;SameSite=Strict';
+            alert('Consent rejected! Reload the page to see the effect.');
+            refreshStatus();
+        }
+
+        function clearConsent() {
+            console.log('[TEST] Clearing consent cookie');
+            document.cookie = 'office365versions_cookie_consent=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            alert('Consent cleared! Reload the page to see the banner again.');
+            refreshStatus();
+        }
+
+        function refreshStatus() {
+            console.log('[TEST] Refreshing status display');
+            
+            // GTM ID
+            document.getElementById('gtm-id-value').textContent = window.gtmId || 'Not set';
+            
+            // Consent status
+            const cookies = document.cookie.split(';');
+            let consentStatus = 'Not set (null)';
+            for (let cookie of cookies) {
+                const [key, value] = cookie.trim().split('=');
+                if (key === 'office365versions_cookie_consent') {
+                    consentStatus = value === 'true' ? 'Accepted (true)' : 'Rejected (false)';
+                    break;
+                }
+            }
+            document.getElementById('consent-status').textContent = consentStatus;
+            
+            // All cookies
+            document.getElementById('all-cookies').textContent = document.cookie || 'No cookies';
+            
+            // Banner visible
+            const banner = document.getElementById('cookie-consent-banner');
+            document.getElementById('banner-visible').textContent = banner ? 'Yes' : 'No';
+            
+            // GTM loaded
+            const gtmLoaded = typeof window.google_tag_manager !== 'undefined' || typeof window.dataLayer !== 'undefined';
+            document.getElementById('gtm-loaded').textContent = gtmLoaded ? 'Yes' : 'No';
+            
+            console.log('[TEST] Status refreshed:', {
+                gtmId: window.gtmId,
+                consentStatus,
+                allCookies: document.cookie,
+                bannerVisible: !!banner,
+                gtmLoaded
+            });
+        }
+
+        // Auto-refresh on load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[TEST] Cookie Test Page loaded - auto-refreshing status');
+            refreshStatus();
+            
+            // Auto-refresh every 2 seconds
+            setInterval(refreshStatus, 2000);
+        });
+    </script>
+}
