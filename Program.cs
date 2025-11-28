@@ -190,14 +190,100 @@ builder.Services.AddResponseCompression(options =>
 });
 
 // Add Rate Limiting for API endpoints (.NET 10 built-in)
+// Multiple policies for different use cases
 builder.Services.AddRateLimiter(rateLimiterOptions =>
 {
-    rateLimiterOptions.AddFixedWindowLimiter(policyName: "fixed", options =>
+    // Rejection behavior when limit is exceeded
+    rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    
+    rateLimiterOptions.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        
+        var retryAfterSeconds = 60;
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            retryAfterSeconds = (int)retryAfter.TotalSeconds;
+            context.HttpContext.Response.Headers.RetryAfter = retryAfterSeconds.ToString();
+        }
+        
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            error = "Too Many Requests",
+            message = "Rate limit exceeded. Please try again later.",
+            retryAfter = retryAfterSeconds
+        }, cancellationToken: cancellationToken);
+    };
+
+    // 1. API - General rate limit (100 requests per minute)
+    rateLimiterOptions.AddFixedWindowLimiter(policyName: "api", options =>
     {
         options.PermitLimit = 100;
         options.Window = TimeSpan.FromMinutes(1);
-        options.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5;
+    });
+
+    // 2. API Strict - For expensive endpoints (20 requests per minute)
+    rateLimiterOptions.AddFixedWindowLimiter(policyName: "api-strict", options =>
+    {
+        options.PermitLimit = 20;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 2;
+    });
+
+    // 3. Sliding Window - More sophisticated rate limiting (150 requests per minute, distributed)
+    rateLimiterOptions.AddSlidingWindowLimiter(policyName: "api-sliding", options =>
+    {
+        options.PermitLimit = 150;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.SegmentsPerWindow = 6; // Check every 10 seconds
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5;
+    });
+
+    // 4. Token Bucket - For burst traffic (30 requests burst, refill 1 per 2 seconds)
+    rateLimiterOptions.AddTokenBucketLimiter(policyName: "api-burst", options =>
+    {
+        options.TokenLimit = 30;
+        options.ReplenishmentPeriod = TimeSpan.FromSeconds(2);
+        options.TokensPerPeriod = 1;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         options.QueueLimit = 10;
+    });
+
+    // 5. Concurrency Limiter - For resource-intensive operations (max 10 concurrent)
+    rateLimiterOptions.AddConcurrencyLimiter(policyName: "api-concurrent", options =>
+    {
+        options.PermitLimit = 10;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5;
+    });
+
+    // 6. Razor Pages - Permissive (1000 requests per minute)
+    rateLimiterOptions.AddFixedWindowLimiter(policyName: "pages", options =>
+    {
+        options.PermitLimit = 1000;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 20;
+    });
+
+    // Global per-IP rate limiting (50 requests per minute per IP)
+    rateLimiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var ipAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault() 
+            ?? httpContext.Connection.RemoteIpAddress?.ToString() 
+            ?? "unknown";
+        
+        return RateLimitPartition.GetFixedWindowLimiter(ipAddress, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 200,
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 10
+        });
     });
 });
 

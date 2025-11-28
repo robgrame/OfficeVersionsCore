@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OfficeVersionsCore.Services;
 using OfficeVersionsCore.Models;
 
@@ -10,6 +11,7 @@ namespace OfficeVersionsCore.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [EnableRateLimiting("api-sliding")]  // Apply sliding window rate limiting to all endpoints
     public class WindowsVersionsController : ControllerBase
     {
         private readonly IWindowsVersionsService _windowsService;
@@ -648,6 +650,7 @@ namespace OfficeVersionsCore.Controllers
         /// </summary>
         /// <returns>Result of refresh operation</returns>
         [HttpPost("refresh")]
+        [EnableRateLimiting("api-strict")]  // Strict rate limiting for resource-intensive operations
         public async Task<ActionResult<object>> RefreshData()
         {
             try

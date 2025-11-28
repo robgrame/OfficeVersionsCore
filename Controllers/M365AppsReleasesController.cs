@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OfficeVersionsCore.Services;
 using OfficeVersionsCore.Models;
 
@@ -11,6 +12,7 @@ namespace OfficeVersionsCore.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
+    [EnableRateLimiting("api-sliding")]  // Apply sliding window rate limiting to all endpoints
     public class M365AppsReleasesController : ControllerBase
     {
         private readonly IOffice365Service _office365Service;

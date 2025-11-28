@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace OfficeVersionsCore.Controllers
     /// </summary>
     [Route("[controller]")]
     [ApiController]
+    [EnableRateLimiting("api")]  // Standard rate limiting for sitemap
     public class SitemapController : ControllerBase
     {
         private readonly IConfiguration _configuration;
