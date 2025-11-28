@@ -70,9 +70,35 @@
                         <th scope="col">Release Date</th>
                         <th scope="col">Channel</th>
                         <th scope="col">Full Build</th>
+                        <th scope="col" class="text-center">Details</th>
                     </tr>
                 </thead>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Update Details Modal -->
+<div class="modal fade" id="updateDetailsModal" tabindex="-1" aria-labelledby="updateDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateDetailsModalLabel">
+                    <i class="bi bi-microsoft me-2"></i>Release Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="updateDetailsBody">
+                <!-- Details loaded dynamically -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -93,6 +119,13 @@
     .channel-tag.current {background:#e8f5e8;color:#2d7d32;border:1px solid #a5d6a7;}
     .channel-tag.monthly {background:#e3f2fd;color:#1976d2;border:1px solid #90caf9;}
     .channel-tag.semiannual {background:#fff3e0;color:#f57c00;border:1px solid #ffcc02;}
+    
+    /* Update Details Modal Styling */
+    .update-details-content {padding: 1rem;}
+    .update-details-content h6 {font-weight: 600;text-transform: uppercase;font-size: 0.75rem;letter-spacing: 0.5px;}
+    .update-details-content .list-group-item {border-left: 3px solid var(--bs-primary);border-right: none;border-top: none;border-bottom: 1px solid rgba(0,0,0,.125);}
+    .update-details-content .list-group-item:last-child {border-bottom: none;}
+    .build-code {font-family: monospace;padding: .2rem .4rem;font-size: .85rem;border-radius: .25rem;background-color: rgba(13,110,253,.1);color: var(--bs-primary);}
 </style>
 <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
 <script type="text/javascript">
@@ -178,11 +211,110 @@ $(document).ready(function() {
                 return data || '';
               }
             }
+          },
+          {
+            data: null,
+            orderable: false,
+            className: 'text-center',
+            render: function(data, type, row) {
+              return `<button type="button" class="btn btn-sm btn-outline-primary btn-details" 
+                          data-bs-toggle="tooltip" 
+                          data-bs-placement="top" 
+                          title="View release details">
+                          <i class="bi bi-info-circle"></i>
+                      </button>`;
+            }
           }
         ],
         order: [[ 1, 'desc' ]], // Sort by release date descending
-        drawCallback: function(){ initTooltips(); }
+        drawCallback: function(){ 
+          initTooltips(); 
+          
+          // Attach click handlers to details buttons
+          $('.btn-details').off('click').on('click', function() {
+            const rowData = table.row($(this).parents('tr')).data();
+            showUpdateDetails(rowData);
+          });
+        }
       });
+
+      // Function to show update details modal
+      function showUpdateDetails(release) {
+        const modal = new bootstrap.Modal(document.getElementById('updateDetailsModal'));
+        const modalBody = document.getElementById('updateDetailsBody');
+        
+        // Build the modal content
+        let content = `
+            <div class="update-details-content">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-tag me-2"></i>Version</h6>
+                        <p class="h5">${release.version || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-hash me-2"></i>Full Build</h6>
+                        <p class="h5"><code class="build-code">${release.fullBuild || 'N/A'}</code></p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-calendar-event me-2"></i>Release Date</h6>
+                        <p>${release.releaseDate ? new Date(release.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-diagram-3 me-2"></i>Channel</h6>
+                        <p>${formatChannel(release.channel)}</p>
+                    </div>
+                </div>
+                
+                ${release.description ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>Description</h6>
+                    <p class="text-muted">${release.description}</p>
+                </div>
+                ` : ''}
+                
+                ${release.highlights && release.highlights.length > 0 ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-star me-2"></i>Highlights</h6>
+                    <ul class="list-group list-group-flush">
+                        ${release.highlights.map(h => `<li class="list-group-item">${h}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                ${release.newFeatures && release.newFeatures.length > 0 ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-lightning me-2"></i>New Features</h6>
+                    <ul class="list-group list-group-flush">
+                        ${release.newFeatures.map(f => `<li class="list-group-item">${f}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                ${release.knownIssues && release.knownIssues.length > 0 ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Known Issues</h6>
+                    <ul class="list-group list-group-flush">
+                        ${release.knownIssues.map(issue => `<li class="list-group-item text-warning">${issue}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                ${release.url ? `
+                <div class="d-grid">
+                    <a href="${release.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>View Release Notes
+                    </a>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        modalBody.innerHTML = content;
+        modal.show();
+      }
 
       // Custom search functionality
       $('#versionFilter').on('keyup change', function(){
