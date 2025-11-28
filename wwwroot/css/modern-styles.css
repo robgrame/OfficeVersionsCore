@@ -441,6 +441,18 @@ body {
   color: var(--accent-color);
 }
 
+.modern-footer .text-muted {
+  color: var(--white) !important;
+}
+
+.modern-footer p {
+  color: var(--gray-300);
+}
+
+.modern-footer .text-muted span {
+  color: var(--white) !important;
+}
+
 /* Privacy Policy Page Styles */
 .privacy-header {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
