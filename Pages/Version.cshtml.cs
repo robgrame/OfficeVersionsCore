@@ -93,7 +93,8 @@ namespace OfficeVersionsCore.Pages
 
         public void OnGet()
         {
-            var assembly = Assembly.GetExecutingAssembly();
+            // Use GetEntryAssembly() which is more reliable for getting version info in .NET 10
+            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
             var assemblyName = assembly.GetName();
 
             // Version information

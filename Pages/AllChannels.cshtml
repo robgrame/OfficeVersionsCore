@@ -104,276 +104,374 @@
 </div>
 
 @section Scripts {
-<style>
-    .version-badge {display:inline-block;padding:.35rem .6rem;font-weight:600;font-size:.85rem;border-radius:.65rem;background:var(--bs-primary-bg-subtle,#e6f0ff);color:var(--bs-primary,#0d6efd);letter-spacing:.5px;box-shadow:0 0 0 1px rgba(13,110,253,.15);}    
-    .release-date-cell {font-weight:500;white-space:nowrap;}
-    .release-date-cell.new {color:#fff;background:#0d6efd;padding:.25rem .55rem;border-radius:.6rem;font-size:.7rem;font-weight:600;}
-    .release-date-cell.recent {color:#0d6efd;}
-    .release-date-cell.stale {color:#6c757d;opacity:.85;}
-    #allChannelsVersions tbody tr td {vertical-align:middle;}
-    #allChannelsVersions_wrapper .dataTables_paginate {padding:.5rem 1rem;}
-    .table-actions {border-bottom:1px solid var(--bs-border-color,#dee2e6);}
-    .about-points li {position:relative;padding-left:1rem;margin-bottom:.35rem;}
-    .about-points li:before {content:"•";position:absolute;left:0;color:var(--bs-primary,#0d6efd);}
-    .channel-tag {display:inline-block;padding:.25rem .5rem;font-size:.75rem;font-weight:500;border-radius:.375rem;text-transform:uppercase;letter-spacing:.5px;}
-    .channel-tag.current {background:#e8f5e8;color:#2d7d32;border:1px solid #a5d6a7;}
-    .channel-tag.monthly {background:#e3f2fd;color:#1976d2;border:1px solid #90caf9;}
-    .channel-tag.semiannual {background:#fff3e0;color:#f57c00;border:1px solid #ffcc02;}
-    
-    /* Update Details Modal Styling */
-    .update-details-content {padding: 1rem;}
-    .update-details-content h6 {font-weight: 600;text-transform: uppercase;font-size: 0.75rem;letter-spacing: 0.5px;}
-    .update-details-content .list-group-item {border-left: 3px solid var(--bs-primary);border-right: none;border-top: none;border-bottom: 1px solid rgba(0,0,0,.125);}
-    .update-details-content .list-group-item:last-child {border-bottom: none;}
-    .build-code {font-family: monospace;padding: .2rem .4rem;font-size: .85rem;border-radius: .25rem;background-color: rgba(13,110,253,.1);color: var(--bs-primary);}
-</style>
-<script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-  const RECENT_LIMIT_DAYS = 180; // 6 months for all channels view
-  let showRecentOnly = false;
-  let channelFilterValue = '';
+    <style>
+        .version-badge {
+            display: inline-block;
+            padding: .35rem .6rem;
+            font-weight: 600;
+            font-size: .85rem;
+            border-radius: .65rem;
+            background: var(--bs-primary-bg-subtle,#e6f0ff);
+            color: var(--bs-primary,#0d6efd);
+            letter-spacing: .5px;
+            box-shadow: 0 0 0 1px rgba(13,110,253,.15);
+        }
 
-  function formatVersion(v){
-    if(!v) return '';
-    return `<span class="version-badge" title="Version ${v}">${v}</span>`;
-  }
-  
-  function formatReleaseDate(dStr){
-    if(!dStr) return '';
-    const d = new Date(dStr);
-    if(isNaN(d)) return dStr;
-    const now = new Date();
-    const diffDays = Math.floor((now - d)/(1000*60*60*24));
-    let cls = 'release-date-cell';
-    if(diffDays <= 7) cls += ' new';
-    else if(diffDays <= 30) cls += ' recent';
-    else cls += ' stale';
-    const local = d.toLocaleString();
-    const rel = diffDays === 0 ? 'today' : diffDays + 'd ago';
-    return `<span class="${cls}" data-bs-toggle="tooltip" data-bs-title="${local} (${rel})">${d.toISOString().substring(0,10)}</span>`;
-  }
-  
-  function formatChannel(channelName) {
-    if (!channelName) return '';
-    let tagClass = 'channel-tag';
-    const lower = channelName.toLowerCase();
-    if (lower.includes('current')) tagClass += ' current';
-    else if (lower.includes('monthly')) tagClass += ' monthly';
-    else if (lower.includes('semi')) tagClass += ' semiannual';
-    return `<span class="${tagClass}">${channelName}</span>`;
-  }
-  
-  function initTooltips(){
-    if(window.bootstrap && bootstrap.Tooltip){
-      document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el=>{ new bootstrap.Tooltip(el); });
-    }
-  }
+        .release-date-cell {
+            font-weight: 500;
+            white-space: nowrap;
+        }
 
-  // Load data from all channels and combine them
-  const channelEndpoints = [
-    '/api/M365AppsReleases/channel/Current%20Channel',
-    '/api/M365AppsReleases/channel/Monthly%20Enterprise%20Channel',  
-    '/api/M365AppsReleases/channel/Semi-Annual%20Enterprise%20Channel'
-  ];
+            .release-date-cell.new {
+                color: #fff;
+                background: #0d6efd;
+                padding: .25rem .55rem;
+                border-radius: .6rem;
+                font-size: .7rem;
+                font-weight: 600;
+            }
 
-  Promise.all(channelEndpoints.map(url => fetch(url).then(resp => resp.json())))
-    .then(results => {
-      // Combine all channel data
-      const allReleases = results.flat();
-      
-      // Sort by release date descending (most recent first)
-      allReleases.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
-      
-      console.log(`Loaded ${allReleases.length} total releases from all channels`);
-      
-      const table = $('#allChannelsVersions').DataTable({
-        data: allReleases,
-        serverSide: false,
-        paging: true,
-        pageLength: 25,
-        lengthChange: false,
-        searching: true,
-        ordering: true,
-        info: true,
-        processing: false,
-        autoWidth: false,
-        columns: [
-          { data: 'version', render: function(data){ return formatVersion(data); } },
-          { data: 'releaseDate', render: function(data){ return formatReleaseDate(data); } },
-          { data: 'channel', render: function(data){ return formatChannel(data); } },
-          {
-            data: 'fullBuild',
-            render: function(data, type, row) {
-              if (row.url) {
-                return `<a target="_blank" rel="noopener noreferrer" href="${row.url}">${data}</a>`;
-              } else {
-                return data || '';
+            .release-date-cell.recent {
+                color: #0d6efd;
+            }
+
+            .release-date-cell.stale {
+                color: #6c757d;
+                opacity: .85;
+            }
+
+        #allChannelsVersions tbody tr td {
+            vertical-align: middle;
+        }
+
+        #allChannelsVersions_wrapper .dataTables_paginate {
+            padding: .5rem 1rem;
+        }
+
+        .table-actions {
+            border-bottom: 1px solid var(--bs-border-color,#dee2e6);
+        }
+
+        .about-points li {
+            position: relative;
+            padding-left: 1rem;
+            margin-bottom: .35rem;
+        }
+
+            .about-points li:before {
+                content: "•";
+                position: absolute;
+                left: 0;
+                color: var(--bs-primary,#0d6efd);
+            }
+
+        .channel-tag {
+            display: inline-block;
+            padding: .25rem .5rem;
+            font-size: .75rem;
+            font-weight: 500;
+            border-radius: .375rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+            .channel-tag.current {
+                background: #e8f5e8;
+                color: #2d7d32;
+                border: 1px solid #a5d6a7;
+            }
+
+            .channel-tag.monthly {
+                background: #e3f2fd;
+                color: #1976d2;
+                border: 1px solid #90caf9;
+            }
+
+            .channel-tag.semiannual {
+                background: #fff3e0;
+                color: #f57c00;
+                border: 1px solid #ffcc02;
+            }
+
+        /* Update Details Modal Styling */
+        .update-details-content {
+            padding: 1rem;
+        }
+
+            .update-details-content h6 {
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                letter-spacing: 0.5px;
+            }
+
+            .update-details-content .list-group-item {
+                border-left: 3px solid var(--bs-primary);
+                border-right: none;
+                border-top: none;
+                border-bottom: 1px solid rgba(0,0,0,.125);
+            }
+
+                .update-details-content .list-group-item:last-child {
+                    border-bottom: none;
+                }
+
+        .build-code {
+            font-family: monospace;
+            padding: .2rem .4rem;
+            font-size: .85rem;
+            border-radius: .25rem;
+            background-color: rgba(13,110,253,.1);
+            color: var(--bs-primary);
+        }
+    </style>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+          const RECENT_LIMIT_DAYS = 180; // 6 months for all channels view
+          let showRecentOnly = false;
+          let channelFilterValue = '';
+
+          function formatVersion(v){
+            if(!v) return '';
+            return `<span class="version-badge" title="Version ${v}">${v}</span>`;
+          }
+
+          function formatReleaseDate(dStr){
+            if(!dStr) return '';
+            const d = new Date(dStr);
+            if(isNaN(d)) return dStr;
+            const now = new Date();
+            const diffDays = Math.floor((now - d)/(1000*60*60*24));
+            let cls = 'release-date-cell';
+            if(diffDays <= 7) cls += ' new';
+            else if(diffDays <= 30) cls += ' recent';
+            else cls += ' stale';
+            const local = d.toLocaleString();
+            const rel = diffDays === 0 ? 'today' : diffDays + 'd ago';
+            return `<span class="${cls}" data-bs-toggle="tooltip" data-bs-title="${local} (${rel})">${d.toISOString().substring(0,10)}</span>`;
+          }
+
+          function formatChannel(channelName) {
+            if (!channelName) return '';
+            let tagClass = 'channel-tag';
+            const lower = channelName.toLowerCase();
+            if (lower.includes('current')) tagClass += ' current';
+            else if (lower.includes('monthly')) tagClass += ' monthly';
+            else if (lower.includes('semi')) tagClass += ' semiannual';
+            return `<span class="${tagClass}">${channelName}</span>`;
+          }
+
+          function initTooltips(){
+            if(window.bootstrap && bootstrap.Tooltip){
+              document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el=>{ new bootstrap.Tooltip(el); });
+            }
+          }
+
+          // Load data from all channels and combine them
+          const channelEndpoints = [
+            '/api/M365AppsReleases/channel/Current%20Channel',
+            '/api/M365AppsReleases/channel/Monthly%20Enterprise%20Channel',
+            '/api/M365AppsReleases/channel/Semi-Annual%20Enterprise%20Channel'
+          ];
+
+          Promise.all(channelEndpoints.map(url => fetch(url).then(resp => resp.json())))
+            .then(results => {
+              // Combine all channel data
+              const allReleases = results.flat();
+
+              // Sort by release date descending (most recent first)
+              allReleases.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+
+              console.log(`Loaded ${allReleases.length} total releases from all channels`);
+
+              const table = $('#allChannelsVersions').DataTable({
+                data: allReleases,
+                serverSide: false,
+                paging: true,
+                pageLength: 25,
+                lengthChange: false,
+                searching: true,
+                ordering: true,
+                info: true,
+                processing: false,
+                autoWidth: false,
+                columns: [
+                  { data: 'version', render: function(data){ return formatVersion(data); } },
+                  { data: 'releaseDate', render: function(data){ return formatReleaseDate(data); } },
+                  { data: 'channel', render: function(data){ return formatChannel(data); } },
+                  {
+                    data: 'fullBuild',
+                    render: function(data, type, row) {
+                      if (row.url) {
+                        return `<a target="_blank" rel="noopener noreferrer" href="${row.url}">${data}</a>`;
+                      } else {
+                        return data || '';
+                      }
+                    }
+                  },
+                  {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    render: function(data, type, row) {
+                      return `<button type="button" class="btn btn-sm btn-outline-primary btn-details"
+                                  data-bs-toggle="tooltip"
+                                  data-bs-placement="top"
+                                  title="View release details">
+                                  <i class="bi bi-info-circle"></i>
+                              </button>`;
+                    }
+                  }
+                ],
+                order: [[ 1, 'desc' ]], // Sort by release date descending
+                drawCallback: function(){
+                  initTooltips();
+
+                  // Attach click handlers to details buttons
+                  $('.btn-details').off('click').on('click', function() {
+                    const rowData = table.row($(this).parents('tr')).data();
+                    showUpdateDetails(rowData);
+                  });
+                }
+              });
+
+              // Function to show update details modal
+              function showUpdateDetails(release) {
+                const modal = new bootstrap.Modal(document.getElementById('updateDetailsModal'));
+                const modalBody = document.getElementById('updateDetailsBody');
+
+                // Build the modal content
+                let content = `
+                    <div class="update-details-content">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-tag me-2"></i>Version</h6>
+                                <p class="h5">${release.version || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-hash me-2"></i>Full Build</h6>
+                                <p class="h5"><code class="build-code">${release.fullBuild || 'N/A'}</code></p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-calendar-event me-2"></i>Release Date</h6>
+                                <p>${release.releaseDate ? new Date(release.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-diagram-3 me-2"></i>Channel</h6>
+                                <p>${formatChannel(release.channel)}</p>
+                            </div>
+                        </div>
+
+                        ${release.description ? `
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>Description</h6>
+                            <p class="text-muted">${release.description}</p>
+                        </div>
+                        ` : ''}
+
+                        ${release.highlights && release.highlights.length > 0 ? `
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2"><i class="bi bi-star me-2"></i>Highlights</h6>
+                            <ul class="list-group list-group-flush">
+                                ${release.highlights.map(h => `<li class="list-group-item">${h}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        ${release.newFeatures && release.newFeatures.length > 0 ? `
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2"><i class="bi bi-lightning me-2"></i>New Features</h6>
+                            <ul class="list-group list-group-flush">
+                                ${release.newFeatures.map(f => `<li class="list-group-item">${f}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        ${release.knownIssues && release.knownIssues.length > 0 ? `
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Known Issues</h6>
+                            <ul class="list-group list-group-flush">
+                                ${release.knownIssues.map(issue => `<li class="list-group-item text-warning">${issue}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+
+                        ${release.url ? `
+                        <div class="d-grid">
+                            <a href="${release.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>View Release Notes
+                            </a>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                modalBody.innerHTML = content;
+                modal.show();
               }
-            }
-          },
-          {
-            data: null,
-            orderable: false,
-            className: 'text-center',
-            render: function(data, type, row) {
-              return `<button type="button" class="btn btn-sm btn-outline-primary btn-details" 
-                          data-bs-toggle="tooltip" 
-                          data-bs-placement="top" 
-                          title="View release details">
-                          <i class="bi bi-info-circle"></i>
-                      </button>`;
-            }
-          }
-        ],
-        order: [[ 1, 'desc' ]], // Sort by release date descending
-        drawCallback: function(){ 
-          initTooltips(); 
-          
-          // Attach click handlers to details buttons
-          $('.btn-details').off('click').on('click', function() {
-            const rowData = table.row($(this).parents('tr')).data();
-            showUpdateDetails(rowData);
-          });
-        }
-      });
 
-      // Function to show update details modal
-      function showUpdateDetails(release) {
-        const modal = new bootstrap.Modal(document.getElementById('updateDetailsModal'));
-        const modalBody = document.getElementById('updateDetailsBody');
-        
-        // Build the modal content
-        let content = `
-            <div class="update-details-content">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-2"><i class="bi bi-tag me-2"></i>Version</h6>
-                        <p class="h5">${release.version || 'N/A'}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-2"><i class="bi bi-hash me-2"></i>Full Build</h6>
-                        <p class="h5"><code class="build-code">${release.fullBuild || 'N/A'}</code></p>
-                    </div>
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-2"><i class="bi bi-calendar-event me-2"></i>Release Date</h6>
-                        <p>${release.releaseDate ? new Date(release.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-muted mb-2"><i class="bi bi-diagram-3 me-2"></i>Channel</h6>
-                        <p>${formatChannel(release.channel)}</p>
-                    </div>
-                </div>
-                
-                ${release.description ? `
-                <div class="mb-3">
-                    <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>Description</h6>
-                    <p class="text-muted">${release.description}</p>
-                </div>
-                ` : ''}
-                
-                ${release.highlights && release.highlights.length > 0 ? `
-                <div class="mb-3">
-                    <h6 class="text-muted mb-2"><i class="bi bi-star me-2"></i>Highlights</h6>
-                    <ul class="list-group list-group-flush">
-                        ${release.highlights.map(h => `<li class="list-group-item">${h}</li>`).join('')}
-                    </ul>
-                </div>
-                ` : ''}
-                
-                ${release.newFeatures && release.newFeatures.length > 0 ? `
-                <div class="mb-3">
-                    <h6 class="text-muted mb-2"><i class="bi bi-lightning me-2"></i>New Features</h6>
-                    <ul class="list-group list-group-flush">
-                        ${release.newFeatures.map(f => `<li class="list-group-item">${f}</li>`).join('')}
-                    </ul>
-                </div>
-                ` : ''}
-                
-                ${release.knownIssues && release.knownIssues.length > 0 ? `
-                <div class="mb-3">
-                    <h6 class="text-muted mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Known Issues</h6>
-                    <ul class="list-group list-group-flush">
-                        ${release.knownIssues.map(issue => `<li class="list-group-item text-warning">${issue}</li>`).join('')}
-                    </ul>
-                </div>
-                ` : ''}
-                
-                ${release.url ? `
-                <div class="d-grid">
-                    <a href="${release.url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                        <i class="bi bi-box-arrow-up-right me-2"></i>View Release Notes
-                    </a>
-                </div>
-                ` : ''}
-            </div>
-        `;
-        
-        modalBody.innerHTML = content;
-        modal.show();
-      }
+              // Custom search functionality
+              $('#versionFilter').on('keyup change', function(){
+                table.search(this.value).draw();
+              });
 
-      // Custom search functionality
-      $('#versionFilter').on('keyup change', function(){
-        table.search(this.value).draw();
-      });
+              // Recent toggle
+              $('#toggleRecent').on('click', function(){
+                showRecentOnly = !showRecentOnly;
+                $(this).text(showRecentOnly ? 'Show full history' : 'Show recent only');
+                $(this).attr('aria-pressed', showRecentOnly.toString());
+                table.draw();
+              });
 
-      // Recent toggle
-      $('#toggleRecent').on('click', function(){
-        showRecentOnly = !showRecentOnly;
-        $(this).text(showRecentOnly ? 'Show full history' : 'Show recent only');
-        $(this).attr('aria-pressed', showRecentOnly.toString());
-        table.draw();
-      });
+              // Channel filter dropdown
+              $('#channelFilter').on('change', function(){
+                channelFilterValue = this.value.toLowerCase();
+                table.draw();
+              });
 
-      // Channel filter dropdown
-      $('#channelFilter').on('change', function(){
-        channelFilterValue = this.value.toLowerCase();
-        table.draw();
-      });
+              // Custom filtering function
+              $.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
+                if(settings.nTable.id !== 'allChannelsVersions') return true;
 
-      // Custom filtering function
-      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
-        if(settings.nTable.id !== 'allChannelsVersions') return true;
-        
-        // Recent filter
-        if(showRecentOnly) {
-          const releaseDateStr = table.row(dataIndex).data().releaseDate;
-          if(releaseDateStr) {
-            const d = new Date(releaseDateStr);
-            if(!isNaN(d)) {
-              const diffDays = Math.floor((Date.now() - d.getTime())/(1000*60*60*24));
-              if(diffDays > RECENT_LIMIT_DAYS) return false;
-            }
-          }
-        }
-        
-        // Channel filter
-        if(channelFilterValue) {
-          const channelName = table.row(dataIndex).data().channel;
-          if(channelName && !channelName.toLowerCase().includes(channelFilterValue)) {
-            return false;
-          }
-        }
-        
-        return true;
-      });
-    })
-    .catch(error => {
-      console.error('Error loading channel data:', error);
-      $('#allChannelsVersions').DataTable({
-        data: [],
-        columns: [
-          { title: 'Version' },
-          { title: 'Release Date' },
-          { title: 'Channel' },
-          { title: 'Full Build' }
-        ]
-      });
-    });
-});
-</script>
+                // Recent filter
+                if(showRecentOnly) {
+                  const releaseDateStr = table.row(dataIndex).data().releaseDate;
+                  if(releaseDateStr) {
+                    const d = new Date(releaseDateStr);
+                    if(!isNaN(d)) {
+                      const diffDays = Math.floor((Date.now() - d.getTime())/(1000*60*60*24));
+                      if(diffDays > RECENT_LIMIT_DAYS) return false;
+                    }
+                  }
+                }
+
+                // Channel filter
+                if(channelFilterValue) {
+                  const channelName = table.row(dataIndex).data().channel;
+                  if(channelName && !channelName.toLowerCase().includes(channelFilterValue)) {
+                    return false;
+                  }
+                }
+
+                return true;
+              });
+            })
+            .catch(error => {
+              console.error('Error loading channel data:', error);
+              $('#allChannelsVersions').DataTable({
+                data: [],
+                columns: [
+                  { title: 'Version' },
+                  { title: 'Release Date' },
+                  { title: 'Channel' },
+                  { title: 'Full Build' }
+                ]
+              });
+            });
+        });
+    </script>
 }

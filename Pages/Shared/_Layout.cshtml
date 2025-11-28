@@ -4,7 +4,8 @@
 @inject IConfiguration Configuration
 @inject IWebHostEnvironment Environment
 @{
-    var assembly = Assembly.GetExecutingAssembly();
+    // Use GetEntryAssembly() which is more reliable for getting version info in .NET 10
+    var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
     var version = assembly.GetName().Version?.ToString() ?? "1.0.0.0";
     var infoVersionAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
     var informationalVersion = infoVersionAttr?.InformationalVersion ?? version;
