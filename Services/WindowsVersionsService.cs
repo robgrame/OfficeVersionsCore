@@ -1567,11 +1567,11 @@ namespace OfficeVersionsCore.Services
             if (string.IsNullOrEmpty(title))
                 return (null, false);
 
-            bool isOptional = title.Contains("preview", StringComparison.OrdinalIgnoreCase) ||
-                              title.Contains("optional", StringComparison.OrdinalIgnoreCase);
+            bool isPreview = title.Contains("preview", StringComparison.OrdinalIgnoreCase);
+            bool isOptional = isPreview || title.Contains("optional", StringComparison.OrdinalIgnoreCase);
 
             // Preview updates are explicitly labeled in the title (e.g., "KB5066198 Preview")
-            if (title.Contains("preview", StringComparison.OrdinalIgnoreCase))
+            if (isPreview)
             {
                 return ("Preview", true);
             }
