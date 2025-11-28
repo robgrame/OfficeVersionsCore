@@ -729,18 +729,8 @@ namespace OfficeVersionsCore.Services
                         var text = ExtractText(heading);
                         if (text.Contains("KB", StringComparison.OrdinalIgnoreCase))
                         {
-                            var builds = new List<string>();
-                            var multipleBuildsMatch = Regex.Match(text, @"OS Builds\s+([\d\.]+)\s+and\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                            if (multipleBuildsMatch.Success && multipleBuildsMatch.Groups.Count > 2)
-                            {
-                                builds.Add(multipleBuildsMatch.Groups[1].Value);
-                                builds.Add(multipleBuildsMatch.Groups[2].Value);
-                            }
-                            else
-                            {
-                                var buildMatch = Regex.Match(text, @"(?:OS )?[Bb]uild\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                                if (buildMatch.Success && buildMatch.Groups.Count > 1) builds.Add(buildMatch.Groups[1].Value);
-                            }
+                            // Extract all builds using the new helper
+                            var builds = ExtractAllBuildsFromText(text);
 
                             var description = string.Empty;
                             var nextNode = heading.NextSibling;
@@ -750,12 +740,14 @@ namespace OfficeVersionsCore.Services
                                 nextNode = nextNode.NextSibling;
                             }
 
-                            if (builds.Count > 1)
+                            // Create one update entry per build
+                            if (builds.Count > 0)
                             {
                                 foreach (var build in builds)
                                 {
                                     string buildVersion = DetermineVersionFromBuild(build);
                                     if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                    
                                     var update = new WindowsUpdate
                                     {
                                         Edition = edition,
@@ -772,11 +764,12 @@ namespace OfficeVersionsCore.Services
                             }
                             else
                             {
+                                // No builds found, create single entry without build
                                 var update = new WindowsUpdate
                                 {
                                     Edition = edition,
                                     Version = version,
-                                    Build = builds.FirstOrDefault() ?? string.Empty,
+                                    Build = string.Empty,
                                     KBNumber = ExtractKBNumber(text),
                                     UpdateTitle = text,
                                     ReleaseDate = ExtractDateFromText(text),
@@ -840,20 +833,18 @@ namespace OfficeVersionsCore.Services
                         string kbNumber = ExtractKBNumber(kbOrTitle);
                         DateTime? releaseDate = ParseDate(dateText);
 
-                        var builds = new List<string>();
-                        var multipleBuildsMatch = Regex.Match(buildText, @"([\d\.]+)\s+and\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                        if (multipleBuildsMatch.Success && multipleBuildsMatch.Groups.Count > 2)
+                        // Extract all builds using the new helper
+                        var builds = ExtractAllBuildsFromText(buildText);
+                        
+                        // Also check the title for builds if buildText didn't yield any
+                        if (builds.Count == 0)
                         {
-                            builds.Add(multipleBuildsMatch.Groups[1].Value);
-                            builds.Add(multipleBuildsMatch.Groups[2].Value);
-                        }
-                        else if (Regex.IsMatch(buildText, @"^\d+(\.\d+)*$"))
-                        {
-                            builds.Add(buildText);
+                            builds = ExtractAllBuildsFromText(kbOrTitle);
                         }
 
                         if (builds.Count > 0)
                         {
+                            // Create one entry per build
                             foreach (var build in builds)
                             {
                                 string buildVersion = !string.IsNullOrEmpty(version) ? version : DetermineVersionFromBuild(build);
@@ -871,6 +862,7 @@ namespace OfficeVersionsCore.Services
                         }
                         else
                         {
+                            // No builds found, create single entry
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
@@ -913,38 +905,11 @@ namespace OfficeVersionsCore.Services
                         
                         string colKbNumber = ExtractKBNumber(title);
                         
-                        // Try to extract build numbers
-                        var colBuilds = new List<string>();
-                        
-                        // Check if second column has build numbers
-                        var colMultiBuildsMatch = Regex.Match(dateOrBuild, @"([\d\.]+)\s+and\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                        if (colMultiBuildsMatch.Success && colMultiBuildsMatch.Groups.Count > 2)
+                        // Extract all builds from both columns
+                        var colBuilds = ExtractAllBuildsFromText(title);
+                        if (colBuilds.Count == 0)
                         {
-                            colBuilds.Add(colMultiBuildsMatch.Groups[1].Value);
-                            colBuilds.Add(colMultiBuildsMatch.Groups[2].Value);
-                        }
-                        else if (Regex.IsMatch(dateOrBuild, @"^\d+(\.\d+)*$"))
-                        {
-                            // Single build number
-                            colBuilds.Add(dateOrBuild);
-                        }
-                        else
-                        {
-                            // Check title for build information
-                            colMultiBuildsMatch = Regex.Match(title, @"OS Builds\s+([\d\.]+)\s+and\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                            if (colMultiBuildsMatch.Success && colMultiBuildsMatch.Groups.Count > 2)
-                            {
-                                colBuilds.Add(colMultiBuildsMatch.Groups[1].Value);
-                                colBuilds.Add(colMultiBuildsMatch.Groups[2].Value);
-                            }
-                            else
-                            {
-                                var singleBuildMatch = Regex.Match(title, @"(?:OS )?[Bb]uild\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                                if (singleBuildMatch.Success && singleBuildMatch.Groups.Count > 1)
-                                {
-                                    colBuilds.Add(singleBuildMatch.Groups[1].Value);
-                                }
-                            }
+                            colBuilds = ExtractAllBuildsFromText(dateOrBuild);
                         }
                         
                         // Create updates
@@ -1005,21 +970,12 @@ namespace OfficeVersionsCore.Services
                         string kbNumber = ExtractKBNumber(updateText);
                         DateTime? releaseDate = ExtractDateFromText(updateText);
 
-                        List<string> builds = new();
-                        var multipleBuildsMatch = Regex.Match(updateText, @"OS Builds\s+([\d\.]+)\s+and\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                        if (multipleBuildsMatch.Success && multipleBuildsMatch.Groups.Count > 2)
-                        {
-                            builds.Add(multipleBuildsMatch.Groups[1].Value);
-                            builds.Add(multipleBuildsMatch.Groups[2].Value);
-                        }
-                        else
-                        {
-                            var singleBuildMatch = Regex.Match(updateText, @"OS Build\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                            if (singleBuildMatch.Success && singleBuildMatch.Groups.Count > 1) builds.Add(singleBuildMatch.Groups[1].Value);
-                        }
+                        // Extract all builds using the new helper
+                        var builds = ExtractAllBuildsFromText(updateText);
 
-                        if (builds.Count > 1)
+                        if (builds.Count > 0)
                         {
+                            // Create one entry per build
                             foreach (var build in builds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
@@ -1039,11 +995,12 @@ namespace OfficeVersionsCore.Services
                         }
                         else
                         {
+                            // No builds found, create single entry
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
                                 Version = version,
-                                Build = builds.FirstOrDefault() ?? string.Empty,
+                                Build = string.Empty,
                                 KBNumber = kbNumber,
                                 UpdateTitle = updateText,
                                 ReleaseDate = releaseDate,
@@ -1074,17 +1031,9 @@ namespace OfficeVersionsCore.Services
                     return null;
                 }
 
-                string build = string.Empty;
-                var multipleBuildsMatch = Regex.Match(text, @"OS Builds\s+([\d\.]+)\s+and\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                if (multipleBuildsMatch.Success && multipleBuildsMatch.Groups.Count > 2)
-                {
-                    build = multipleBuildsMatch.Groups[1].Value;
-                }
-                else
-                {
-                    var buildMatch = Regex.Match(text, @"(?:OS )?[Bb]uild\s+([\d\.]+)", RegexOptions.IgnoreCase);
-                    if (buildMatch.Success && buildMatch.Groups.Count > 1) build = buildMatch.Groups[1].Value;
-                }
+                // Extract builds using the new helper
+                var builds = ExtractAllBuildsFromText(text);
+                string build = builds.FirstOrDefault() ?? string.Empty;
 
                 var releaseDate = ExtractDateFromText(text);
                 string updateVersion = version;
@@ -1178,6 +1127,33 @@ namespace OfficeVersionsCore.Services
             return string.Empty;
         }
 
+        /// <summary>
+        /// Extracts all build numbers from text, handling patterns like:
+        /// - "OS Builds 19042.2965, 19044.2965, and 19045.2965"
+        /// - "19042.2965 and 19044.2965"
+        /// - Single build: "19045.2965"
+        /// </summary>
+        private List<string> ExtractAllBuildsFromText(string text)
+        {
+            var builds = new List<string>();
+            if (string.IsNullOrWhiteSpace(text)) return builds;
+
+            // Match all 5-digit build patterns (e.g., 19042.2965, 22621.1234)
+            // Pattern: 5 digits followed by optional .digits
+            var buildMatches = Regex.Matches(text, @"\b(\d{5}\.\d+)\b");
+            
+            foreach (Match match in buildMatches)
+            {
+                string build = match.Groups[1].Value;
+                if (!builds.Contains(build))
+                {
+                    builds.Add(build);
+                }
+            }
+
+            return builds;
+        }
+
         private string DetermineVersionFromBuild(string build)
         {
             if (string.IsNullOrEmpty(build)) return string.Empty;
@@ -1203,6 +1179,7 @@ namespace OfficeVersionsCore.Services
             {
                 // Windows 11 build numbers
                 case "26200": return "25H2"; // Windows 11 25H2
+                case "26100": return "24H2"; // Windows 11 24H2
                 case "22631": return "23H2"; // Windows 11 23H2
                 case "22621": return "22H2"; // Windows 11 22H2
                 case "22000": return "21H2"; // Windows 11 initial release
@@ -1218,6 +1195,7 @@ namespace OfficeVersionsCore.Services
                 case "17763": return "1809"; // Windows 10 1809
                 case "17134": return "1803"; // Windows 10 1803
                 case "16299": return "1709"; // Windows 10 1709
+                case "15254": return "1709 Mobile";
                 case "15063": return "1703"; // Windows 10 1703
                 case "14393": return "1607"; // Windows 10 1607
                 case "10586": return "1511"; // Windows 10 1511
