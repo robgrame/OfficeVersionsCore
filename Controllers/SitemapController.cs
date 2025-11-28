@@ -43,8 +43,7 @@ namespace OfficeVersionsCore.Controllers
         [HttpGet]
         [Route("")]
         [Route("xml")]
-        [Produces("application/xml")]
-        public IActionResult GetSitemap()
+        public ContentResult GetSitemap()
         {
             try
             {
@@ -55,40 +54,82 @@ namespace OfficeVersionsCore.Controllers
                 if (baseUrl.EndsWith("/"))
                     baseUrl = baseUrl.Substring(0, baseUrl.Length - 1);
 
-                // Create sitemap root element
-                var sitemap = new XElement("urlset",
-                    new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
-                    new XAttribute(XNamespace.Xmlns + "xhtml", "http://www.w3.org/1999/xhtml"),
-                    new XAttribute(XNamespace.Get("http://www.w3.org/2001/XMLSchema-instance") + "schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"),
-                    new XAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9"));
+                // Define XML namespaces
+                XNamespace xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9";
+                XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
 
-                // Add core pages
+                // Create sitemap root element with proper namespace handling
+                var sitemap = new XElement(xmlns + "urlset",
+                    new XAttribute(XNamespace.Xmlns + "xsi", xsi.NamespaceName),
+                    new XAttribute(xsi + "schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"));
+
+                // Homepage - highest priority, daily updates
                 AddUrlToSitemap(sitemap, baseUrl, "/", changeFreq: "daily", priority: "1.0");
+                
+                // Office 365 Channel Pages - high priority, frequent updates
                 AddUrlToSitemap(sitemap, baseUrl, "/Current", changeFreq: "daily", priority: "0.9");
                 AddUrlToSitemap(sitemap, baseUrl, "/Monthly", changeFreq: "daily", priority: "0.9");
                 AddUrlToSitemap(sitemap, baseUrl, "/SemiAnnual", changeFreq: "weekly", priority: "0.8");
                 AddUrlToSitemap(sitemap, baseUrl, "/SemiAnnualPreview", changeFreq: "weekly", priority: "0.8");
+                
+                // Office 365 Overview Pages
                 AddUrlToSitemap(sitemap, baseUrl, "/AllChannels", changeFreq: "daily", priority: "0.7");
                 AddUrlToSitemap(sitemap, baseUrl, "/AllReleases", changeFreq: "daily", priority: "0.7");
+                
+                // Windows Pages - high priority for Windows users
+                AddUrlToSitemap(sitemap, baseUrl, "/Windows/Index", changeFreq: "daily", priority: "0.85");
+                AddUrlToSitemap(sitemap, baseUrl, "/Windows/Releases", changeFreq: "daily", priority: "0.8");
+                AddUrlToSitemap(sitemap, baseUrl, "/Windows/Releases11", changeFreq: "daily", priority: "0.85");
+                AddUrlToSitemap(sitemap, baseUrl, "/Windows/Releases10", changeFreq: "daily", priority: "0.8");
+                
+                // Informational Pages
                 AddUrlToSitemap(sitemap, baseUrl, "/About", changeFreq: "monthly", priority: "0.5");
                 AddUrlToSitemap(sitemap, baseUrl, "/Contact", changeFreq: "monthly", priority: "0.5");
                 AddUrlToSitemap(sitemap, baseUrl, "/Privacy", changeFreq: "yearly", priority: "0.3");
+                
+                // Development-only pages
+                if (!_environment.IsProduction())
+                {
+                    AddUrlToSitemap(sitemap, baseUrl, "/CookieTest", changeFreq: "never", priority: "0.1");
+                }
+                
+                // API Documentation (Swagger)
+                AddUrlToSitemap(sitemap, baseUrl, "/swagger", changeFreq: "monthly", priority: "0.6");
+
+                _logger.LogInformation($"Generated sitemap with {sitemap.Elements("url").Count()} URLs");
 
                 // Create XML document with declaration
                 var doc = new XDocument(
                     new XDeclaration("1.0", "UTF-8", null),
                     sitemap);
 
-                // Return XML content
-                return Content(doc.ToString(), "application/xml");
+                // Set X-Robots-Tag header
+                Response.Headers.Append("X-Robots-Tag", "all");
+
+                // Convert to string with declaration
+                var xmlString = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n{sitemap.ToString()}";
+
+                // Return XML content with proper content type
+                return new ContentResult
+                {
+                    Content = xmlString,
+                    ContentType = "application/xml",
+                    StatusCode = 200
+                };
             }
             catch (Exception ex)
             {
-                // Log the error
-                Console.Error.WriteLine($"Error generating sitemap: {ex.Message}");
+                // Log the error with full exception details
+                _logger.LogError(ex, "Error generating sitemap: {ErrorMessage}. StackTrace: {StackTrace}", 
+                    ex.Message, ex.StackTrace);
                 
-                // Return 500 error
-                return StatusCode(500, "Error generating sitemap");
+                // Return 500 error as ContentResult
+                return new ContentResult
+                {
+                    Content = $"Error generating sitemap: {ex.Message}",
+                    ContentType = "text/plain",
+                    StatusCode = 500
+                };
             }
         }
 
@@ -96,12 +137,15 @@ namespace OfficeVersionsCore.Controllers
         {
             var fullUrl = $"{baseUrl}{path}";
             
+            // Get the namespace from the parent sitemap element
+            XNamespace xmlns = sitemap.Name.Namespace;
+            
             sitemap.Add(
-                new XElement("url",
-                    new XElement("loc", fullUrl),
-                    new XElement("lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
-                    new XElement("changefreq", changeFreq),
-                    new XElement("priority", priority)
+                new XElement(xmlns + "url",
+                    new XElement(xmlns + "loc", fullUrl),
+                    new XElement(xmlns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                    new XElement(xmlns + "changefreq", changeFreq),
+                    new XElement(xmlns + "priority", priority)
                 )
             );
         }

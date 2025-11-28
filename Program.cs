@@ -74,7 +74,8 @@ builder.Host.UseSerilog((ctx, services, config) =>
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddXmlSerializerFormatters(); // Add XML support for Content Negotiation
 
 // HttpClient factory (can extend later with proxy/timeout logic)
 builder.Services.AddHttpClient();
@@ -369,7 +370,8 @@ app.UseRateLimiter();
 // Setup URL rewrite rules for SEO optimization
 var rewriteOptions = new RewriteOptions();
 // Redirect /sitemap.xml to the SitemapController
-rewriteOptions.AddRedirect("^sitemap\\.xml$", "sitemap");
+rewriteOptions.AddRedirect("^sitemap\\.xml$", "sitemap", statusCode: 301);
+// Redirect /robots.txt is served statically from wwwroot (no rewrite needed)
 app.UseRewriter(rewriteOptions);
 
 app.UseStaticFiles();
@@ -381,6 +383,12 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+
+// Map sitemap.xml directly at root for better SEO discoverability
+app.MapGet("/sitemap.xml", async (HttpContext context) =>
+{
+    context.Response.Redirect("/sitemap", permanent: true);
+}).ExcludeFromDescription(); // Exclude from Swagger
 
 // Map Health Check endpoint
 app.MapHealthChecks("/health");

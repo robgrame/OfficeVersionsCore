@@ -409,9 +409,29 @@ $(document).ready(function() {
                     
                     let tagClass = 'channel-tag';
                     const lower = data.toLowerCase();
-                    if (lower.includes('current')) tagClass += ' current';
-                    else if (lower.includes('monthly')) tagClass += ' monthly';
-                    else if (lower.includes('semi')) tagClass += ' semiannual';
+                    let channelPage = '';
+                    
+                    // Determine tag class and channel page URL
+                    if (lower.includes('current')) {
+                        tagClass += ' current';
+                        channelPage = '/Current';
+                    } else if (lower.includes('monthly')) {
+                        tagClass += ' monthly';
+                        channelPage = '/Monthly';
+                    } else if (lower.includes('semi')) {
+                        tagClass += ' semiannual';
+                        channelPage = '/SemiAnnual';
+                    }
+                    
+                    // Create clickable channel tag
+                    let channelHtml = '';
+                    if (channelPage) {
+                        channelHtml = `<a href="${channelPage}" class="channel-link" title="View ${data} details">
+                            <span class="${tagClass}">${data}</span>
+                        </a>`;
+                    } else {
+                        channelHtml = `<span class="${tagClass}">${data}</span>`;
+                    }
                     
                     // For mobile display: combine Channel, Version and Build in first column
                     let detailsHtml = '';
@@ -448,7 +468,7 @@ $(document).ready(function() {
                         detailsHtml += '</div>';
                     }
                     
-                    return `<span class="${tagClass}">${data}</span>${detailsHtml}`;
+                    return channelHtml + detailsHtml;
                 }
             },
             { 
@@ -1074,6 +1094,21 @@ $(document).ready(function() {
         box-shadow: 0 0 0 1px rgba(13,110,253,.15);
     }
     
+    /* Channel link styling */
+    .channel-link {
+        text-decoration: none;
+        display: inline-block;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .channel-link:hover {
+        transform: translateX(3px);
+    }
+    
+    .channel-link:hover .channel-tag {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    
     /* Channel tag styling */
     .channel-tag {
         display: inline-block;
@@ -1082,6 +1117,7 @@ $(document).ready(function() {
         font-weight: 600;
         font-size: 0.8rem;
         white-space: nowrap;
+        transition: box-shadow 0.2s ease;
     }
     
     .channel-tag.current {

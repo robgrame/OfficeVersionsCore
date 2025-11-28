@@ -72,6 +72,25 @@
         window.gtmId = '@Configuration["Google:Tag"]';
     </script>
     
+    <!-- Application Insights JavaScript SDK -->
+    @{
+        var aiConnectionString = Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+    }
+    @if (!string.IsNullOrWhiteSpace(aiConnectionString))
+    {
+        <script>
+        // Pass Application Insights connection string to loader script
+        window.appInsightsConnectionString = '@Html.Raw(aiConnectionString)';
+        </script>
+        <script src="~/js/appinsights-loader.js" defer></script>
+    }
+    else
+    {
+        <script>
+        console.log('[Application Insights] Client-side tracking disabled (no connection string)');
+        </script>
+    }
+    
     <!-- Pulse Animation Style -->
     <style>
         @@keyframes pulse-animation {
@@ -297,11 +316,14 @@
                                 <i class="bi bi-shield-lock me-1"></i>Privacy
                             </a>
                         </li>
+                        @* Analytics page temporarily hidden *@
+                        @*
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/Analytics">
                                 <i class="bi bi-graph-up me-1"></i>Analytics
                             </a>
                         </li>
+                        *@
                         <li class="nav-item">
                             <a class="nav-link" href="/swagger" target="_blank">
                                 <i class="bi bi-code-square me-1"></i>API

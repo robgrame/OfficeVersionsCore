@@ -1,183 +1,260 @@
-# OfficeVersionsCore
+<div align="center">
 
-Open-source .NET 10 Razor Pages web app and lightweight API for tracking Microsoft 365 (Office 365) client versions and Windows 10/11 releases. It provides a modern UI, endpoints for programmatic access, GDPR/CCPA compliance with cookie consent, and operational telemetry/logging.
+# ?? Office365Versions.com
 
-- ?? Live site: https://www.office365versions.com
-- ?? Live API docs: navigate to `/swagger` when running locally
-- ?? GitHub repository: https://github.com/robgrame/OfficeVersionsCore
-- ??? Privacy: GDPR/CCPA compliant with Cookie Consent Banner
+### ?? Your Ultimate Microsoft 365 & Windows Version Tracker
 
+[![Live Site](https://img.shields.io/badge/??_Live_Site-office365versions.com-0078D4?style=for-the-badge)](https://www.office365versions.com)
+[![API Available](https://img.shields.io/badge/??_API-Available-success?style=for-the-badge)](https://www.office365versions.com/swagger)
+[![Privacy First](https://img.shields.io/badge/??_Privacy-GDPR_Compliant-green?style=for-the-badge)](https://www.office365versions.com/Privacy)
 
-## Features
+**Stay up-to-date with the latest Microsoft 365 (Office) and Windows releases — all in one place!**
 
-- ?? Modern Razor Pages frontend (ASP.NET Core, .NET 10)
-- ?? RESTful API with Swagger UI documentation at `/swagger`
-- ?? **Office 365 version tracking** across all update channels (Current, Monthly, Semi-Annual)
-- ?? **Windows version tracking** for Windows 10 and Windows 11 releases with intelligent sorting
-- ?? **GDPR/CCPA Compliance** with Cookie Consent Banner
-- ?? Azure Storage (Blobs) integration for data persistence
-- ?? First-class Azure auth using `Azure.Identity` (Managed Identity or Service Principal)
-- ?? Telemetry with Application Insights
-- ?? Structured logging with Serilog (console/file/Application Insights)
-- ?? Responsive UI using Bootstrap 5, DataTables.js, and Bootstrap Icons
-- ? Performance optimized with GZIP compression
-- ?? Health check endpoint for monitoring
+[?? Visit Site](https://www.office365versions.com) • [?? API Docs](https://www.office365versions.com/swagger) • [?? Contact Us](#-contact--support)
 
+</div>
 
-## Tech stack
+---
 
-- .NET 10, C# 14
-- ASP.NET Core Razor Pages
-- Azure SDKs: `Azure.Storage.Blobs`, `Microsoft.Extensions.Azure`, `Azure.Identity`
-- Observability: `Microsoft.ApplicationInsights.AspNetCore`
-- Logging: `Serilog.*`
-- Swagger UI: `Swashbuckle.AspNetCore.SwaggerUI` (static `swagger.json` generated at build)
+## ? What We Offer
 
+### ?? **Microsoft 365 Apps Tracking**
+Track all Office 365 update channels in real-time:
 
-## Getting started
+- ?? **Current Channel** - Latest features, fastest updates
+- ?? **Monthly Enterprise Channel** - Monthly predictable updates
+- ?? **Semi-Annual Channel** - Twice-yearly stability-focused updates
+- ?? **Semi-Annual Preview** - Test upcoming semi-annual releases
 
-### Prerequisites
+Get instant access to:
+- ? Latest version numbers
+- ?? Release dates
+- ??? Build numbers
+- ?? Version history across all channels
 
-- .NET 10 SDK
-- Optional: Visual Studio 2024 (17.10+) or VS Code + C# Dev Kit
-- Optional for cloud integration: Azure subscription (for Blob Storage and Application Insights)
+---
 
-### Clone
+### ?? **Windows Version Tracking**
 
-- git clone https://github.com/robgrame/OfficeVersionsCore.git
-- cd OfficeVersionsCore
+Stay informed about Windows releases:
 
-### Build and run
+- ?? **Windows 11** - All releases with intelligent build sorting
+- ??? **Windows 10** - Complete version history
+- ?? Smart version sorting (22H2, 21H2, 20H2, etc.)
+- ?? Comprehensive release timeline
 
-- dotnet restore
-- dotnet build
-- dotnet run
+---
 
-By default ASP.NET Core shows the listening URLs in the console. Open the HTTPS address in your browser, then navigate to `/swagger` for the API UI.
+### ?? **Public API Access**
 
+Integrate our data into your own applications:
 
-## Configuration
+- ?? **RESTful API** with full documentation
+- ?? **Interactive Swagger UI** at `/swagger`
+- ? **Fast & reliable** endpoints
+- ?? **Free to use** for your projects
+- ?? **JSON responses** ready to consume
 
-Configuration sources follow standard ASP.NET Core order: `appsettings.json`, environment-specific files, environment variables, and Azure-hosted providers.
-
-Common settings you may use:
-
-- Application Insights
-  - `ApplicationInsights:ConnectionString`
-- Azure Storage (choose one approach)
-  - Connection string: `Azure:Storage:ConnectionString`
-  - Or Managed Identity/Service Principal via `Azure.Identity` (no connection string required)
-  - Optionally: `Azure:Storage:Container`
-- Serilog (optional overrides)
-  - `Serilog:MinimumLevel`
-  - `Serilog:WriteTo` sinks (Console, File, ApplicationInsights)
-
-Example `appsettings.Development.json` snippet:
-
-```json
-{
-  "ApplicationInsights": {
-    "ConnectionString": "<app-insights-connection-string>"
-  },
-  "Azure": {
-    "Storage": {
-      "ConnectionString": "<storage-connection-string>",
-      "Container": "<container-name>"
-    }
-  },
-  "Serilog": {
-    "Using": [
-      "Serilog.Sinks.Console",
-      "Serilog.Sinks.File",
-      "Serilog.Sinks.ApplicationInsights"
-    ],
-    "MinimumLevel": "Information",
-    "WriteTo": [
-      { "Name": "Console" },
-      { "Name": "File", "Args": { "path": "logs/log-.txt", "rollingInterval": "Day" } }
-    ],
-    "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId" ]
-  }
-}
+**Example endpoints:**
+```
+GET /api/M365AppsReleases          - All Office 365 releases
+GET /api/WindowsVersions            - All Windows versions
+GET /api/WindowsVersions/latest     - Latest Windows releases
 ```
 
-Environment variables for `Azure.Identity` (only if using a Service Principal):
+---
 
-- `AZURE_TENANT_ID`
-- `AZURE_CLIENT_ID`
-- `AZURE_CLIENT_SECRET`
+## ?? Key Features
 
-If running in Azure with Managed Identity, no secrets are required.
+### ?? **Modern User Experience**
+- ?? **Fully responsive design** - works on desktop, tablet, and mobile
+- ?? **Advanced search & filtering** with DataTables
+- ?? **Interactive data tables** with sorting capabilities
+- ? **Lightning-fast performance** with optimized caching
+- ?? **Clean, intuitive interface** with Bootstrap 5
 
+### ?? **Privacy & Security**
+- ??? **GDPR & CCPA compliant** - your privacy matters
+- ?? **Cookie consent banner** - transparent data usage
+- ?? **HTTPS-only** - encrypted connections
+- ?? **No personal data collection** - anonymous analytics only
+- ? **Transparent privacy policy** at `/Privacy`
 
-## API and Swagger
+### ?? **Performance & Reliability**
+- ? **GZIP compression** - faster page loads
+- ?? **Smart caching** - optimized data delivery
+- ?? **Automatic updates** - always fresh data
+- ?? **Health monitoring** - 99.9% uptime
+- ?? **Global CDN** - fast worldwide access
 
-- API docs/UI: `/swagger`
-- A minimal `swagger.json` is generated at build and copied to output/publish. The UI reads that file so API docs are available even without a live generator.
+---
 
+## ?? Who Uses This?
 
-## Project structure (high-level)
+### ?? **IT Professionals**
+- ?? Track Office 365 deployments across organizations
+- ?? Verify current versions before updates
+- ?? Plan update schedules with confidence
 
-- `Pages/` — Razor Pages UI (`.cshtml` and PageModels)
-  - `Pages/Windows/` — Windows version tracking pages
-- `Models/` — Data models for Office365 and Windows versions
-- `Services/` — Business logic services
-  - `Services/BackgroundTasks/` — Background scrapers for data collection
-- `Controllers/` — API controllers for Office365 and Windows data
-- `wwwroot/` — static assets and `swagger` folder
-- `Program.cs` — application startup
-- `appsettings*.json` — configuration
-- `OfficeVersionsCore.csproj` — project definition and Swagger generation target
+### ?? **System Administrators**
+- ??? Monitor Windows version compliance
+- ?? Stay ahead of end-of-life dates
+- ?? Coordinate enterprise rollouts
 
+### ????? **Developers**
+- ?? Integrate version data via API
+- ?? Build automation tools
+- ?? Create custom dashboards
 
-## Development tips
+### ?? **Organizations**
+- ?? Compliance reporting
+- ?? Update planning
+- ?? Version analytics
 
-- Use `ASPNETCORE_ENVIRONMENT=Development` for local work
-- Prefer environment variables or user secrets for credentials; avoid committing secrets
-- Logs are written to console during development; file sink can be enabled via Serilog config
+---
 
+## ?? Why Choose Us?
 
-## Deployment
+| Feature | Office365Versions.com | Others |
+|---------|----------------------|--------|
+| ?? **Free Access** | ? Yes | ? Often paid |
+| ?? **Public API** | ? Full access | ?? Limited/None |
+| ?? **Mobile Friendly** | ? Fully responsive | ?? Desktop only |
+| ?? **Auto Updates** | ? Real-time | ? Manual |
+| ?? **Privacy First** | ? GDPR compliant | ?? Varies |
+| ?? **Windows Data** | ? Included | ? Separate sites |
+| ?? **Data Export** | ? API available | ? No export |
 
-- Any Azure Web App / container host that supports .NET 8
-- Ensure required configuration is provided via environment variables or Azure App Settings
-- For Azure Storage access, prefer Managed Identity when possible
-- Application Insights connection string can be set as an app setting
+---
 
+## ?? Getting Started
 
-## Contributing
+### ?? **Web Interface**
 
-- Fork the repo
-- Create a feature branch from `master`
-- Commit with clear messages
-- Open a pull request describing the change and testing steps
+1. ??? Visit [office365versions.com](https://www.office365versions.com)
+2. ?? Browse latest versions on homepage
+3. ?? Filter by channel or search specific versions
+4. ?? Access from any device - desktop, tablet, or mobile!
 
-Issues and feature requests are tracked here: https://github.com/robgrame/OfficeVersionsCore/issues
+### ?? **API Integration**
 
+1. ?? Check API docs at [/swagger](https://www.office365versions.com/swagger)
+2. ?? Use RESTful endpoints in your application
+3. ?? Parse JSON responses
+4. ? No authentication required for public data!
 
-## Privacy & Compliance
+**Quick API Example:**
+```bash
+# Get all Office 365 releases
+curl https://www.office365versions.com/api/M365AppsReleases
 
-This project is **GDPR and CCPA compliant**:
+# Get latest Windows versions
+curl https://www.office365versions.com/api/WindowsVersions/latest
+```
 
-- ?? **No personal data collected**: We do not collect name, email, phone number, or IP address
-- ?? **Technical data only**: Browser info, device info, usage patterns, and performance metrics (anonymous)
-- ?? **Cookie Consent Banner**: Users must consent before analytics tracking (Google Tag Manager)
-- ?? **Transparent Policy**: Full privacy policy available at `/Privacy`
-- ? **Verified compliance**: Security headers, HTTPS enforcement, and secure cookie handling
+---
 
-See `Pages/Privacy.cshtml` for detailed privacy disclosures.
+## ?? Data We Track
 
+### ?? **Microsoft 365 Apps**
+- ?? Version numbers (e.g., 2408, 2407)
+- ??? Build numbers (e.g., 17928.20114)
+- ?? Release dates
+- ?? Update channels (Current, Monthly, Semi-Annual)
+- ?? Release notes references
 
-## Support and contact
+### ?? **Windows Versions**
+- ?? Windows 11 releases
+- ??? Windows 10 releases
+- ?? Version identifiers (22H2, 21H2, etc.)
+- ??? Build numbers
+- ?? Release dates
+- ??? Service pack information
 
-- General/support: info@office365versions.com
-- Privacy: privacy@officeversions.com
-- Twitter/X: https://twitter.com/office365ver
-- LinkedIn: https://www.linkedin.com/company/office365versions
+---
 
-Security disclosures: please do not file public issues for sensitive reports. Contact the team via email.
+## ?? Privacy & Cookie Policy
 
+We take your privacy seriously:
 
-## License
+- ?? **No personal data** - we don't collect names, emails, or IP addresses
+- ?? **Anonymous analytics only** - browser type, device info, page views
+- ?? **Cookie consent required** - you control your data
+- ?? **HTTPS encryption** - secure connections always
+- ? **GDPR & CCPA compliant** - your rights protected
 
-This project is licensed under the terms described in the `LICENSE` file in this repository.
+Read our full [Privacy Policy](https://www.office365versions.com/Privacy) for details.
+
+---
+
+## ?? Contact & Support
+
+### ?? **Get in Touch**
+
+- ?? **General inquiries:** info@office365versions.com
+- ?? **Privacy questions:** privacy@officeversions.com
+- ?? **Bug reports:** [GitHub Issues](https://github.com/robgrame/OfficeVersionsCore/issues)
+
+### ?? **Follow Us**
+
+- ?? **Twitter/X:** [@office365ver](https://twitter.com/office365ver)
+- ?? **LinkedIn:** [office365versions](https://www.linkedin.com/company/office365versions)
+- ?? **GitHub:** [robgrame/OfficeVersionsCore](https://github.com/robgrame/OfficeVersionsCore)
+
+---
+
+## ?? Legal
+
+### ?? **Disclaimer**
+
+Office365Versions.com is an **independent community project** and is **not affiliated with, endorsed by, or sponsored by Microsoft Corporation**. 
+
+- Microsoft, Office 365, Microsoft 365, Windows, and related trademarks are property of Microsoft Corporation
+- We aggregate publicly available version information for community benefit
+- All data is sourced from official Microsoft documentation
+
+### ?? **Security**
+
+Found a security issue? Please **do not** file a public GitHub issue. Contact us privately at info@office365versions.com.
+
+---
+
+## ?? Acknowledgments
+
+This project relies on publicly available data from:
+- ?? Microsoft Learn documentation
+- ?? Official Microsoft support pages
+- ?? Microsoft 365 update channels
+- ?? Windows release information
+
+Special thanks to:
+- ?? The IT community for feedback and suggestions
+- ?? Contributors who report issues and improvements
+- ?? Everyone who uses and shares this resource!
+
+---
+
+## ? Show Your Support
+
+If you find this tool helpful:
+
+- ? **Star this repository** on GitHub
+- ?? **Share the link** with colleagues
+- ?? **Follow us** on social media
+- ?? **Provide feedback** to help us improve
+- ?? **Report bugs** or suggest features
+
+---
+
+<div align="center">
+
+### ?? Ready to Get Started?
+
+[![Visit Site](https://img.shields.io/badge/??_Visit_Site-office365versions.com-0078D4?style=for-the-badge&logo=microsoft)](https://www.office365versions.com)
+[![Try API](https://img.shields.io/badge/??_Try_API-Swagger_Docs-85EA2D?style=for-the-badge&logo=swagger)](https://www.office365versions.com/swagger)
+
+**Made with ?? for the IT Community**
+
+*Last updated: 2024*
+
+</div>

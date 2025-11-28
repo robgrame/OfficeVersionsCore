@@ -1,11 +1,60 @@
+# robots.txt for Office365Versions.com
+# This file controls search engine crawling behavior
+
+# Default rules for all robots
 User-agent: *
 Allow: /
+
+# Allow access to public content
+Allow: /Current
+Allow: /Monthly
+Allow: /SemiAnnual
+Allow: /SemiAnnualPreview
+Allow: /AllChannels
+Allow: /AllReleases
+Allow: /Windows/
+Allow: /About
+Allow: /Contact
+Allow: /Privacy
+Allow: /api/
+Allow: /swagger/
 Allow: /ads.txt
 
-# Disallow access to diagnostic pages
+# Disallow access to diagnostic and internal pages
 Disallow: /Diagnostic/
 Disallow: /Error
+Disallow: /CookieTest
 Disallow: /ads
+
+# Disallow private API endpoints (if any in future)
+Disallow: /api/internal/
+
+# Crawl delay to prevent server overload (1 second between requests)
+# Most modern search engines respect this
+Crawl-delay: 1
+
+# Specific rules for aggressive crawlers
+User-agent: Googlebot
+Crawl-delay: 0
+Allow: /
+
+User-agent: Bingbot
+Crawl-delay: 0
+Allow: /
+
+# Disallow known bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
 
 # Sitemap location
 Sitemap: https://www.office365versions.com/sitemap.xml
+Sitemap: https://www.office365versions.com/sitemap
