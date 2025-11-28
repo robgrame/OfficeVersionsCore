@@ -1,0 +1,99 @@
+<Project>
+  <!-- 
+    Sistema di Versioning Automatico basato su Data
+    Formato: Major.Minor.MMDD.Revision
+    Esempio: 1.0.1128.1 (versione 1.0, 28 novembre, prima build del giorno)
+    
+    Il file Directory.Build.props viene automaticamente importato da MSBuild
+    in tutti i progetti nella directory e sottodirectory.
+  -->
+  
+  <PropertyGroup>
+    <!-- Versione base Major.Minor -->
+    <VersionMajor>1</VersionMajor>
+    <VersionMinor>0</VersionMinor>
+  
+    <!-- Build: MMDD (mese e giorno corrente) -->
+    <VersionBuild>$([System.DateTime]::Now.ToString('MMdd'))</VersionBuild>
+    
+    <!-- Revision: contatore incrementale per build multiple nello stesso giorno -->
+    <!-- In locale default a 1, in Azure DevOps/GitHub Actions usa BUILD_BUILDNUMBER -->
+    <VersionRevision Condition="'$(VersionRevision)'==''">1</VersionRevision>
+    <VersionRevision Condition="'$(BUILD_BUILDNUMBER)'!=''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), '\d+$').Value)</VersionRevision>
+    <VersionRevision Condition="'$(GITHUB_RUN_NUMBER)'!=''">$(GITHUB_RUN_NUMBER)</VersionRevision>
+    
+    <!-- Versione completa -->
+    <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionBuild).$(VersionRevision)</VersionPrefix>
+    <Version>$(VersionPrefix)</Version>
+    <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+    <FileVersion>$(VersionPrefix)</FileVersion>
+    
+    <!-- Include commit hash per tracciabilità (se disponibile) -->
+    <SourceRevisionId Condition="'$(SourceRevisionId)'=='' AND '$(BUILD_SOURCEVERSION)'!=''">$(BUILD_SOURCEVERSION.Substring(0,8))</SourceRevisionId>
+    <SourceRevisionId Condition="'$(SourceRevisionId)'=='' AND '$(GITHUB_SHA)'!=''">$(GITHUB_SHA.Substring(0,8))</SourceRevisionId>
+    <SourceRevisionId Condition="'$(SourceRevisionId)'==''">local</SourceRevisionId>
+    <InformationalVersion>$(VersionPrefix)+$(SourceRevisionId)</InformationalVersion>
+    
+    <!-- Metadati aggiuntivi -->
+    <Company>OfficeVersionsCore</Company>
+    <Authors>Roberto Gramegna</Authors>
+    <Copyright>Copyright © $([System.DateTime]::Now.Year) OfficeVersionsCore</Copyright>
+    <Product>Office &amp; Windows Versions Tracker</Product>
+    <Description>ASP.NET Core Razor Pages application for tracking Office 365 and Windows version history</Description>
+    <PackageProjectUrl>https://github.com/robgrame/OfficeVersionsCore</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/robgrame/OfficeVersionsCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>it-IT</NeutralLanguage>
+    
+    <!-- Generate XML documentation for all builds -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Target per visualizzare la versione corrente durante la build -->
+  <Target Name="DisplayVersion" BeforeTargets="CoreCompile">
+    <Message Importance="High" Text="??????????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="?  Building OfficeVersionsCore                               ?" />
+    <Message Importance="High" Text="??????????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="?  Version: $(Version)" />
+    <Message Importance="High" Text="?  Informational: $(InformationalVersion)" />
+    <Message Importance="High" Text="?  Configuration: $(Configuration)" />
+    <Message Importance="High" Text="?  Build Date: $([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))" />
+    <Message Importance="High" Text="??????????????????????????????????????????????????????????????" />
+  </Target>
+
+  <!-- Target personalizzato per incrementare manualmente la revision -->
+  <Target Name="IncrementRevision">
+    <PropertyGroup>
+      <NewRevision>$([MSBuild]::Add($(VersionRevision), 1))</NewRevision>
+    </PropertyGroup>
+    <Message Importance="High" Text="????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="Current version: $(VersionPrefix)" />
+    <Message Importance="High" Text="New revision would be: $(VersionMajor).$(VersionMinor).$(VersionBuild).$(NewRevision)" />
+    <Message Importance="High" Text="????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="To build with new revision, run:" />
+    <Message Importance="High" Text="  dotnet build /p:VersionRevision=$(NewRevision)" />
+    <Message Importance="High" Text="Or for Release build:" />
+    <Message Importance="High" Text="  dotnet build -c Release /p:VersionRevision=$(NewRevision)" />
+    <Message Importance="High" Text="????????????????????????????????????????????????????????" />
+  </Target>
+
+  <!-- Target per visualizzare solo la versione (utile per script) -->
+  <Target Name="GetVersion">
+    <Message Importance="High" Text="$(Version)" />
+  </Target>
+
+  <!-- Target per creare un file version.txt con informazioni di versione -->
+  <Target Name="CreateVersionFile" AfterTargets="Build">
+    <PropertyGroup>
+      <VersionFileContent>Version: $(Version)
+InformationalVersion: $(InformationalVersion)
+Build Date: $([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))
+Configuration: $(Configuration)
+Target Framework: $(TargetFramework)
+Source Revision: $(SourceRevisionId)
+</VersionFileContent>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(OutputPath)version.txt" Lines="$(VersionFileContent)" Overwrite="true" />
+    <Message Importance="High" Text="Version file created: $(OutputPath)version.txt" />
+  </Target>
+</Project>

@@ -1,0 +1,199 @@
+@page
+@model OfficeVersionsCore.Pages.VersionModel
+@{
+    ViewData["Title"] = "Version Information";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-info-circle"></i> Version Information
+                    </h1>
+                </div>
+                <div class="card-body">
+                    <div class="version-hero text-center mb-4">
+                        <h2 class="display-4 text-primary mb-2">v@Model.Version</h2>
+                        <p class="text-muted">@Model.Product</p>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-muted mb-1">
+                                    <i class="bi bi-tag"></i> Version
+                                </h6>
+                                <p class="h5 mb-0">@Model.Version</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-muted mb-1">
+                                    <i class="bi bi-code-square"></i> Informational Version
+                                </h6>
+                                <p class="h5 mb-0">
+                                    <code class="text-primary">@Model.InformationalVersion</code>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-muted mb-1">
+                                    <i class="bi bi-calendar-event"></i> Build Date
+                                </h6>
+                                <p class="h5 mb-0">@Model.BuildDate.ToString("dd MMMM yyyy HH:mm")</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-muted mb-1">
+                                    <i class="bi bi-gear"></i> Configuration
+                                </h6>
+                                <p class="h5 mb-0">
+                                    <span class="badge @(Model.Configuration == "Release" ? "bg-success" : "bg-warning")">
+                                        @Model.Configuration
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-muted mb-1">
+                                    <i class="bi bi-diagram-3"></i> Target Framework
+                                </h6>
+                                <p class="h5 mb-0">@Model.TargetFramework</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-muted mb-1">
+                                    <i class="bi bi-git"></i> Source Revision
+                                </h6>
+                                <p class="h5 mb-0">
+                                    <code class="text-muted">@Model.SourceRevision</code>
+                                </p>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Copyright))
+                        {
+                            <div class="col-12">
+                                <div class="info-card">
+                                    <h6 class="text-muted mb-1">
+                                        <i class="bi bi-c-circle"></i> Copyright
+                                    </h6>
+                                    <p class="mb-0">@Model.Copyright</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <div class="col-12">
+                                <div class="info-card">
+                                    <h6 class="text-muted mb-1">
+                                        <i class="bi bi-file-text"></i> Description
+                                    </h6>
+                                    <p class="mb-0">@Model.Description</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="system-info">
+                        <h5 class="mb-3">
+                            <i class="bi bi-pc-display"></i> System Information
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <h6 class="text-muted mb-1">Environment</h6>
+                                    <p class="mb-0">
+                                        <span class="badge @(Model.EnvironmentName == "Production" ? "bg-danger" : "bg-info")">
+                                            @Model.EnvironmentName
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <h6 class="text-muted mb-1">Machine Name</h6>
+                                    <p class="mb-0">@Model.MachineName</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <h6 class="text-muted mb-1">OS Version</h6>
+                                    <p class="mb-0">@Model.OSVersion</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card">
+                                    <h6 class="text-muted mb-1">.NET Runtime</h6>
+                                    <p class="mb-0">@Model.RuntimeVersion</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <a href="https://github.com/robgrame/OfficeVersionsCore" target="_blank" class="btn btn-outline-primary">
+                            <i class="bi bi-github"></i> View on GitHub
+                        </a>
+                        <a asp-page="/Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .info-card {
+        padding: 1rem;
+        background: var(--bs-light, #f8f9fa);
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .info-card h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-card i {
+        margin-right: 0.25rem;
+    }
+
+    .version-hero {
+        padding: 2rem 0;
+    }
+
+    .system-info {
+        background: var(--bs-light, #f8f9fa);
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    code {
+        font-size: 0.9rem;
+        padding: 0.2rem 0.5rem;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+    }
+</style>
