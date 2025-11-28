@@ -332,14 +332,57 @@ namespace OfficeVersionsCore.Services
             // Remove "Version" prefix if present
             version = Regex.Replace(version, @"^version\s+", "", RegexOptions.IgnoreCase).Trim();
             
-            // Extract specific version formats (22H2, 21H1, 2004, 1909, etc.)
-            var versionMatch = Regex.Match(version, @"(\d{2}H\d|\d{4}|1\d{3})");
+            // First try to match YYH# format (e.g., 22H2, 21H1, 20H2)
+            var versionMatch = Regex.Match(version, @"(\d{2}H\d)");
             if (versionMatch.Success)
             {
                 return versionMatch.Groups[1].Value;
             }
+            
+            // Then try to match valid Windows 10 YYMM versions (1507-2004)
+            // This regex only matches valid Windows 10 version ranges
+            versionMatch = Regex.Match(version, @"(1[5-9][0-1]\d|20[0-0][0-4])");
+            if (versionMatch.Success)
+            {
+                string candidate = versionMatch.Groups[1].Value;
+                // Additional validation: check if it's a known valid version
+                if (IsValidWindows10VersionNumber(candidate))
+                {
+                    return candidate;
+                }
+            }
+            
+            // Check for LTSC versions
+            if (version.Contains("LTSC", StringComparison.OrdinalIgnoreCase) || 
+                version.Contains("LTSB", StringComparison.OrdinalIgnoreCase))
+            {
+                return version;
+            }
 
             return version;
+        }
+        
+        /// <summary>
+        /// Validates if a 4-digit number is a valid Windows 10 version
+        /// </summary>
+        private static bool IsValidWindows10VersionNumber(string version)
+        {
+            // List of all valid Windows 10 version numbers
+            var validVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "1507", // RTM
+                "1511", // November Update
+                "1607", // Anniversary Update
+                "1703", // Creators Update
+                "1709", // Fall Creators Update
+                "1803", // April 2018 Update
+                "1809", // October 2018 Update
+                "1903", // May 2019 Update
+                "1909", // November 2019 Update
+                "2004"  // May 2020 Update
+            };
+            
+            return validVersions.Contains(version);
         }
 
         /// <summary>

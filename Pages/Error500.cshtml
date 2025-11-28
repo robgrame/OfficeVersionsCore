@@ -1,0 +1,248 @@
+@page
+@model OfficeVersionsCore.Pages.Error500Model
+@{
+    ViewData["Title"] = "Server Error";
+}
+
+<div class="error-page-container">
+    <div class="error-content">
+        <div class="error-icon-wrapper">
+            <div class="error-icon error-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+        </div>
+        
+        <h1 class="error-code">500</h1>
+        <h2 class="error-title">Oops! Something Went Wrong</h2>
+        <p class="error-message">
+            Houston, abbiamo un problema! Il nostro server sta avendo qualche difficoltà.
+            Non preoccuparti, il nostro team è già al lavoro per risolvere il problema.
+        </p>
+        
+        <div class="error-suggestions">
+            <h3>Cosa è successo?</h3>
+            <p class="mb-3">Si è verificato un errore interno del server. Questo problema è stato automaticamente segnalato al nostro team.</p>
+            
+            <h3>Cosa puoi fare:</h3>
+            <ul>
+                <li><i class="bi bi-arrow-clockwise"></i> Ricarica la pagina tra qualche minuto</li>
+                <li><i class="bi bi-arrow-left-circle"></i> Torna alla pagina precedente</li>
+                <li><i class="bi bi-house-door"></i> Vai alla <a asp-page="/Index">Homepage</a></li>
+                <li><i class="bi bi-envelope"></i> Se il problema persiste, <a asp-page="/Contact">contattaci</a></li>
+            </ul>
+        </div>
+        
+        <div class="error-actions">
+            <button onclick="location.reload()" class="btn btn-primary btn-lg">
+                <i class="bi bi-arrow-clockwise"></i> Reload Page
+            </button>
+            <a asp-page="/Index" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-house-door"></i> Home
+            </a>
+        </div>
+        
+        @if (Model.ShowDetails && !string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="error-details mt-4">
+                <details>
+                    <summary>Technical Details (for developers)</summary>
+                    <pre class="mt-2"><code>@Model.ErrorMessage</code></pre>
+                </details>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .error-page-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        text-align: center;
+    }
+    
+    .error-content {
+        max-width: 600px;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .error-icon-wrapper {
+        margin-bottom: 2rem;
+    }
+    
+    .error-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+        color: #dc3545;
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    .error-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .error-code {
+        font-size: 6rem;
+        font-weight: 700;
+        color: #dc3545;
+        margin: 0;
+        line-height: 1;
+        background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .error-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--bs-dark, #212529);
+        margin: 1rem 0;
+    }
+    
+    .error-message {
+        font-size: 1.125rem;
+        color: var(--bs-secondary, #6c757d);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .error-suggestions {
+        background: var(--bs-light, #f8f9fa);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+    
+    .error-suggestions h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--bs-dark, #212529);
+        margin-bottom: 1rem;
+    }
+    
+    .error-suggestions p {
+        color: var(--bs-secondary, #6c757d);
+        margin-bottom: 0;
+    }
+    
+    .error-suggestions ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .error-suggestions li {
+        padding: 0.5rem 0;
+        color: var(--bs-dark, #212529);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .error-suggestions li i {
+        color: #dc3545;
+        font-size: 1.25rem;
+    }
+    
+    .error-suggestions a {
+        color: var(--bs-primary, #0066cc);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .error-suggestions a:hover {
+        text-decoration: underline;
+    }
+    
+    .error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .error-actions .btn {
+        min-width: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .error-details {
+        text-align: left;
+    }
+    
+    .error-details details {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .error-details summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--bs-dark, #212529);
+        user-select: none;
+    }
+    
+    .error-details summary:hover {
+        color: var(--bs-primary, #0066cc);
+    }
+    
+    .error-details pre {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 1rem;
+        overflow-x: auto;
+        font-size: 0.875rem;
+    }
+    
+    .error-details code {
+        color: #d63384;
+    }
+    
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    @@media (max-width: 768px) {
+        .error-code {
+            font-size: 4rem;
+        }
+        
+        .error-title {
+            font-size: 1.5rem;
+        }
+        
+        .error-icon {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>

@@ -310,6 +310,20 @@ else
     // app.UseHsts();
 }
 
+// Configure custom error pages for specific status codes
+app.UseStatusCodePagesWithReExecute("/Error{0}");
+
+// Additional fallback for 500 errors
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.Redirect("/Error500");
+        await Task.CompletedTask;
+    });
+});
+
 // Enable Swagger
 app.UseSwagger(c =>
 {

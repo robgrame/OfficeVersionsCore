@@ -1181,7 +1181,24 @@ namespace OfficeVersionsCore.Services
         private string DetermineVersionFromBuild(string build)
         {
             if (string.IsNullOrEmpty(build)) return string.Empty;
+            
+            // Validate build format - must be 5 digits minimum for Windows 10/11
+            var buildMatch = Regex.Match(build, @"^(\d{5,})(?:\.\d+)?$");
+            if (!buildMatch.Success) 
+            {
+                _logger.LogWarning("Invalid build format: {Build}", build);
+                return string.Empty;
+            }
+            
             string majorBuild = build.Split('.')[0];
+            
+            // Validate major build is exactly 5 digits
+            if (majorBuild.Length != 5)
+            {
+                _logger.LogWarning("Invalid major build length: {MajorBuild}", majorBuild);
+                return string.Empty;
+            }
+            
             switch (majorBuild)
             {
                 // Windows 11 build numbers
@@ -1205,7 +1222,9 @@ namespace OfficeVersionsCore.Services
                 case "14393": return "1607"; // Windows 10 1607
                 case "10586": return "1511"; // Windows 10 1511
                 case "10240": return "1507"; // Windows 10 initial release
-                default: return string.Empty;
+                default: 
+                    _logger.LogWarning("Unrecognized Windows build number: {MajorBuild}", majorBuild);
+                    return string.Empty;
             }
         }
 
@@ -1767,24 +1786,87 @@ namespace OfficeVersionsCore.Services
         private string ExtractVersionName(string versionText)
         {
             if (string.IsNullOrWhiteSpace(versionText)) return string.Empty;
-            var match = Regex.Match(versionText, @"Version\s+(\d+H\d|\d{4})", RegexOptions.IgnoreCase);
+            
+            // Try to match YYH# format (e.g., 22H2, 21H1)
+            var match = Regex.Match(versionText, @"Version\s+(\d{2}H\d)", RegexOptions.IgnoreCase);
             if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
-            match = Regex.Match(versionText, @"^(\d+H\d|\d{4})", RegexOptions.IgnoreCase);
+            
+            match = Regex.Match(versionText, @"^(\d{2}H\d)", RegexOptions.IgnoreCase);
             if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
-            match = Regex.Match(versionText, @"version\s+(\d+H\d|\d{4})", RegexOptions.IgnoreCase);
-            if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
+            
+            // Try to match Windows 10 YYMM format (1507-2004 only, validated range)
+            match = Regex.Match(versionText, @"Version\s+(1[5-9][0-1]\d|20[0-0][0-4])", RegexOptions.IgnoreCase);
+            if (match.Success && match.Groups.Count > 1) 
+            {
+                string candidate = match.Groups[1].Value;
+                if (IsValidWindows10Version(candidate)) return candidate;
+            }
+            
+            match = Regex.Match(versionText, @"^(1[5-9][0-1]\d|20[0-0][0-4])");
+            if (match.Success && match.Groups.Count > 1) 
+            {
+                string candidate = match.Groups[1].Value;
+                if (IsValidWindows10Version(candidate)) return candidate;
+            }
+            
             var parts = versionText.Split(new[] { '(', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length > 0) return parts[0].Trim();
+            if (parts.Length > 0) 
+            {
+                string candidate = parts[0].Trim();
+                // Validate the candidate before returning
+                if (Regex.IsMatch(candidate, @"^(\d{2}H\d|1[5-9][0-1]\d|20[0-0][0-4]|LTSC|\d{4}\s*(LTSC|LTSB))", RegexOptions.IgnoreCase))
+                {
+                    return candidate;
+                }
+            }
+            
             return versionText.Trim();
+        }
+        
+        /// <summary>
+        /// Validates if a 4-digit version number is a valid Windows 10 version
+        /// </summary>
+        private bool IsValidWindows10Version(string version)
+        {
+            // List of valid Windows 10 version numbers
+            var validVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "1507", "1511", "1607", "1703", "1709", "1803", "1809", 
+                "1903", "1909", "2004"
+            };
+            
+            return validVersions.Contains(version);
         }
 
         private string ExtractBuildFromVersionText(string versionText)
         {
             if (string.IsNullOrWhiteSpace(versionText)) return string.Empty;
+            
+            // Try to match explicit build patterns first
             var match = Regex.Match(versionText, @"(?:OS\s+)?build\s+([\d\.]+)", RegexOptions.IgnoreCase);
-            if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
-            match = Regex.Match(versionText, @"\b(\d{5,}(?:\.[\d]+)?)\b");
-            if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
+            if (match.Success && match.Groups.Count > 1) 
+            {
+                string buildCandidate = match.Groups[1].Value;
+                // Validate that the build starts with 5 digits
+                if (Regex.IsMatch(buildCandidate, @"^\d{5}"))
+                {
+                    return buildCandidate;
+                }
+            }
+            
+            // Try to find 5-digit build numbers (not 4-digit versions)
+            match = Regex.Match(versionText, @"\b(\d{5}(?:\.[\d]+)?)\b");
+            if (match.Success && match.Groups.Count > 1) 
+            {
+                string buildCandidate = match.Groups[1].Value;
+                // Additional validation: major build must be exactly 5 digits
+                string majorBuild = buildCandidate.Split('.')[0];
+                if (majorBuild.Length == 5)
+                {
+                    return buildCandidate;
+                }
+            }
+            
             return string.Empty;
         }
 
