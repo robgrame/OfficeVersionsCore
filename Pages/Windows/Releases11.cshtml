@@ -111,14 +111,14 @@ $(document).ready(function() {
                 className: 'version-column',
                 type: 'windows-version-pre',
                 render: function(data) {
-                    return data ? `<span class="version-badge">${data}</span>` : '';
+                    return data ? `<span class="version-badge windows-11-version">${data}</span>` : '';
                 }
             },
             {
                 data: 'buildNumber',
                 className: 'build-column',
                 render: function(data) {
-                    return data ? `<code class="build-code">${data}</code>` : '';
+                    return data ? `<code class="build-code windows-11-build">${data}</code>` : '';
                 }
             },
             {
@@ -281,21 +281,46 @@ $(document).ready(function() {
 </script>
 
 <style>
+    /* Windows 11 styling - Blue theme */
+    .windows-11-version {
+        background-color: rgba(0, 120, 212, 0.15);
+        color: #0078D4;
+        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.2);
+    }
+    
+    .windows-11-build {
+        color: #0078D4;
+        background-color: rgba(0, 120, 212, 0.08);
+    }
+    
+    /* Base badge and code styling */
     .version-badge {
         display: inline-block;
         padding: .35rem .6rem;
         font-weight: 600;
         font-size: .85rem;
         border-radius: .65rem;
+        letter-spacing: .5px;
+        white-space: nowrap;
+    }
+    
+    /* Default style if no Windows version is matched */
+    .version-badge:not(.windows-11-version) {
         background-color: rgba(13,110,253,.15);
         color: var(--bs-primary);
+        box-shadow: 0 0 0 1px rgba(13,110,253,.2);
     }
     
     .build-code {
-        font-family: monospace;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         padding: .2rem .4rem;
         font-size: .85rem;
         border-radius: .25rem;
+        white-space: nowrap;
+    }
+    
+    /* Default style if no Windows version is matched */
+    .build-code:not(.windows-11-build) {
         background-color: rgba(13,110,253,.1);
         color: var(--bs-primary);
     }

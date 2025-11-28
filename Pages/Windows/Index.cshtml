@@ -202,17 +202,21 @@ $(document).ready(function() {
             {
                 data: 'latestVersion',
                 className: 'version-column',
-                render: function(data) {
+                render: function(data, type, row) {
                     if (!data) return '';
-                    return `<span class="version-badge">${data}</span>`;
+                    // Determine color class based on product
+                    let colorClass = getProductColorClass(row.product);
+                    return `<span class="version-badge ${colorClass}">${data}</span>`;
                 }
             },
             {
                 data: 'latestBuild',
                 className: 'build-column',
-                render: function(data) {
+                render: function(data, type, row) {
                     if (!data) return '';
-                    return `<code class="build-code">${data}</code>`;
+                    // Determine color class based on product
+                    let colorClass = getProductColorClass(row.product);
+                    return `<code class="build-code ${colorClass}">${data}</code>`;
                 }
             },
             {
@@ -255,6 +259,33 @@ $(document).ready(function() {
         }
     });
 
+    // Helper function to determine color class based on product name
+    function getProductColorClass(product) {
+        if (!product) return '';
+        
+        const productLower = product.toLowerCase();
+        
+        // Windows 11 versions (newer to older)
+        if (productLower.includes('25h2')) return 'win11-25h2';
+        if (productLower.includes('24h2')) return 'win11-24h2';
+        if (productLower.includes('23h2')) return 'win11-23h2';
+        if (productLower.includes('22h2') && productLower.includes('11')) return 'win11-22h2';
+        if (productLower.includes('21h2') && productLower.includes('11')) return 'win11-21h2';
+        
+        // Windows 10 versions (newer to older)
+        if (productLower.includes('22h2') && productLower.includes('10')) return 'win10-22h2';
+        if (productLower.includes('21h2') && productLower.includes('10')) return 'win10-21h2';
+        if (productLower.includes('ltsc 2021')) return 'win10-ltsc2021';
+        if (productLower.includes('ltsc 2019') || productLower.includes('1809')) return 'win10-ltsc2019';
+        if (productLower.includes('ltsc 2016') || productLower.includes('1607')) return 'win10-ltsc2016';
+        
+        // Generic fallback based on Windows version
+        if (productLower.includes('11')) return 'windows-11';
+        if (productLower.includes('10')) return 'windows-10';
+        
+        return '';
+    }
+    
     // Load hero stats
     loadHeroStats();
     
@@ -470,6 +501,138 @@ $(document).ready(function() {
         white-space: nowrap;
         color: var(--bs-primary);
         background-color: rgba(13,110,253,.1);
+    }
+    
+    /* Windows 11 25H2 - Deep Blue */
+    .version-badge.win11-25h2 {
+        background-color: rgba(0, 120, 212, 0.15);
+        color: #0078D4;
+        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.3);
+    }
+    .build-code.win11-25h2 {
+        color: #0078D4;
+        background-color: rgba(0, 120, 212, 0.1);
+    }
+    
+    /* Windows 11 24H2 - Royal Blue */
+    .version-badge.win11-24h2 {
+        background-color: rgba(16, 110, 190, 0.15);
+        color: #106EBE;
+        box-shadow: 0 0 0 1px rgba(16, 110, 190, 0.3);
+    }
+    .build-code.win11-24h2 {
+        color: #106EBE;
+        background-color: rgba(16, 110, 190, 0.1);
+    }
+    
+    /* Windows 11 23H2 - Sky Blue */
+    .version-badge.win11-23h2 {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #3B82F6;
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+    }
+    .build-code.win11-23h2 {
+        color: #3B82F6;
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Windows 11 22H2 - Light Blue */
+    .version-badge.win11-22h2 {
+        background-color: rgba(96, 165, 250, 0.15);
+        color: #60A5FA;
+        box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.3);
+    }
+    .build-code.win11-22h2 {
+        color: #60A5FA;
+        background-color: rgba(96, 165, 250, 0.1);
+    }
+    
+    /* Windows 11 21H2 - Pale Blue */
+    .version-badge.win11-21h2 {
+        background-color: rgba(147, 197, 253, 0.15);
+        color: #93C5FD;
+        box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.3);
+    }
+    .build-code.win11-21h2 {
+        color: #2563EB;
+        background-color: rgba(147, 197, 253, 0.1);
+    }
+    
+    /* Windows 10 22H2 - Cyan */
+    .version-badge.win10-22h2 {
+        background-color: rgba(0, 188, 242, 0.15);
+        color: #00BCF2;
+        box-shadow: 0 0 0 1px rgba(0, 188, 242, 0.3);
+    }
+    .build-code.win10-22h2 {
+        color: #00BCF2;
+        background-color: rgba(0, 188, 242, 0.1);
+    }
+    
+    /* Windows 10 21H2 - Teal */
+    .version-badge.win10-21h2 {
+        background-color: rgba(20, 184, 166, 0.15);
+        color: #14B8A6;
+        box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.3);
+    }
+    .build-code.win10-21h2 {
+        color: #14B8A6;
+        background-color: rgba(20, 184, 166, 0.1);
+    }
+    
+    /* Windows 10 LTSC 2021 - Emerald */
+    .version-badge.win10-ltsc2021 {
+        background-color: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
+    }
+    .build-code.win10-ltsc2021 {
+        color: #10B981;
+        background-color: rgba(16, 185, 129, 0.1);
+    }
+    
+    /* Windows 10 LTSC 2019 - Lime */
+    .version-badge.win10-ltsc2019 {
+        background-color: rgba(132, 204, 22, 0.15);
+        color: #84CC16;
+        box-shadow: 0 0 0 1px rgba(132, 204, 22, 0.3);
+    }
+    .build-code.win10-ltsc2019 {
+        color: #84CC16;
+        background-color: rgba(132, 204, 22, 0.1);
+    }
+    
+    /* Windows 10 LTSC 2016 - Olive */
+    .version-badge.win10-ltsc2016 {
+        background-color: rgba(163, 230, 53, 0.15);
+        color: #A3E635;
+        box-shadow: 0 0 0 1px rgba(163, 230, 53, 0.3);
+    }
+    .build-code.win10-ltsc2016 {
+        color: #65A30D;
+        background-color: rgba(163, 230, 53, 0.1);
+    }
+    
+    /* Generic Windows 11 fallback - Blue */
+    .version-badge.windows-11 {
+        background-color: rgba(0, 120, 212, 0.15);
+        color: #0078D4;
+        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.3);
+    }
+    .build-code.windows-11 {
+        color: #0078D4;
+        background-color: rgba(0, 120, 212, 0.1);
+    }
+    
+    /* Generic Windows 10 fallback - Cyan */
+    .version-badge.windows-10 {
+        background-color: rgba(0, 188, 242, 0.15);
+        color: #00BCF2;
+        box-shadow: 0 0 0 1px rgba(0, 188, 242, 0.3);
+    }
+    .build-code.windows-10 {
+        color: #00BCF2;
+        background-color: rgba(0, 188, 242, 0.1);
     }
     
     .date-cell {

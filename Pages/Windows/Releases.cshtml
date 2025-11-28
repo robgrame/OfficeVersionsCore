@@ -75,20 +75,61 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'product', className: 'product-column' },
+            { 
+                data: 'product', 
+                className: 'product-column',
+                render: function(data) {
+                    if (!data) return '';
+                    // Add Windows version specific styling
+                    let iconClass = 'bi-windows me-2';
+                    let productClass = '';
+                    
+                    if (data.includes('11')) {
+                        productClass = 'windows-11-product';
+                    } else if (data.includes('10')) {
+                        productClass = 'windows-10-product';
+                    }
+                    
+                    return `<span class="${productClass}"><i class="bi ${iconClass}"></i>${data}</span>`;
+                }
+            },
             {
                 data: 'version',
                 type: 'windows-version-pre',
                 className: 'version-column',
-                render: function(data) {
-                    return data ? `<span class="version-badge">${data}</span>` : '';
+                render: function(data, type, row) {
+                    if (!data) return '';
+                    
+                    // Determine badge class based on product
+                    let badgeClass = 'version-badge';
+                    if (row.product) {
+                        if (row.product.includes('11')) {
+                            badgeClass += ' windows-11-version';
+                        } else if (row.product.includes('10')) {
+                            badgeClass += ' windows-10-version';
+                        }
+                    }
+                    
+                    return `<span class="${badgeClass}">${data}</span>`;
                 }
             },
             {
                 data: 'buildNumber',
                 className: 'build-column',
-                render: function(data) {
-                    return data ? `<code class="build-code">${data}</code>` : '';
+                render: function(data, type, row) {
+                    if (!data) return '';
+                    
+                    // Determine code class based on product
+                    let codeClass = 'build-code';
+                    if (row.product) {
+                        if (row.product.includes('11')) {
+                            codeClass += ' windows-11-build';
+                        } else if (row.product.includes('10')) {
+                            codeClass += ' windows-10-build';
+                        }
+                    }
+                    
+                    return `<code class="${codeClass}">${data}</code>`;
                 }
             },
             {
@@ -134,21 +175,68 @@ $(document).ready(function() {
 </script>
 
 <style>
+    /* Windows 10 styling - Cyan theme */
+    .windows-10-product {
+        color: #00BCF2;
+        font-weight: 600;
+    }
+    
+    .windows-10-version {
+        background-color: rgba(0, 188, 242, 0.15);
+        color: #00BCF2;
+        box-shadow: 0 0 0 1px rgba(0, 188, 242, 0.2);
+    }
+    
+    .windows-10-build {
+        color: #00BCF2;
+        background-color: rgba(0, 188, 242, 0.08);
+    }
+    
+    /* Windows 11 styling - Blue theme */
+    .windows-11-product {
+        color: #0078D4;
+        font-weight: 600;
+    }
+    
+    .windows-11-version {
+        background-color: rgba(0, 120, 212, 0.15);
+        color: #0078D4;
+        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.2);
+    }
+    
+    .windows-11-build {
+        color: #0078D4;
+        background-color: rgba(0, 120, 212, 0.08);
+    }
+    
+    /* Base badge and code styling */
     .version-badge {
         display: inline-block;
         padding: .35rem .6rem;
         font-weight: 600;
         font-size: .85rem;
         border-radius: .65rem;
+        letter-spacing: .5px;
+        white-space: nowrap;
+    }
+    
+    /* Default style if no Windows version is matched */
+    .version-badge:not(.windows-10-version):not(.windows-11-version) {
         background-color: rgba(13,110,253,.15);
         color: var(--bs-primary);
+        box-shadow: 0 0 0 1px rgba(13,110,253,.2);
     }
     
     .build-code {
-        font-family: monospace;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         padding: .2rem .4rem;
         font-size: .85rem;
         border-radius: .25rem;
+        white-space: nowrap;
+    }
+    
+    /* Default style if no Windows version is matched */
+    .build-code:not(.windows-10-build):not(.windows-11-build) {
         background-color: rgba(13,110,253,.1);
         color: var(--bs-primary);
     }

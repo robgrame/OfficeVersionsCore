@@ -111,14 +111,14 @@ $(document).ready(function() {
                 className: 'version-column',
                 type: 'windows-version-pre',
                 render: function(data) {
-                    return data ? `<span class="version-badge">${data}</span>` : '';
+                    return data ? `<span class="version-badge windows-10-version">${data}</span>` : '';
                 }
             },
             {
                 data: 'buildNumber',
                 className: 'build-column',
                 render: function(data) {
-                    return data ? `<code class="build-code">${data}</code>` : '';
+                    return data ? `<code class="build-code windows-10-build">${data}</code>` : '';
                 }
             },
             {
