@@ -1,7 +1,14 @@
 ﻿@using Microsoft.Extensions.Configuration
 @using Microsoft.AspNetCore.Hosting
+@using System.Reflection
 @inject IConfiguration Configuration
 @inject IWebHostEnvironment Environment
+@{
+    var assembly = Assembly.GetExecutingAssembly();
+    var version = assembly.GetName().Version?.ToString() ?? "1.0.0.0";
+    var infoVersionAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+    var informationalVersion = infoVersionAttr?.InformationalVersion ?? version;
+}
 <!doctype html>
 <html lang="en">
 <head>
@@ -374,8 +381,28 @@
                         <strong>Disclaimer:</strong> This site is not affiliated with Microsoft Corporation.
                         All trademarks are property of their respective owners.
                     </p>
+                    <p class="mb-1">
+                        &copy; @DateTime.Now.Year Office 365 Versions - Built with ❤️ for the IT community
+                    </p>
                     <p class="mb-0">
-                        &copy; 2025 Office 365 Versions - Built with ❤️ for the IT community
+                        <small class="text-muted">
+                            <i class="bi bi-code-slash me-1"></i>
+                            <a asp-page="/Version" class="text-muted text-decoration-none" title="View detailed version information">
+                                v@version
+                            </a>
+                            @if (Environment.IsDevelopment())
+                            {
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="bi bi-bug-fill me-1"></i>DEV
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success ms-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i>PROD
+                                </span>
+                            }
+                        </small>
                     </p>
                 </div>
             </div>
