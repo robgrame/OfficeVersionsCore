@@ -192,7 +192,8 @@ namespace OfficeVersionsCore.Controllers
                             kb = update.KBNumber,
                             url = string.Empty,
                             updateTitle = update.UpdateTitle,
-                            isSecurityUpdate = update.IsSecurityUpdate
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
                         });
                     }
                 }
@@ -212,7 +213,8 @@ namespace OfficeVersionsCore.Controllers
                             kb = update.KBNumber,
                             url = string.Empty,
                             updateTitle = update.UpdateTitle,
-                            isSecurityUpdate = update.IsSecurityUpdate
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
                         });
                     }
                 }
@@ -264,7 +266,8 @@ namespace OfficeVersionsCore.Controllers
                             kb = update.KBNumber,
                             url = string.Empty,
                             updateTitle = update.UpdateTitle,
-                            isSecurityUpdate = update.IsSecurityUpdate
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
                         });
                     }
                 }
@@ -316,7 +319,8 @@ namespace OfficeVersionsCore.Controllers
                             kb = update.KBNumber,
                             url = string.Empty,
                             updateTitle = update.UpdateTitle,
-                            isSecurityUpdate = update.IsSecurityUpdate
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
                         });
                     }
                 }

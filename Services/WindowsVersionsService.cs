@@ -343,7 +343,7 @@ namespace OfficeVersionsCore.Services
             try
             {
                 var featureUpdates = await LoadFeatureUpdatesFromStorageAsync(edition);
-                
+
                 return new ApiResponse<List<WindowsFeatureUpdate>>
                 {
                     Success = true,
@@ -442,7 +442,7 @@ namespace OfficeVersionsCore.Services
                 {
                     var json = await _storageService.ReadAsync(fileName);
                     var metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
-                    
+
                     if (metadata?.TryGetValue("lastUpdate", out var lastUpdateObj) == true)
                     {
                         if (DateTime.TryParse(lastUpdateObj?.ToString(), out var lastUpdate))
@@ -484,6 +484,9 @@ namespace OfficeVersionsCore.Services
                 var updates = await ScrapeUpdateHistoryAsync(updateHistoryUrl, edition);
                 updates = UpdateDataCleaner.CleanWindowsUpdates(updates);
 
+                // Duplicate multi-build updates to ensure each build has its own entry
+                updates = DuplicateMultiBuildUpdates(updates);
+
                 var recentUpdates = updates
                     .OrderByDescending(u => u.ReleaseDate)
                     .Take(10)
@@ -493,8 +496,30 @@ namespace OfficeVersionsCore.Services
                 {
                     if (i > 0) await Task.Delay(1000);
                     var updatedItem = await EnrichUpdateFromDetailPageAsync(recentUpdates[i]);
-                    int indexInMainCollection = updates.FindIndex(u => u.KBNumber == updatedItem.KBNumber);
-                    if (indexInMainCollection >= 0) updates[indexInMainCollection] = updatedItem;
+                    
+                    // Update ALL entries with the same KB number (handles duplicates from multi-build updates)
+                    var matchingIndices = updates
+                        .Select((u, index) => new { Update = u, Index = index })
+                        .Where(x => x.Update.KBNumber == updatedItem.KBNumber)
+                        .Select(x => x.Index)
+                        .ToList();
+                    
+                    _logger.LogDebug("Enriched KB{KB}: Found {Count} matching entries to update", 
+                        updatedItem.KBNumber, matchingIndices.Count);
+                    
+                    foreach (var index in matchingIndices)
+                    {
+                        // Preserve the build-specific Version and Build, only update enriched fields
+                        updates[index].Description = updatedItem.Description;
+                        updates[index].Highlights = updatedItem.Highlights;
+                        updates[index].KnownIssues = updatedItem.KnownIssues;
+                        updates[index].IsSecurityUpdate = updatedItem.IsSecurityUpdate;
+                        updates[index].IsOptionalUpdate = updatedItem.IsOptionalUpdate;
+                        updates[index].Type = updatedItem.Type;
+                        
+                        _logger.LogDebug("Updated entry at index {Index}: KB={KB}, Build={Build}, Version={Version}, Type={Type}",
+                            index, updates[index].KBNumber, updates[index].Build, updates[index].Version, updates[index].Type);
+                    }
                 }
 
                 var versions = await ScrapeReleaseInformationAsync(releaseInfoUrl, edition);
@@ -544,7 +569,7 @@ namespace OfficeVersionsCore.Services
                 await SaveUpdatesToStorageAsync(edition, updates);
                 await SaveReleaseVersionsToStorageAsync(edition, grouped);
 
-                _logger.LogInformation("Successfully scraped {UpdateCount} updates and {VersionCount} versions for {Edition}", 
+                _logger.LogInformation("Successfully scraped {UpdateCount} updates and {VersionCount} versions for {Edition}",
                     updates.Count, versions.Count, edition);
 
                 return true;
@@ -568,7 +593,7 @@ namespace OfficeVersionsCore.Services
                 doc.LoadHtml(html);
 
                 var versionSections = FindVersionSections(doc);
-                
+
                 if (versionSections.Any())
                 {
                     foreach (var sectionInfo in versionSections)
@@ -599,7 +624,7 @@ namespace OfficeVersionsCore.Services
             try
             {
                 var versionCategories = doc.DocumentNode.SelectNodes("//div[contains(@class, 'supLeftNavCategoryTitle')]");
-                
+
                 if (versionCategories != null)
                 {
                     foreach (var categoryTitleDiv in versionCategories)
@@ -627,12 +652,12 @@ namespace OfficeVersionsCore.Services
                     // Try to find the entire left navigation section
                     var leftNavSection = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'supLeftNav')]") ??
                                          doc.DocumentNode.SelectSingleNode("//nav");
-                    
+
                     if (leftNavSection != null)
                     {
                         // Find all update article lists
                         var articleLists = leftNavSection.SelectNodes(".//ul[contains(@class, 'supLeftNavArticles')]");
-                        
+
                         if (articleLists != null)
                         {
                             foreach (var articleList in articleLists)
@@ -643,13 +668,13 @@ namespace OfficeVersionsCore.Services
                                 {
                                     categoryTitle = categoryTitle.PreviousSibling;
                                 }
-                                
+
                                 string version = string.Empty;
                                 if (categoryTitle != null)
                                 {
                                     version = ExtractVersionFromHeader(ExtractText(categoryTitle));
                                 }
-                                
+
                                 result.Add((articleList, version));
                             }
                         }
@@ -707,7 +732,7 @@ namespace OfficeVersionsCore.Services
                             var text = ExtractText(p);
                             if (text.Contains("KB", StringComparison.OrdinalIgnoreCase))
                             {
-                                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
+                            var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
@@ -715,7 +740,7 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = ExtractKBNumber(text),
                                     UpdateTitle = text,
                                     ReleaseDate = ExtractDateFromText(text),
-                                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsSecurityUpdate = (updateType == "Security Update"),
                                     IsOptionalUpdate = isOptional,
                                     Type = updateType
                                 });
@@ -751,7 +776,7 @@ namespace OfficeVersionsCore.Services
                                     string buildVersion = DetermineVersionFromBuild(build);
                                     if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
                                     var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
-                                    
+
                                     var update = new WindowsUpdate
                                     {
                                         Edition = edition,
@@ -760,7 +785,7 @@ namespace OfficeVersionsCore.Services
                                         KBNumber = ExtractKBNumber(text),
                                         UpdateTitle = text,
                                         ReleaseDate = ExtractDateFromText(text),
-                                        IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                        IsSecurityUpdate = (updateType == "Security Update"),
                                         IsOptionalUpdate = isOptional,
                                         Type = updateType
                                     };
@@ -780,7 +805,7 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = ExtractKBNumber(text),
                                     UpdateTitle = text,
                                     ReleaseDate = ExtractDateFromText(text),
-                                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsSecurityUpdate = (updateType == "Security Update"),
                                     IsOptionalUpdate = isOptional,
                                     Type = updateType
                                 };
@@ -844,7 +869,7 @@ namespace OfficeVersionsCore.Services
 
                         // Extract all builds using the new helper
                         var builds = ExtractAllBuildsFromText(buildText);
-                        
+
                         // Also check the title for builds if buildText didn't yield any
                         if (builds.Count == 0)
                         {
@@ -856,7 +881,8 @@ namespace OfficeVersionsCore.Services
                             // Create one entry per build
                             foreach (var build in builds)
                             {
-                                string buildVersion = !string.IsNullOrEmpty(version) ? version : DetermineVersionFromBuild(build);
+                                string buildVersion = DetermineVersionFromBuild(build);
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(kbOrTitle);
                                 updates.Add(new WindowsUpdate
                                 {
@@ -866,7 +892,7 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = kbNumber,
                                     UpdateTitle = kbOrTitle,
                                     ReleaseDate = releaseDate,
-                                    IsSecurityUpdate = kbOrTitle.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsSecurityUpdate = (updateType == "Security Update"),
                                     IsOptionalUpdate = isOptional,
                                     Type = updateType
                                 });
@@ -883,7 +909,7 @@ namespace OfficeVersionsCore.Services
                                 KBNumber = kbNumber,
                                 UpdateTitle = kbOrTitle,
                                 ReleaseDate = releaseDate,
-                                IsSecurityUpdate = kbOrTitle.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                IsSecurityUpdate = (updateType == "Security Update"),
                                 IsOptionalUpdate = isOptional,
                                 Type = updateType
                             });
@@ -894,12 +920,12 @@ namespace OfficeVersionsCore.Services
                         // Format: KB/Title | Date or Build/Date
                         string firstCol = ExtractText(cells[0]);
                         string secondCol = ExtractText(cells[1]);
-                        
+
                         // Determine which is title and which is date/build
                         string title;
                         string dateOrBuild;
                         DateTime? colDate = null;
-                        
+
                         if (TryParseDate(secondCol, out var parsedDate))
                         {
                             title = firstCol;
@@ -917,24 +943,25 @@ namespace OfficeVersionsCore.Services
                             title = firstCol;
                             dateOrBuild = secondCol;
                         }
-                        
+
                         string colKbNumber = ExtractKBNumber(title);
-                        
+
                         // Extract all builds from both columns
                         var colBuilds = ExtractAllBuildsFromText(title);
                         if (colBuilds.Count == 0)
                         {
                             colBuilds = ExtractAllBuildsFromText(dateOrBuild);
                         }
-                        
+
                         // Create updates
                         if (colBuilds.Count > 0)
                         {
                             foreach (var build in colBuilds)
                             {
-                                string buildVersion = !string.IsNullOrEmpty(version) ? version : DetermineVersionFromBuild(build);
+                                string buildVersion = DetermineVersionFromBuild(build);
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(title);
-                                
+
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
@@ -943,7 +970,7 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = colKbNumber,
                                     UpdateTitle = title,
                                     ReleaseDate = colDate,
-                                    IsSecurityUpdate = title.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsSecurityUpdate = (updateType == "Security Update"),
                                     IsOptionalUpdate = isOptional,
                                     Type = updateType
                                 });
@@ -960,7 +987,7 @@ namespace OfficeVersionsCore.Services
                                 KBNumber = colKbNumber,
                                 UpdateTitle = title,
                                 ReleaseDate = colDate,
-                                IsSecurityUpdate = title.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                IsSecurityUpdate = (updateType == "Security Update"),
                                 IsOptionalUpdate = isOptional,
                                 Type = updateType
                             });
@@ -983,10 +1010,14 @@ namespace OfficeVersionsCore.Services
                 var updateLinks = updatesList.SelectNodes(".//li/a[@class='supLeftNavLink']");
                 if (updateLinks != null)
                 {
+                    _logger.LogInformation("ExtractUpdatesFromNavLinks: Found {Count} update links for version {Version}", 
+                        updateLinks.Count, version ?? "NULL");
+
                     foreach (var updateLink in updateLinks)
                     {
                         string updateText = ExtractText(updateLink);
                         if (updateText.Contains("update history", StringComparison.OrdinalIgnoreCase)) continue;
+                        
                         string href = updateLink.GetAttributeValue("href", string.Empty);
                         string kbNumber = ExtractKBNumber(updateText);
                         DateTime? releaseDate = ExtractDateFromText(updateText);
@@ -994,15 +1025,25 @@ namespace OfficeVersionsCore.Services
                         // Extract all builds using the new helper
                         var builds = ExtractAllBuildsFromText(updateText);
 
+                        _logger.LogDebug("NavLink update: KB={KB}, Text='{Text}', ExtractedBuilds={BuildCount}, SectionVersion={Version}",
+                            kbNumber, updateText, builds.Count, version ?? "NULL");
+
                         if (builds.Count > 0)
                         {
+                            _logger.LogDebug("Builds found in title for {KB}: {Builds}", kbNumber, string.Join(", ", builds));
+
                             // Create one entry per build
                             foreach (var build in builds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
                                 if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+
+                                _logger.LogDebug("Creating update entry: KB={KB}, Build={Build}, BuildVersion={BuildVersion}, FallbackVersion={FallbackVersion}",
+                                    kbNumber, build, buildVersion ?? "NULL", version ?? "NULL");
+
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(updateText);
-                                updates.Add(new WindowsUpdate
+                                
+                                var newUpdate = new WindowsUpdate
                                 {
                                     Edition = edition,
                                     Version = buildVersion,
@@ -1010,16 +1051,24 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = kbNumber,
                                     UpdateTitle = updateText,
                                     ReleaseDate = releaseDate,
-                                    IsSecurityUpdate = updateText.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsSecurityUpdate = (updateType == "Security Update"),
                                     IsOptionalUpdate = isOptional,
                                     Type = updateType,
                                     SourceUrl = href
-                                });
+                                };
+
+                                _logger.LogDebug("Created update from NavLink: KB={KB}, Build={Build}, Version={Version}, Type={Type}",
+                                    newUpdate.KBNumber, newUpdate.Build, newUpdate.Version, newUpdate.Type);
+
+                                updates.Add(newUpdate);
                             }
                         }
                         else
                         {
                             // No builds found, create single entry
+                            _logger.LogDebug("No builds found in title for {KB}, creating single entry with version {Version}",
+                                kbNumber, version ?? "NULL");
+
                             var (updateType, isOptional) = DetermineUpdateTypeFromTitle(updateText);
                             updates.Add(new WindowsUpdate
                             {
@@ -1029,7 +1078,7 @@ namespace OfficeVersionsCore.Services
                                 KBNumber = kbNumber,
                                 UpdateTitle = updateText,
                                 ReleaseDate = releaseDate,
-                                IsSecurityUpdate = updateText.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                IsSecurityUpdate = (updateType == "Security Update"),
                                 IsOptionalUpdate = isOptional,
                                 Type = updateType,
                                 SourceUrl = href
@@ -1037,11 +1086,19 @@ namespace OfficeVersionsCore.Services
                         }
                     }
                 }
+                else
+                {
+                    _logger.LogWarning("ExtractUpdatesFromNavLinks: No update links found in the provided HTML node");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error extracting updates from navigation links");
             }
+
+            _logger.LogInformation("ExtractUpdatesFromNavLinks: Extracted {Count} updates for version {Version}", 
+                updates.Count, version ?? "NULL");
+
             return updates;
         }
 
@@ -1080,7 +1137,7 @@ namespace OfficeVersionsCore.Services
                     KBNumber = kbNumber,
                     UpdateTitle = text.Length > 200 ? text.Substring(0, 197) + "..." : text,
                     ReleaseDate = releaseDate,
-                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase) || text.Contains("vulnerability", StringComparison.OrdinalIgnoreCase),
+                    IsSecurityUpdate = (updateType == "Security Update"),
                     IsOptionalUpdate = isOptional,
                     Type = updateType
                 };
@@ -1130,7 +1187,7 @@ namespace OfficeVersionsCore.Services
                                             KBNumber = kbNumber,
                                             UpdateTitle = text.Length > 200 ? text.Substring(0, 197) + "..." : text,
                                             ReleaseDate = ExtractDateFromText(text),
-                                            IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                            IsSecurityUpdate = (updateType == "Security Update"),
                                             IsOptionalUpdate = isOptional,
                                             Type = updateType
                                         });
@@ -1174,7 +1231,7 @@ namespace OfficeVersionsCore.Services
             // Match all 5-digit build patterns (e.g., 19042.2965, 22621.1234)
             // Pattern: 5 digits followed by optional .digits
             var buildMatches = Regex.Matches(text, @"\b(\d{5}\.\d+)\b");
-            
+
             foreach (Match match in buildMatches)
             {
                 string build = match.Groups[1].Value;
@@ -1190,24 +1247,24 @@ namespace OfficeVersionsCore.Services
         private string DetermineVersionFromBuild(string build)
         {
             if (string.IsNullOrEmpty(build)) return string.Empty;
-            
+
             // Validate build format - must be 5 digits minimum for Windows 10/11
             var buildMatch = Regex.Match(build, @"^(\d{5,})(?:\.\d+)?$");
-            if (!buildMatch.Success) 
+            if (!buildMatch.Success)
             {
                 _logger.LogWarning("Invalid build format: {Build}", build);
                 return string.Empty;
             }
-            
+
             string majorBuild = build.Split('.')[0];
-            
+
             // Validate major build is exactly 5 digits
             if (majorBuild.Length != 5)
             {
                 _logger.LogWarning("Invalid major build length: {MajorBuild}", majorBuild);
                 return string.Empty;
             }
-            
+
             switch (majorBuild)
             {
                 // Windows 11 build numbers
@@ -1216,7 +1273,7 @@ namespace OfficeVersionsCore.Services
                 case "22631": return "23H2"; // Windows 11 23H2
                 case "22621": return "22H2"; // Windows 11 22H2
                 case "22000": return "21H2"; // Windows 11 initial release
-            
+
                 // Windows 10 build numbers
                 case "19045": return "22H2"; // Windows 10 22H2
                 case "19044": return "21H2"; // Windows 10 21H2
@@ -1233,7 +1290,7 @@ namespace OfficeVersionsCore.Services
                 case "14393": return "1607"; // Windows 10 1607
                 case "10586": return "1511"; // Windows 10 1511
                 case "10240": return "1507"; // Windows 10 initial release
-                default: 
+                default:
                     _logger.LogWarning("Unrecognized Windows build number: {MajorBuild}", majorBuild);
                     return string.Empty;
             }
@@ -1567,28 +1624,41 @@ namespace OfficeVersionsCore.Services
             if (string.IsNullOrEmpty(title))
                 return (null, false);
 
-            bool isPreview = title.Contains("preview", StringComparison.OrdinalIgnoreCase);
-            bool isOptional = isPreview || title.Contains("optional", StringComparison.OrdinalIgnoreCase);
+            // Check for out-of-band updates first (highest priority)
+            if (title.Contains("out-of-band", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("Out-of-band", false);
+            }
 
-            // Preview updates are explicitly labeled in the title (e.g., "KB5066198 Preview")
+            // Check for preview updates (optional updates released in the third/fourth week of the month)
+            bool isPreview = title.Contains("preview", StringComparison.OrdinalIgnoreCase);
             if (isPreview)
             {
                 return ("Preview", true);
             }
-            else if (title.Contains("cumulative", StringComparison.OrdinalIgnoreCase))
-            {
-                return ("Cumulative", isOptional);
-            }
-            else if (title.Contains("feature", StringComparison.OrdinalIgnoreCase))
-            {
-                return ("Feature", isOptional);
-            }
-            else if (isOptional)
+
+            // Check for other optional updates
+            bool isOptional = title.Contains("optional", StringComparison.OrdinalIgnoreCase);
+            if (isOptional)
             {
                 return ("Optional", true);
             }
 
-            return (null, false);
+            // Check for feature updates
+            if (title.Contains("feature", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("Feature", false);
+            }
+
+            // Check for cumulative updates
+            if (title.Contains("cumulative", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("Cumulative", false);
+            }
+
+            // If none of the above, it's a regular Security Update (monthly Patch Tuesday)
+            // These are the standard monthly security updates with no special designation
+            return ("Security Update", false);
         }
 
         private DateTime? ParseDate(string? dateString)
@@ -1765,7 +1835,7 @@ namespace OfficeVersionsCore.Services
 
             return null;
         }
-        
+
         private List<WindowsVersion> FlattenReleaseVersions(WindowsReleaseVersions rv)
         {
             var list = new List<WindowsVersion>();
@@ -1829,31 +1899,31 @@ namespace OfficeVersionsCore.Services
         private string ExtractVersionName(string versionText)
         {
             if (string.IsNullOrWhiteSpace(versionText)) return string.Empty;
-            
+
             // Try to match YYH# format (e.g., 22H2, 21H1)
             var match = Regex.Match(versionText, @"Version\s+(\d{2}H\d)", RegexOptions.IgnoreCase);
             if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
-            
+
             match = Regex.Match(versionText, @"^(\d{2}H\d)", RegexOptions.IgnoreCase);
             if (match.Success && match.Groups.Count > 1) return match.Groups[1].Value;
-            
+
             // Try to match Windows 10 YYMM format (1507-2004 only, validated range)
             match = Regex.Match(versionText, @"Version\s+(1[5-9][0-1]\d|20[0-0][0-4])", RegexOptions.IgnoreCase);
-            if (match.Success && match.Groups.Count > 1) 
+            if (match.Success && match.Groups.Count > 1)
             {
                 string candidate = match.Groups[1].Value;
                 if (IsValidWindows10Version(candidate)) return candidate;
             }
-            
+
             match = Regex.Match(versionText, @"^(1[5-9][0-1]\d|20[0-0][0-4])");
-            if (match.Success && match.Groups.Count > 1) 
+            if (match.Success && match.Groups.Count > 1)
             {
                 string candidate = match.Groups[1].Value;
                 if (IsValidWindows10Version(candidate)) return candidate;
             }
-            
+
             var parts = versionText.Split(new[] { '(', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length > 0) 
+            if (parts.Length > 0)
             {
                 string candidate = parts[0].Trim();
                 // Validate the candidate before returning
@@ -1862,10 +1932,10 @@ namespace OfficeVersionsCore.Services
                     return candidate;
                 }
             }
-            
+
             return versionText.Trim();
         }
-        
+
         /// <summary>
         /// Validates if a 4-digit version number is a valid Windows 10 version
         /// </summary>
@@ -1874,20 +1944,20 @@ namespace OfficeVersionsCore.Services
             // List of valid Windows 10 version numbers
             var validVersions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "1507", "1511", "1607", "1703", "1709", "1803", "1809", 
+                "1507", "1511", "1607", "1703", "1709", "1803", "1809",
                 "1903", "1909", "2004"
             };
-            
+
             return validVersions.Contains(version);
         }
 
         private string ExtractBuildFromVersionText(string versionText)
         {
             if (string.IsNullOrWhiteSpace(versionText)) return string.Empty;
-            
+
             // Try to match explicit build patterns first
             var match = Regex.Match(versionText, @"(?:OS\s+)?build\s+([\d\.]+)", RegexOptions.IgnoreCase);
-            if (match.Success && match.Groups.Count > 1) 
+            if (match.Success && match.Groups.Count > 1)
             {
                 string buildCandidate = match.Groups[1].Value;
                 // Validate that the build starts with 5 digits
@@ -1896,10 +1966,10 @@ namespace OfficeVersionsCore.Services
                     return buildCandidate;
                 }
             }
-            
+
             // Try to find 5-digit build numbers (not 4-digit versions)
             match = Regex.Match(versionText, @"\b(\d{5}(?:\.[\d]+)?)\b");
-            if (match.Success && match.Groups.Count > 1) 
+            if (match.Success && match.Groups.Count > 1)
             {
                 string buildCandidate = match.Groups[1].Value;
                 // Additional validation: major build must be exactly 5 digits
@@ -1909,7 +1979,7 @@ namespace OfficeVersionsCore.Services
                     return buildCandidate;
                 }
             }
-            
+
             return string.Empty;
         }
 
@@ -1982,33 +2052,44 @@ namespace OfficeVersionsCore.Services
                     update.IsOptionalUpdate = true;
                 }
 
-                // Check for Preview updates first - these should be marked as Preview, not General
-                // Preview updates are explicitly labeled in the title (e.g., "KB5066198 Preview")
-                if (update.UpdateTitle.Contains("preview", StringComparison.OrdinalIgnoreCase))
+                // Use the same classification logic as DetermineUpdateTypeFromTitle to maintain consistency
+                // Check for out-of-band updates first (highest priority)
+                if (update.UpdateTitle.Contains("out-of-band", StringComparison.OrdinalIgnoreCase) ||
+                    mainContent.InnerText.Contains("out-of-band", StringComparison.OrdinalIgnoreCase))
+                {
+                    update.Type = "Out-of-band";
+                }
+                // Check for Preview updates (optional updates released in the third/fourth week of the month)
+                else if (update.UpdateTitle.Contains("preview", StringComparison.OrdinalIgnoreCase) ||
+                    mainContent.InnerText.Contains("preview release", StringComparison.OrdinalIgnoreCase))
                 {
                     update.Type = "Preview";
+                    update.IsOptionalUpdate = true;
                 }
-                else if (update.UpdateTitle.Contains("cumulative", StringComparison.OrdinalIgnoreCase) ||
-                    mainContent.InnerText.Contains("cumulative update", StringComparison.OrdinalIgnoreCase))
+                // Check for other optional updates
+                else if (update.UpdateTitle.Contains("optional", StringComparison.OrdinalIgnoreCase) ||
+                    mainContent.InnerText.Contains("optional", StringComparison.OrdinalIgnoreCase))
                 {
-                    update.Type = "Cumulative";
+                    update.Type = "Optional";
+                    update.IsOptionalUpdate = true;
                 }
-                else if (update.IsSecurityUpdate)
-                {
-                    update.Type = "Security";
-                }
+                // Check for feature updates
                 else if (update.UpdateTitle.Contains("feature", StringComparison.OrdinalIgnoreCase) ||
                          mainContent.InnerText.Contains("feature update", StringComparison.OrdinalIgnoreCase))
                 {
                     update.Type = "Feature";
                 }
-                else if (update.IsOptionalUpdate)
+                // Check for cumulative updates
+                else if (update.UpdateTitle.Contains("cumulative", StringComparison.OrdinalIgnoreCase) ||
+                    mainContent.InnerText.Contains("cumulative update", StringComparison.OrdinalIgnoreCase))
                 {
-                    update.Type = "Optional";
+                    update.Type = "Cumulative";
                 }
+                // If none of the above, it's a regular Security Update (monthly Patch Tuesday)
+                // These are the standard monthly security updates with no special designation
                 else
                 {
-                    update.Type = "General";
+                    update.Type = "Security Update";
                 }
             }
             catch (Exception ex)
@@ -2017,6 +2098,122 @@ namespace OfficeVersionsCore.Services
             }
 
             return update;
+        }
+
+        /// <summary>
+        /// Duplicates updates that apply to multiple builds/versions into separate entries
+        /// </summary>
+        private List<WindowsUpdate> DuplicateMultiBuildUpdates(List<WindowsUpdate> updates)
+        {
+            var result = new List<WindowsUpdate>();
+
+            _logger.LogInformation("Starting DuplicateMultiBuildUpdates with {Count} updates", updates.Count);
+
+            foreach (var update in updates)
+            {
+                // Log the incoming update details
+                _logger.LogDebug("Processing update {KB}: Title='{Title}', Build='{Build}', Version='{Version}', Type='{Type}'",
+                    update.KBNumber, update.UpdateTitle, update.Build ?? "NULL", update.Version ?? "NULL", update.Type ?? "NULL");
+
+                // Always extract all builds from the update title to catch multi-build scenarios
+                var builds = ExtractAllBuildsFromText(update.UpdateTitle);
+                _logger.LogDebug("Extracted {Count} builds from title for {KB}: {Builds}",
+                    builds.Count, update.KBNumber, builds.Count > 0 ? string.Join(", ", builds) : "NONE");
+
+                // If no builds in title, try description
+                if (builds.Count == 0 && !string.IsNullOrEmpty(update.Description))
+                {
+                    builds = ExtractAllBuildsFromText(update.Description);
+                    _logger.LogDebug("Extracted {Count} builds from description for {KB}: {Builds}",
+                        builds.Count, update.KBNumber, builds.Count > 0 ? string.Join(", ", builds) : "NONE");
+                }
+
+                // If still no builds found but update has a Build field, use it
+                if (builds.Count == 0 && !string.IsNullOrEmpty(update.Build))
+                {
+                    builds.Add(update.Build);
+                    _logger.LogDebug("Using existing Build field for {KB}: {Build}", update.KBNumber, update.Build);
+                }
+
+                // If we found multiple builds, create duplicate entries
+                if (builds.Count > 1)
+                {
+                    _logger.LogInformation("Duplicating update {KB} for {Count} builds: {Builds}",
+                        update.KBNumber, builds.Count, string.Join(", ", builds));
+
+                    foreach (var build in builds)
+                    {
+                        var version = DetermineVersionFromBuild(build);
+                        _logger.LogDebug("Build {Build} mapped to version {Version} for {KB}", 
+                            build, version ?? "NULL", update.KBNumber);
+
+                        if (string.IsNullOrEmpty(version))
+                        {
+                            _logger.LogWarning("Could not determine version for build {Build} in {KB}, skipping this build", build, update.KBNumber);
+                            continue; // Skip this build instead of using wrong version
+                        }
+
+                        // Create a duplicate entry with specific build and version
+                        var duplicateUpdate = new WindowsUpdate
+                        {
+                            Edition = update.Edition,
+                            Version = version, // This is now guaranteed to be the correct version for this build
+                            Build = build,
+                            KBNumber = update.KBNumber,
+                            UpdateTitle = update.UpdateTitle,
+                            Description = update.Description,
+                            ReleaseDate = update.ReleaseDate,
+                            IsSecurityUpdate = update.IsSecurityUpdate,
+                            IsOptionalUpdate = update.IsOptionalUpdate,
+                            Type = update.Type,
+                            SourceUrl = update.SourceUrl,
+                            Highlights = new List<string>(update.Highlights),
+                            KnownIssues = new List<string>(update.KnownIssues)
+                        };
+
+                        _logger.LogDebug("Created duplicate: KB={KB}, Build={Build}, Version={Version}, Type={Type}",
+                            duplicateUpdate.KBNumber, duplicateUpdate.Build, duplicateUpdate.Version, duplicateUpdate.Type);
+
+                        result.Add(duplicateUpdate);
+                    }
+                }
+                else if (builds.Count == 1)
+                {
+                    // Single build found - ensure correct version
+                    var build = builds[0];
+                    var version = DetermineVersionFromBuild(build);
+                    
+                    _logger.LogDebug("Single build scenario for {KB}: Build={Build}, DeterminedVersion={Version}, OriginalVersion={OriginalVersion}",
+                        update.KBNumber, build, version ?? "NULL", update.Version ?? "NULL");
+
+                    if (!string.IsNullOrEmpty(version))
+                    {
+                        // Update with correct version from build
+                        var oldVersion = update.Version;
+                        update.Version = version;
+                        update.Build = build;
+                        
+                        if (oldVersion != version)
+                        {
+                            _logger.LogInformation("Corrected version for {KB}: {OldVersion} -> {NewVersion} (Build: {Build})",
+                                update.KBNumber, oldVersion ?? "NULL", version, build);
+                        }
+                    }
+                    
+                    result.Add(update);
+                }
+                else
+                {
+                    // No builds found - keep original entry as-is
+                    _logger.LogDebug("No builds found for {KB}, keeping original entry", update.KBNumber);
+                    result.Add(update);
+                }
+            }
+
+            _logger.LogInformation("Duplication complete: {Original} original updates expanded to {Result} entries",
+                updates.Count, result.Count);
+
+            return result;
         }
     }
 }

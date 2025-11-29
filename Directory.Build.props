@@ -1,19 +1,21 @@
 <Project>
   <!-- 
     Sistema di Versioning Automatico basato su Data
-    Formato: Major.Minor.MMDD.Revision
-    Esempio: 1.0.1128.1 (versione 1.0, 28 novembre, prima build del giorno)
+    Formato: Major.yy.MMdd.Revision
+    Esempio: 1.24.1129.1 (versione 1, anno 2024, 29 novembre, prima build del giorno)
     
     Il file Directory.Build.props viene automaticamente importato da MSBuild
     in tutti i progetti nella directory e sottodirectory.
   -->
   
   <PropertyGroup>
-    <!-- Versione base Major.Minor -->
+    <!-- Versione base Major (MajorBuild) -->
     <VersionMajor>1</VersionMajor>
-    <VersionMinor>0</VersionMinor>
-  
-    <!-- Build: MMDD (mese e giorno corrente) -->
+    
+    <!-- Anno a 2 cifre (yy) -->
+    <VersionMinor>$([System.DateTime]::Now.ToString('yy'))</VersionMinor>
+
+    <!-- Build: MMdd (mese e giorno corrente) -->
     <VersionBuild>$([System.DateTime]::Now.ToString('MMdd'))</VersionBuild>
     
     <!-- Revision: contatore incrementale per build multiple nello stesso giorno -->
@@ -22,7 +24,7 @@
     <VersionRevision Condition="'$(BUILD_BUILDNUMBER)'!=''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), '\d+$').Value)</VersionRevision>
     <VersionRevision Condition="'$(GITHUB_RUN_NUMBER)'!=''">$(GITHUB_RUN_NUMBER)</VersionRevision>
     
-    <!-- Versione completa -->
+    <!-- Versione completa: Major.yy.MMdd.Revision -->
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionBuild).$(VersionRevision)</VersionPrefix>
     <Version>$(VersionPrefix)</Version>
     <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
@@ -36,14 +38,14 @@
     
     <!-- Metadati aggiuntivi -->
     <Company>OfficeVersionsCore</Company>
-    <Authors>Roberto Gramegna</Authors>
+    <Authors>Bob Gramellini</Authors>
     <Copyright>Copyright © $([System.DateTime]::Now.Year) OfficeVersionsCore</Copyright>
     <Product>Office &amp; Windows Versions Tracker</Product>
     <Description>ASP.NET Core Razor Pages application for tracking Office 365 and Windows version history</Description>
-    <PackageProjectUrl>https://github.com/robgrame/OfficeVersionsCore</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/robgrame/OfficeVersionsCore</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/rgp-net/Office365Versions.com</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rgp-net/Office365Versions.com</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <NeutralLanguage>it-IT</NeutralLanguage>
+    <NeutralLanguage>en-US</NeutralLanguage>
     
     <!-- Generate XML documentation for all builds -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -51,14 +53,14 @@
 
   <!-- Target per visualizzare la versione corrente durante la build -->
   <Target Name="DisplayVersion" BeforeTargets="CoreCompile">
-    <Message Importance="High" Text="??????????????????????????????????????????????????????????????" />
-    <Message Importance="High" Text="?  Building OfficeVersionsCore                               ?" />
-    <Message Importance="High" Text="??????????????????????????????????????????????????????????????" />
-    <Message Importance="High" Text="?  Version: $(Version)" />
-    <Message Importance="High" Text="?  Informational: $(InformationalVersion)" />
-    <Message Importance="High" Text="?  Configuration: $(Configuration)" />
-    <Message Importance="High" Text="?  Build Date: $([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))" />
-    <Message Importance="High" Text="??????????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="##############################################################" />
+    <Message Importance="High" Text="#  Building OfficeVersionsCore                               #" />
+    <Message Importance="High" Text="##############################################################" />
+    <Message Importance="High" Text="#  Version: $(Version)" />
+    <Message Importance="High" Text="#  Informational: $(InformationalVersion)" />
+    <Message Importance="High" Text="#  Configuration: $(Configuration)" />
+    <Message Importance="High" Text="#  Build Date: $([System.DateTime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))" />
+    <Message Importance="High" Text="##############################################################" />
   </Target>
 
   <!-- Target personalizzato per incrementare manualmente la revision -->
@@ -66,15 +68,15 @@
     <PropertyGroup>
       <NewRevision>$([MSBuild]::Add($(VersionRevision), 1))</NewRevision>
     </PropertyGroup>
-    <Message Importance="High" Text="????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="##############################################################" />
     <Message Importance="High" Text="Current version: $(VersionPrefix)" />
     <Message Importance="High" Text="New revision would be: $(VersionMajor).$(VersionMinor).$(VersionBuild).$(NewRevision)" />
-    <Message Importance="High" Text="????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="##############################################################" />
     <Message Importance="High" Text="To build with new revision, run:" />
     <Message Importance="High" Text="  dotnet build /p:VersionRevision=$(NewRevision)" />
     <Message Importance="High" Text="Or for Release build:" />
     <Message Importance="High" Text="  dotnet build -c Release /p:VersionRevision=$(NewRevision)" />
-    <Message Importance="High" Text="????????????????????????????????????????????????????????" />
+    <Message Importance="High" Text="##############################################################" />
   </Target>
 
   <!-- Target per visualizzare solo la versione (utile per script) -->
