@@ -707,6 +707,7 @@ namespace OfficeVersionsCore.Services
                             var text = ExtractText(p);
                             if (text.Contains("KB", StringComparison.OrdinalIgnoreCase))
                             {
+                                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
@@ -714,7 +715,9 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = ExtractKBNumber(text),
                                     UpdateTitle = text,
                                     ReleaseDate = ExtractDateFromText(text),
-                                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsOptionalUpdate = isOptional,
+                                    Type = updateType
                                 });
                             }
                         }
@@ -747,6 +750,7 @@ namespace OfficeVersionsCore.Services
                                 {
                                     string buildVersion = DetermineVersionFromBuild(build);
                                     if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                    var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
                                     
                                     var update = new WindowsUpdate
                                     {
@@ -756,7 +760,9 @@ namespace OfficeVersionsCore.Services
                                         KBNumber = ExtractKBNumber(text),
                                         UpdateTitle = text,
                                         ReleaseDate = ExtractDateFromText(text),
-                                        IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                        IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                        IsOptionalUpdate = isOptional,
+                                        Type = updateType
                                     };
                                     if (!string.IsNullOrWhiteSpace(description)) update.Description = description.Trim();
                                     updates.Add(update);
@@ -765,6 +771,7 @@ namespace OfficeVersionsCore.Services
                             else
                             {
                                 // No builds found, create single entry without build
+                                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
                                 var update = new WindowsUpdate
                                 {
                                     Edition = edition,
@@ -773,7 +780,9 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = ExtractKBNumber(text),
                                     UpdateTitle = text,
                                     ReleaseDate = ExtractDateFromText(text),
-                                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsOptionalUpdate = isOptional,
+                                    Type = updateType
                                 };
                                 if (!string.IsNullOrWhiteSpace(description)) update.Description = description.Trim();
                                 updates.Add(update);
@@ -848,6 +857,7 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in builds)
                             {
                                 string buildVersion = !string.IsNullOrEmpty(version) ? version : DetermineVersionFromBuild(build);
+                                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(kbOrTitle);
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
@@ -856,13 +866,16 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = kbNumber,
                                     UpdateTitle = kbOrTitle,
                                     ReleaseDate = releaseDate,
-                                    IsSecurityUpdate = kbOrTitle.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                    IsSecurityUpdate = kbOrTitle.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsOptionalUpdate = isOptional,
+                                    Type = updateType
                                 });
                             }
                         }
                         else
                         {
                             // No builds found, create single entry
+                            var (updateType, isOptional) = DetermineUpdateTypeFromTitle(kbOrTitle);
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
@@ -870,7 +883,9 @@ namespace OfficeVersionsCore.Services
                                 KBNumber = kbNumber,
                                 UpdateTitle = kbOrTitle,
                                 ReleaseDate = releaseDate,
-                                IsSecurityUpdate = kbOrTitle.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                IsSecurityUpdate = kbOrTitle.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                IsOptionalUpdate = isOptional,
+                                Type = updateType
                             });
                         }
                     }
@@ -918,6 +933,7 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in colBuilds)
                             {
                                 string buildVersion = !string.IsNullOrEmpty(version) ? version : DetermineVersionFromBuild(build);
+                                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(title);
                                 
                                 updates.Add(new WindowsUpdate
                                 {
@@ -927,13 +943,16 @@ namespace OfficeVersionsCore.Services
                                     KBNumber = colKbNumber,
                                     UpdateTitle = title,
                                     ReleaseDate = colDate,
-                                    IsSecurityUpdate = title.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                    IsSecurityUpdate = title.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsOptionalUpdate = isOptional,
+                                    Type = updateType
                                 });
                             }
                         }
                         else
                         {
                             // No build information
+                            var (updateType, isOptional) = DetermineUpdateTypeFromTitle(title);
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
@@ -941,7 +960,9 @@ namespace OfficeVersionsCore.Services
                                 KBNumber = colKbNumber,
                                 UpdateTitle = title,
                                 ReleaseDate = colDate,
-                                IsSecurityUpdate = title.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                IsSecurityUpdate = title.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                IsOptionalUpdate = isOptional,
+                                Type = updateType
                             });
                         }
                     }
@@ -980,6 +1001,7 @@ namespace OfficeVersionsCore.Services
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
                                 if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(updateText);
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
@@ -989,6 +1011,8 @@ namespace OfficeVersionsCore.Services
                                     UpdateTitle = updateText,
                                     ReleaseDate = releaseDate,
                                     IsSecurityUpdate = updateText.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                    IsOptionalUpdate = isOptional,
+                                    Type = updateType,
                                     SourceUrl = href
                                 });
                             }
@@ -996,6 +1020,7 @@ namespace OfficeVersionsCore.Services
                         else
                         {
                             // No builds found, create single entry
+                            var (updateType, isOptional) = DetermineUpdateTypeFromTitle(updateText);
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
@@ -1005,6 +1030,8 @@ namespace OfficeVersionsCore.Services
                                 UpdateTitle = updateText,
                                 ReleaseDate = releaseDate,
                                 IsSecurityUpdate = updateText.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                IsOptionalUpdate = isOptional,
+                                Type = updateType,
                                 SourceUrl = href
                             });
                         }
@@ -1044,6 +1071,7 @@ namespace OfficeVersionsCore.Services
                     if (versionMatch.Success && versionMatch.Groups.Count > 1) updateVersion = versionMatch.Groups[1].Value;
                 }
 
+                var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
                 return new WindowsUpdate
                 {
                     Edition = edition,
@@ -1052,7 +1080,9 @@ namespace OfficeVersionsCore.Services
                     KBNumber = kbNumber,
                     UpdateTitle = text.Length > 200 ? text.Substring(0, 197) + "..." : text,
                     ReleaseDate = releaseDate,
-                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase) || text.Contains("vulnerability", StringComparison.OrdinalIgnoreCase)
+                    IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase) || text.Contains("vulnerability", StringComparison.OrdinalIgnoreCase),
+                    IsOptionalUpdate = isOptional,
+                    Type = updateType
                 };
             }
             catch (Exception ex)
@@ -1091,6 +1121,7 @@ namespace OfficeVersionsCore.Services
                                         var buildMatch = Regex.Match(text, @"(OS )?Build (\d+\.\d+)", RegexOptions.IgnoreCase);
                                         if (buildMatch.Success && buildMatch.Groups.Count > 2) build = buildMatch.Groups[2].Value;
 
+                                        var (updateType, isOptional) = DetermineUpdateTypeFromTitle(text);
                                         updates.Add(new WindowsUpdate
                                         {
                                             Edition = edition,
@@ -1099,7 +1130,9 @@ namespace OfficeVersionsCore.Services
                                             KBNumber = kbNumber,
                                             UpdateTitle = text.Length > 200 ? text.Substring(0, 197) + "..." : text,
                                             ReleaseDate = ExtractDateFromText(text),
-                                            IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase)
+                                            IsSecurityUpdate = text.Contains("security", StringComparison.OrdinalIgnoreCase),
+                                            IsOptionalUpdate = isOptional,
+                                            Type = updateType
                                         });
                                     }
                                 }
@@ -1526,6 +1559,38 @@ namespace OfficeVersionsCore.Services
             return match.Success ? match.Value.ToUpperInvariant() : string.Empty;
         }
 
+        /// <summary>
+        /// Determines update type and optional flag from the update title text
+        /// </summary>
+        private (string? Type, bool IsOptionalUpdate) DetermineUpdateTypeFromTitle(string title)
+        {
+            if (string.IsNullOrEmpty(title))
+                return (null, false);
+
+            bool isPreview = title.Contains("preview", StringComparison.OrdinalIgnoreCase);
+            bool isOptional = isPreview || title.Contains("optional", StringComparison.OrdinalIgnoreCase);
+
+            // Preview updates are explicitly labeled in the title (e.g., "KB5066198 Preview")
+            if (isPreview)
+            {
+                return ("Preview", true);
+            }
+            else if (title.Contains("cumulative", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("Cumulative", isOptional);
+            }
+            else if (title.Contains("feature", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("Feature", isOptional);
+            }
+            else if (isOptional)
+            {
+                return ("Optional", true);
+            }
+
+            return (null, false);
+        }
+
         private DateTime? ParseDate(string? dateString)
         {
             if (string.IsNullOrWhiteSpace(dateString)) return null;
@@ -1917,7 +1982,13 @@ namespace OfficeVersionsCore.Services
                     update.IsOptionalUpdate = true;
                 }
 
-                if (update.UpdateTitle.Contains("cumulative", StringComparison.OrdinalIgnoreCase) ||
+                // Check for Preview updates first - these should be marked as Preview, not General
+                // Preview updates are explicitly labeled in the title (e.g., "KB5066198 Preview")
+                if (update.UpdateTitle.Contains("preview", StringComparison.OrdinalIgnoreCase))
+                {
+                    update.Type = "Preview";
+                }
+                else if (update.UpdateTitle.Contains("cumulative", StringComparison.OrdinalIgnoreCase) ||
                     mainContent.InnerText.Contains("cumulative update", StringComparison.OrdinalIgnoreCase))
                 {
                     update.Type = "Cumulative";
