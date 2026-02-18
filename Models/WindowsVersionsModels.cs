@@ -22,7 +22,7 @@ namespace OfficeVersionsCore.Models
         public bool IsLatestUpdate { get; set; }
         public string? AdditionalNotes { get; set; }
         public string? SecurityUpdates { get; set; }
-        
+
         // Additional properties to match Microsoft's documentation tables
         public string? EndOfServicingStandard { get; set; } // Home, Pro, Pro Education, Pro for Workstations
         public string? EndOfServicingEnterprise { get; set; } // Enterprise, Education, IoT Enterprise
@@ -30,7 +30,7 @@ namespace OfficeVersionsCore.Models
         public string? ExtendedSupportEndDate { get; set; } // For LTSC editions
         public string? LatestUpdate { get; set; }
         public string? LatestRevisionDate { get; set; }
-        
+
         // Servicing type property to distinguish between regular and LTSC editions
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public ServicingType ServicingType { get; set; } = ServicingType.Regular;
@@ -100,7 +100,8 @@ namespace OfficeVersionsCore.Models
         WindowsServer2016,
         WindowsServer2019,
         WindowsServer2022,
-        WindowsServer2025
+        WindowsServer2025,
+        WindowsServer2012R2
     }
 
     /// <summary>
@@ -137,7 +138,7 @@ namespace OfficeVersionsCore.Models
         public int SecurityUpdates { get; set; }
         public List<WindowsVersion> RecentVersions { get; set; } = new();
         public List<WindowsUpdate> RecentUpdates { get; set; } = new();
-        
+
         // Use specific models for each channel
         public List<RegularServicingVersion> RegularVersions { get; set; } = new();
         public List<LtscServicingVersion> LtscVersions { get; set; } = new();

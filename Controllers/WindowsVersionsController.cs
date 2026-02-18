@@ -960,6 +960,7 @@ namespace OfficeVersionsCore.Controllers
                 // Get releases for all Windows Server editions
                 var serverEditions = new[] 
                 { 
+                    WindowsEdition.WindowsServer2025,
                     WindowsEdition.WindowsServer2022, 
                     WindowsEdition.WindowsServer2019, 
                     WindowsEdition.WindowsServer2016, 
@@ -1012,7 +1013,7 @@ namespace OfficeVersionsCore.Controllers
         /// <summary>
         /// Gets releases for a specific Windows Server version
         /// </summary>
-        /// <param name="version">Windows Server version (2022, 2019, 2016, 2012R2)</param>
+        /// <param name="version">Windows Server version (2025, 2022, 2019, 2016, 2012R2)</param>
         /// <returns>List of releases for the specified version</returns>
         [HttpGet("server/{version}/releases")]
         public async Task<ActionResult<List<object>>> GetWindowsServerVersionReleases(string version)
@@ -1023,6 +1024,7 @@ namespace OfficeVersionsCore.Controllers
 
                 WindowsEdition? edition = version.ToLower() switch
                 {
+                    "2025" => WindowsEdition.WindowsServer2025,
                     "2022" => WindowsEdition.WindowsServer2022,
                     "2019" => WindowsEdition.WindowsServer2019,
                     "2016" => WindowsEdition.WindowsServer2016,
@@ -1035,7 +1037,7 @@ namespace OfficeVersionsCore.Controllers
                     return BadRequest(new
                     {
                         success = false,
-                        message = $"Invalid Windows Server version: {version}. Valid versions are: 2022, 2019, 2016, 2012R2"
+                        message = $"Invalid Windows Server version: {version}. Valid versions are: 2025, 2022, 2019, 2016, 2012R2"
                     });
                 }
 
