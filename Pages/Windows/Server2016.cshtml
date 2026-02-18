@@ -74,7 +74,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="updateDetailsBody">
-                <!-- Details loaded dynamically -->
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -95,7 +94,6 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
-            // Register custom sorting type for Windows versions
             $.fn.dataTable.ext.type.order['windows-version-pre'] = function(version) {
                 return getWindowsVersionSortValue(version);
             };

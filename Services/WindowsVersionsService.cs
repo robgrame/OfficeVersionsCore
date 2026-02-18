@@ -431,9 +431,9 @@ namespace OfficeVersionsCore.Services
                 var server2022Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2022);
                 var server2025Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2025);
 
-                var success = windows10Success && windows11Success && 
-                              server2016Success && server2019Success && 
-                              server2022Success && server2025Success;
+                var success = windows10Success && windows11Success &&
+                    server2016Success && server2019Success &&
+                    server2022Success && server2025Success;
                 _logger.LogInformation("Windows data refresh completed. Success: {Success}", success);
 
                 return success;
