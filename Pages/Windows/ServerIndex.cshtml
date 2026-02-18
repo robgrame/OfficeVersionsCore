@@ -1,0 +1,252 @@
+@page
+@model OfficeVersionsCore.Pages.Windows.ServerIndexModel
+@{
+    ViewData["Title"] = "Windows Server Releases";
+    ViewData["Description"] = "Summary of all Windows Server releases with the latest LCU updates for each operating system version.";
+}
+
+<div class="container">
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-server me-2"></i>
+            </div>
+            <div>
+                <h1 class="card-title">Windows Server Releases</h1>
+                <p class="text-muted mb-0">Latest Cumulative Update (LCU) for each Windows Server operating system</p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4 ps-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" href="/windows/serverindex" role="tab">Server Overview</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2016" role="tab">Server 2016</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2019" role="tab">Server 2019</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2022" role="tab">Server 2022</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2025" role="tab">Server 2025</a>
+            </li>
+        </ul>
+
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>About Windows Server Updates:</strong> This page provides a summary of the latest cumulative updates for each Windows Server version. 
+            Click on any server version to see the complete update history.
+        </div>
+
+        <div class="modern-table-container table-responsive">
+            <table id="serversSummary" class="table modern-table" width="100%">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-server me-2"></i>Server Version</th>
+                        <th><i class="bi bi-tag me-2"></i>Version</th>
+                        <th><i class="bi bi-hash me-2"></i>Latest Build</th>
+                        <th><i class="bi bi-file-text me-2"></i>KB</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                        <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="info-card">
+                    <h5><i class="bi bi-info-circle me-2"></i>Server 2016 & 2019</h5>
+                    <p>Windows Server 2016 follows the Windows 10 version 1607 update schedule, while Windows Server 2019 follows Windows 10 version 1809.</p>
+                    <ul>
+                        <li><a href="https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2016-update-history-4acfbc84-a290-1b54-536a-1c0430e9f3fd" target="_blank" rel="noopener">Server 2016 Update History</a></li>
+                        <li><a href="https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2019-update-history-725fc2e1-4443-6831-a5ca-51ff5cbcb059" target="_blank" rel="noopener">Server 2019 Update History</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="info-card">
+                    <h5><i class="bi bi-info-circle me-2"></i>Server 2022 & 2025</h5>
+                    <p>Windows Server 2022 and 2025 have their own independent update schedules.</p>
+                    <ul>
+                        <li><a href="https://support.microsoft.com/en-us/topic/windows-server-2022-update-history-e1caa597-00c5-4ab9-9f3e-8212fe80b2ee" target="_blank" rel="noopener">Server 2022 Update History</a></li>
+                        <li><a href="https://support.microsoft.com/en-us/topic/windows-server-2025-update-history-10f58da7-e57b-4a9d-9c16-9f1dcd72d7d7" target="_blank" rel="noopener">Server 2025 Update History</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#serversSummary').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: '/api/WindowsVersions/servers/summary',
+                    type: 'GET',
+                    dataType: 'json',
+                    dataSrc: '',
+                    error: function(xhr, error, code) {
+                        console.error('DataTable AJAX error:', error, code);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Loading Data',
+                            text: 'Could not load Windows Server summary data. Please try again later.'
+                        });
+                    }
+                },
+                columns: [
+                    {
+                        data: 'product',
+                        className: 'product-column',
+                        render: function(data) {
+                            if (!data) return '';
+                            
+                            let badgeClass = 'server-badge';
+                            if (data.includes('2016')) {
+                                badgeClass += ' server-2016';
+                            } else if (data.includes('2019')) {
+                                badgeClass += ' server-2019';
+                            } else if (data.includes('2022')) {
+                                badgeClass += ' server-2022';
+                            } else if (data.includes('2025')) {
+                                badgeClass += ' server-2025';
+                            }
+                            
+                            return `<span class="${badgeClass}"><i class="bi bi-server me-2"></i>${data}</span>`;
+                        }
+                    },
+                    {
+                        data: 'version',
+                        className: 'version-column',
+                        render: function(data) {
+                            return data ? `<span class="version-badge">${data}</span>` : 'N/A';
+                        }
+                    },
+                    {
+                        data: 'buildNumber',
+                        className: 'build-column',
+                        render: function(data) {
+                            return data ? `<code class="build-code">${data}</code>` : 'N/A';
+                        }
+                    },
+                    {
+                        data: 'kb',
+                        className: 'kb-column',
+                        render: function(data) {
+                            return data || 'N/A';
+                        }
+                    },
+                    {
+                        data: 'releaseDate',
+                        className: 'release-date-column',
+                        render: function(data) {
+                            if (!data) return 'N/A';
+                            const date = new Date(data);
+                            return isNaN(date) ? data : date.toISOString().substring(0,10);
+                        }
+                    },
+                    {
+                        data: 'servicingOption',
+                        className: 'd-none d-md-table-cell',
+                        render: function(data) {
+                            return data || 'N/A';
+                        }
+                    }
+                ],
+                order: [[ 0, 'asc' ]],  // Sort by Server Version
+                pageLength: 10,
+                lengthMenu: [[5, 10, 25], [5, 10, 25]],
+                paging: false,
+                searching: false,
+                info: false,
+                drawCallback: function() {
+                    if (window.bootstrap && bootstrap.Tooltip) {
+                        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                        tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+                    }
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .server-badge {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .server-2016 {
+            color: #6610F2;
+        }
+
+        .server-2019 {
+            color: #FD7E14;
+        }
+
+        .server-2022 {
+            color: #198754;
+        }
+
+        .server-2025 {
+            color: #0DCAF0;
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: .35rem .6rem;
+            font-weight: 600;
+            font-size: .85rem;
+            border-radius: .65rem;
+            background-color: rgba(13,110,253,.15);
+            color: var(--bs-primary);
+            box-shadow: 0 0 0 1px rgba(13,110,253,.2);
+        }
+
+        .build-code {
+            font-family: monospace;
+            padding: .2rem .4rem;
+            font-size: .85rem;
+            border-radius: .25rem;
+            background-color: rgba(13,110,253,.1);
+            color: var(--bs-primary);
+        }
+
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid var(--bs-primary);
+            font-weight: 600;
+        }
+
+        .info-card {
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: .5rem;
+            background-color: #f8f9fa;
+            height: 100%;
+        }
+
+        .info-card h5 {
+            color: var(--bs-primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .info-card ul {
+            margin-bottom: 0;
+        }
+
+        .info-card li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+}

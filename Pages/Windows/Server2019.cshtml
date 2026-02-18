@@ -1,0 +1,333 @@
+@page
+@model OfficeVersionsCore.Pages.Windows.Server2019Model
+@{
+    ViewData["Title"] = "Windows Server 2019 Releases";
+    ViewData["Description"] = "Complete release history of Windows Server 2019 builds and updates. LCU follows Windows 10 1809 releases.";
+}
+
+<div class="container">
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-server me-2"></i>
+            </div>
+            <div>
+                <h1 class="card-title">Windows Server 2019 Releases</h1>
+                <p class="text-muted mb-0">Complete history of all Windows Server 2019 builds and updates (Cumulative Updates follow Windows 10 version 1809)</p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4 ps-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/serverindex" role="tab">Server Overview</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2016" role="tab">Server 2016</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" href="/windows/server2019" role="tab">Server 2019</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2022" role="tab">Server 2022</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/server2025" role="tab">Server 2025</a>
+            </li>
+        </ul>
+
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Note:</strong> Windows Server 2019 Cumulative Updates follow the same release schedule as Windows 10 version 1809. 
+            For more information, see <a href="https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2019-update-history-725fc2e1-4443-6831-a5ca-51ff5cbcb059" target="_blank" rel="noopener">Windows 10 and Windows Server 2019 update history</a>.
+        </div>
+
+        <div class="modern-table-container table-responsive">
+            <table id="server2019Releases" class="table modern-table" width="100%">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-tag me-2"></i>Version</th>
+                        <th><i class="bi bi-hash me-2"></i>Build</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                        <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                        <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Update Details Modal -->
+<div class="modal fade" id="updateDetailsModal" tabindex="-1" aria-labelledby="updateDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateDetailsModalLabel">
+                    <i class="bi bi-server me-2"></i>Update Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="updateDetailsBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/windows-version-sort.js"></script>
+    <script src="https://cdn.datatables.net/searchbuilder/1.6.0/js/dataTables.searchBuilder.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchbuilder/1.6.0/css/searchBuilder.bootstrap5.min.css" />
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $.fn.dataTable.ext.type.order['windows-version-pre'] = function(version) {
+                return getWindowsVersionSortValue(version);
+            };
+
+            const table = $('#server2019Releases').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: '/api/WindowsVersions/server2019/releases',
+                    type: 'GET',
+                    dataType: 'json',
+                    dataSrc: '',
+                    error: function(xhr, error, code) {
+                        console.error('DataTable AJAX error:', error, code);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error Loading Data',
+                            text: 'Could not load Windows Server 2019 releases data. Please try again later.'
+                        });
+                    }
+                },
+                columns: [
+                    {
+                        data: 'version',
+                        className: 'version-column',
+                        type: 'windows-version-pre',
+                        render: function(data) {
+                            return data ? `<span class="version-badge server-2019-version">${data}</span>` : '';
+                        }
+                    },
+                    {
+                        data: 'buildNumber',
+                        className: 'build-column',
+                        render: function(data) {
+                            return data ? `<code class="build-code server-2019-build">${data}</code>` : '';
+                        }
+                    },
+                    {
+                        data: 'releaseDate',
+                        className: 'release-date-column',
+                        render: function(data) {
+                            if (!data) return '';
+                            const date = new Date(data);
+                            return isNaN(date) ? data : date.toISOString().substring(0,10);
+                        }
+                    },
+                    {
+                        data: 'servicingOption',
+                        className: 'd-none d-md-table-cell'
+                    },
+                    {
+                        data: 'kb',
+                        className: 'd-none d-lg-table-cell',
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (row.url) {
+                                return `<a href="${row.url}" target="_blank" rel="noopener">${data}</a>`;
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'type',
+                        className: 'd-none d-lg-table-cell',
+                        render: function(data) {
+                            if (!data) return '<span class="badge bg-secondary">Unknown</span>';
+
+                            const typeMap = {
+                                'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
+                                'Preview': '<span class="badge bg-info">Preview</span>',
+                                'Security Update': '<span class="badge bg-danger">Quality Update</span>',
+                                'Optional': '<span class="badge bg-secondary">Optional</span>',
+                                'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
+                                'Feature': '<span class="badge bg-success">Feature</span>'
+                            };
+
+                            return typeMap[data] || `<span class="badge bg-secondary">${data}</span>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return `<button type="button" class="btn btn-sm btn-outline-primary btn-details"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="View update details">
+                                        <i class="bi bi-info-circle"></i>
+                                    </button>`;
+                        }
+                    }
+                ],
+                order: [[ 2, 'desc' ], [ 0, 'desc' ]],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                dom: 'QBlfrtip',
+                searchBuilder: {
+                    columns: [0, 1, 4]
+                },
+                drawCallback: function() {
+                    if (window.bootstrap && bootstrap.Tooltip) {
+                        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                        tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+                    }
+
+                    $('.btn-details').off('click').on('click', function() {
+                        const rowData = table.row($(this).parents('tr')).data();
+                        showUpdateDetails(rowData);
+                    });
+                }
+            });
+
+            function getUpdateTypeBadge(type) {
+                if (!type) return '<span class="badge bg-secondary">Unknown</span>';
+                
+                const typeMap = {
+                    'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
+                    'Preview': '<span class="badge bg-info">Preview</span>',
+                    'Security Update': '<span class="badge bg-danger">Quality Update</span>',
+                    'Optional': '<span class="badge bg-secondary">Optional</span>',
+                    'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
+                    'Feature': '<span class="badge bg-success">Feature</span>'
+                };
+                
+                return typeMap[type] || `<span class="badge bg-secondary">${type}</span>`;
+            }
+
+            function showUpdateDetails(update) {
+                const modal = new bootstrap.Modal(document.getElementById('updateDetailsModal'));
+                const modalBody = document.getElementById('updateDetailsBody');
+
+                const kbNumber = update.kb ? update.kb.replace('KB', '') : null;
+                const supportUrl = kbNumber ? `https://support.microsoft.com/help/${kbNumber}` : null;
+
+                let content = `
+                    <div class="update-details-content">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-tag me-2"></i>Version</h6>
+                                <p class="h5">${update.version || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-hash me-2"></i>Build Number</h6>
+                                <p class="h5"><code class="build-code">${update.buildNumber || 'N/A'}</code></p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-calendar-event me-2"></i>Release Date</h6>
+                                <p>${update.releaseDate ? new Date(update.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-gear me-2"></i>Servicing Option</h6>
+                                <p>${update.servicingOption || 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>KB Article</h6>
+                                <p>${update.kb || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted mb-2"><i class="bi bi-tag-fill me-2"></i>Update Type</h6>
+                                <p>${getUpdateTypeBadge(update.type)}</p>
+                            </div>
+                        </div>
+
+                        ${supportUrl ? `
+                        <div class="d-grid gap-2">
+                            <a href="${supportUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>View Microsoft Support Article
+                            </a>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                modalBody.innerHTML = content;
+                modal.show();
+            }
+        });
+    </script>
+
+    <style>
+        .version-badge {
+            display: inline-block;
+            padding: .35rem .6rem;
+            font-weight: 600;
+            font-size: .85rem;
+            border-radius: .65rem;
+        }
+
+        .server-2019-version {
+            background-color: rgba(253, 126, 20, 0.15);
+            color: #FD7E14;
+            box-shadow: 0 0 0 1px rgba(253, 126, 20, 0.2);
+        }
+
+        .build-code {
+            font-family: monospace;
+            padding: .2rem .4rem;
+            font-size: .85rem;
+            border-radius: .25rem;
+        }
+
+        .server-2019-build {
+            background-color: rgba(253, 126, 20, 0.08);
+            color: #FD7E14;
+        }
+
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid var(--bs-primary);
+            font-weight: 600;
+        }
+
+        .dtsb-titleRow {
+            background-color: #f8f9fa;
+            border-radius: .5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .update-details-content {
+            padding: 1rem;
+        }
+
+        .update-details-content h6 {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+    </style>
+}

@@ -80,10 +80,11 @@ namespace OfficeVersionsCore.Models
             {
                 WindowsEdition.Windows10 => "Windows 10",
                 WindowsEdition.Windows11 => "Windows 11",
-                WindowsEdition.WindowsServer2022 => "Windows Server 2022",
-                WindowsEdition.WindowsServer2019 => "Windows Server 2019",
-                WindowsEdition.WindowsServer2016 => "Windows Server 2016",
                 WindowsEdition.WindowsServer2012R2 => "Windows Server 2012 R2",
+                WindowsEdition.WindowsServer2016 => "Windows Server 2016",
+                WindowsEdition.WindowsServer2019 => "Windows Server 2019",
+                WindowsEdition.WindowsServer2022 => "Windows Server 2022",
+                WindowsEdition.WindowsServer2025 => "Windows Server 2025",
                 _ => "Windows"
             };
     }
@@ -95,10 +96,11 @@ namespace OfficeVersionsCore.Models
     {
         Windows10,
         Windows11,
-        WindowsServer2022,
-        WindowsServer2019,
+        WindowsServer2012R2,
         WindowsServer2016,
-        WindowsServer2012R2
+        WindowsServer2019,
+        WindowsServer2022,
+        WindowsServer2025
     }
 
     /// <summary>

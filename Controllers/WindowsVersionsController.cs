@@ -345,6 +345,268 @@ namespace OfficeVersionsCore.Controllers
         }
 
         /// <summary>
+        /// Gets Windows Server 2016 releases for display in the releases table
+        /// </summary>
+        /// <returns>List of Windows Server 2016 releases only</returns>
+        [HttpGet("server2016/releases")]
+        public async Task<ActionResult<List<object>>> GetWindowsServer2016Releases()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Server 2016 releases");
+
+                var releases = new List<object>();
+
+                var serverUpdatesResponse = await _windowsService.GetWindowsUpdatesAsync(WindowsEdition.WindowsServer2016);
+
+                if (serverUpdatesResponse.Success && serverUpdatesResponse.Data != null)
+                {
+                    foreach (var update in serverUpdatesResponse.Data)
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows Server 2016 releases retrieved successfully with {Count} items", sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Server 2016 releases");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets Windows Server 2019 releases for display in the releases table
+        /// </summary>
+        /// <returns>List of Windows Server 2019 releases only</returns>
+        [HttpGet("server2019/releases")]
+        public async Task<ActionResult<List<object>>> GetWindowsServer2019Releases()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Server 2019 releases");
+
+                var releases = new List<object>();
+
+                var serverUpdatesResponse = await _windowsService.GetWindowsUpdatesAsync(WindowsEdition.WindowsServer2019);
+
+                if (serverUpdatesResponse.Success && serverUpdatesResponse.Data != null)
+                {
+                    foreach (var update in serverUpdatesResponse.Data)
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows Server 2019 releases retrieved successfully with {Count} items", sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Server 2019 releases");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets Windows Server 2022 releases for display in the releases table
+        /// </summary>
+        /// <returns>List of Windows Server 2022 releases only</returns>
+        [HttpGet("server2022/releases")]
+        public async Task<ActionResult<List<object>>> GetWindowsServer2022Releases()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Server 2022 releases");
+
+                var releases = new List<object>();
+
+                var serverUpdatesResponse = await _windowsService.GetWindowsUpdatesAsync(WindowsEdition.WindowsServer2022);
+
+                if (serverUpdatesResponse.Success && serverUpdatesResponse.Data != null)
+                {
+                    foreach (var update in serverUpdatesResponse.Data)
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows Server 2022 releases retrieved successfully with {Count} items", sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Server 2022 releases");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets Windows Server 2025 releases for display in the releases table
+        /// </summary>
+        /// <returns>List of Windows Server 2025 releases only</returns>
+        [HttpGet("server2025/releases")]
+        public async Task<ActionResult<List<object>>> GetWindowsServer2025Releases()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Server 2025 releases");
+
+                var releases = new List<object>();
+
+                var serverUpdatesResponse = await _windowsService.GetWindowsUpdatesAsync(WindowsEdition.WindowsServer2025);
+
+                if (serverUpdatesResponse.Success && serverUpdatesResponse.Data != null)
+                {
+                    foreach (var update in serverUpdatesResponse.Data)
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows Server 2025 releases retrieved successfully with {Count} items", sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Server 2025 releases");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets summary of all Windows Server releases with latest LCU for each version
+        /// </summary>
+        /// <returns>Summary with latest updates per server version</returns>
+        [HttpGet("servers/summary")]
+        public async Task<ActionResult<List<object>>> GetWindowsServersSummary()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Servers summary");
+
+                var summary = new List<object>();
+
+                var serverEditions = new[]
+                {
+                    WindowsEdition.WindowsServer2016,
+                    WindowsEdition.WindowsServer2019,
+                    WindowsEdition.WindowsServer2022,
+                    WindowsEdition.WindowsServer2025
+                };
+
+                foreach (var edition in serverEditions)
+                {
+                    var latestResponse = await _windowsService.GetLatestVersionAsync(edition);
+                    
+                    if (latestResponse.Success && latestResponse.Data != null)
+                    {
+                        var latest = latestResponse.Data;
+                        summary.Add(new
+                        {
+                            product = edition.GetDisplayName(),
+                            version = latest.Version,
+                            buildNumber = latest.Build,
+                            kb = latest.KBNumber,
+                            releaseDate = latest.ReleaseDate,
+                            servicingOption = latest.ServiceOption
+                        });
+                    }
+                }
+
+                _logger.LogInformation("Windows Servers summary retrieved successfully with {Count} items", summary.Count);
+                return Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Servers summary");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Gets all Windows updates for a specific edition
         /// </summary>
         /// <param name="edition">The Windows edition (Windows10 or Windows11)</param>
