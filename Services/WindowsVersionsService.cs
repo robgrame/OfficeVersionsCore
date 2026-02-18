@@ -827,7 +827,7 @@ namespace OfficeVersionsCore.Services
                                     var update = new WindowsUpdate
                                     {
                                         Edition = edition,
-                                        Version = buildVersion,
+                                        Version = buildVersion ?? build,
                                         Build = build,
                                         KBNumber = ExtractKBNumber(text),
                                         UpdateTitle = text,
@@ -929,12 +929,13 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in builds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
-                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version ?? build;
+
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(kbOrTitle);
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
-                                    Version = buildVersion,
+                                    Version = buildVersion ?? build,
                                     Build = build,
                                     KBNumber = kbNumber,
                                     UpdateTitle = kbOrTitle,
@@ -1006,13 +1007,13 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in colBuilds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
-                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version ?? build;
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(title);
 
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
-                                    Version = buildVersion,
+                                    Version = buildVersion ?? build,
                                     Build = build,
                                     KBNumber = colKbNumber,
                                     UpdateTitle = title,
@@ -1083,7 +1084,7 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in builds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
-                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version ?? build;
 
                                 _logger.LogDebug("Creating update entry: KB={KB}, Build={Build}, BuildVersion={BuildVersion}, FallbackVersion={FallbackVersion}",
                                     kbNumber, build, buildVersion ?? "NULL", version ?? "NULL");
@@ -1093,7 +1094,7 @@ namespace OfficeVersionsCore.Services
                                 var newUpdate = new WindowsUpdate
                                 {
                                     Edition = edition,
-                                    Version = buildVersion,
+                                    Version = buildVersion ?? build,
                                     Build = build,
                                     KBNumber = kbNumber,
                                     UpdateTitle = updateText,
@@ -1120,7 +1121,7 @@ namespace OfficeVersionsCore.Services
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
-                                Version = version,
+                                Version = version ?? string.Empty,
                                 Build = string.Empty,
                                 KBNumber = kbNumber,
                                 UpdateTitle = updateText,
@@ -1497,15 +1498,6 @@ namespace OfficeVersionsCore.Services
                         if (predicate(kvp.Value)) return kvp.Key;
                     }
                     return null;
-                }
-
-                bool ContainsAll(string text, params string[] tokens)
-                {
-                    foreach (var t in tokens)
-                    {
-                        if (!text.Contains(t, StringComparison.OrdinalIgnoreCase)) return false;
-                    }
-                    return true;
                 }
 
                 var rows = table.SelectNodes(".//tbody/tr") ?? table.SelectNodes(".//tr[not(th)]");

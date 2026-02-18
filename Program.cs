@@ -355,22 +355,22 @@ if (app.Environment.IsDevelopment())
 app.Use(async (context, next) =>
 {
     // Strict-Transport-Security: Enforce HTTPS for 1 year
-    context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+    context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
     
     // X-Content-Type-Options: Prevent MIME type sniffing
-    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
     
     // X-Frame-Options: Prevent clickjacking
-    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers["X-Frame-Options"] = "DENY";
     
     // X-XSS-Protection: Enable browser XSS protection
-    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
     
     // Referrer-Policy: Control referrer information
-    context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     
     // Permissions-Policy: Control browser features
-    context.Response.Headers.Add("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
     
     await next();
 });

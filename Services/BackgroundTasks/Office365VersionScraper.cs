@@ -359,10 +359,16 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
             }
         }
 
-        private async Task UploadJsonDataAsync(Office365VersionsData data, string fileName, CancellationToken cancellationToken)
+        private async Task UploadJsonDataAsync(Office365VersionsData? data, string fileName, CancellationToken cancellationToken)
         {
             try
             {
+                if (data == null)
+                {
+                    _logger.LogWarning("Cannot upload {FileName}: data is null", fileName);
+                    return;
+                }
+
                 _logger.LogInformation("Preparing to upload {FileName} to local storage", fileName);
                 
                 // Convert data to JSON - match PowerShell indentation and casing
