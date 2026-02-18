@@ -2,7 +2,7 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home";
-    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps, Windows 10, and Windows 11 releases. Track versions, build numbers, and release dates across all platforms.";
+    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps, Windows client and Windows Server releases. Track versions, build numbers, and release dates across all platforms.";
 }
 
 <!-- Hero Section -->
@@ -11,7 +11,7 @@
         <div class="hero-content fade-in-up">
             <h1 class="hero-title">Office and Windows Updates</h1>
             <p class="hero-subtitle">
-                Track the latest Microsoft 365 Apps, Windows 10, and Windows 11 releases with version numbers, builds, and key dates
+                Track the latest Microsoft 365 Apps, Windows client and Windows Server releases with version numbers, builds, and key dates
             </p>
             
             <div class="hero-stats" id="hero-stats">
@@ -21,7 +21,7 @@
                     <div class="hero-stat-box">
                         <div class="stat-box-header">
                             <i class="bi bi-file-earmark-text"></i>
-                            <span>Microsoft 365</span>
+                            <span>Microsoft 365 Apps</span>
                         </div>
                         <div class="stat-box-content">
                             <div class="stat-item compact">
@@ -39,7 +39,7 @@
                     <div class="hero-stat-box">
                         <div class="stat-box-header">
                             <i class="bi bi-windows"></i>
-                            <span>Windows</span>
+                            <span>Windows Client</span>
                         </div>
                         <div class="stat-box-content">
                             <div class="stat-item compact">
@@ -49,6 +49,32 @@
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows10-latest-version">-</span>
                                 <span class="stat-label">Win 10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Windows Server Stats -->
+                    <div class="hero-stat-box">
+                        <div class="stat-box-header">
+                            <i class="bi bi-server"></i>
+                            <span>Windows Server</span>
+                        </div>
+                        <div class="stat-box-content flex-wrap">
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2025">-</span>
+                                <span class="stat-label">2025</span>
+                            </div>
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2022">-</span>
+                                <span class="stat-label">2022</span>
+                            </div>
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2019">-</span>
+                                <span class="stat-label">2019</span>
+                            </div>
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2016">-</span>
+                                <span class="stat-label">2016</span>
                             </div>
                         </div>
                     </div>
@@ -672,6 +698,42 @@ $(document).ready(function() {
             .catch(error => { 
                 console.error('Error loading Windows data:', error);
             });
+
+        // Load Windows Server data
+        fetch('/api/WindowsVersions/servers/summary')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    return;
+                }
+
+                const setServerStat = (targetId, item) => {
+                    if (!item) return;
+                    const version = item.version || '-';
+                    const build = item.buildNumber ? ` (${item.buildNumber})` : '';
+                    document.getElementById(targetId).textContent = version + build;
+                };
+
+                const byProduct = data.reduce((acc, item) => {
+                    if (item?.product) {
+                        acc[item.product.toLowerCase()] = item;
+                    }
+                    return acc;
+                }, {});
+
+                setServerStat('windows-server-2025', byProduct['windows server 2025']);
+                setServerStat('windows-server-2022', byProduct['windows server 2022']);
+                setServerStat('windows-server-2019', byProduct['windows server 2019']);
+                setServerStat('windows-server-2016', byProduct['windows server 2016']);
+            })
+            .catch(error => {
+                console.error('Error loading Windows Server data:', error);
+            });
     }
     
     // Deep search function to find timestamp in any nested object
@@ -852,7 +914,7 @@ $(document).ready(function() {
             } else {
                 // Fallback for unparseable dates
                 dateEl.textContent = 'Date format';
-                timeEl.textContent = 'unknown';
+                timeEl.textContent = 'error';
             }
         } 
         catch (e) {
