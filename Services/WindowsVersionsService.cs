@@ -40,6 +40,12 @@ namespace OfficeVersionsCore.Services
         private const string Windows11UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-11-version-24h2-update-history-0929c747-1815-4543-8461-0160d16f15e5";
         private const string Windows10ReleaseInfoUrl = "https://learn.microsoft.com/en-us/windows/release-health/release-information";
         private const string Windows11ReleaseInfoUrl = "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information";
+        
+        // Windows Server update history URLs
+        private const string WindowsServer2016UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2016-update-history-4acfbc84-a290-1b54-536a-1c0430e9f3fd";
+        private const string WindowsServer2019UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2019-update-history-725fc2e1-4443-6831-a5ca-51ff5cbcb059";
+        private const string WindowsServer2022UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-server-2022-update-history-e1caa597-00c5-4ab9-9f3e-8212fe80b2ee";
+        private const string WindowsServer2025UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-server-2025-update-history-10f58da7-e57b-4a9d-9c16-9f1dcd72d7d7";
 
         public WindowsVersionsService(
             HttpClient httpClient,
@@ -420,8 +426,14 @@ namespace OfficeVersionsCore.Services
 
                 var windows10Success = await ScrapeWindowsDataAsync(WindowsEdition.Windows10);
                 var windows11Success = await ScrapeWindowsDataAsync(WindowsEdition.Windows11);
+                var server2016Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2016);
+                var server2019Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2019);
+                var server2022Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2022);
+                var server2025Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2025);
 
-                var success = windows10Success && windows11Success;
+                var success = windows10Success && windows11Success && 
+                              server2016Success && server2019Success && 
+                              server2022Success && server2025Success;
                 _logger.LogInformation("Windows data refresh completed. Success: {Success}", success);
 
                 return success;
@@ -461,6 +473,41 @@ namespace OfficeVersionsCore.Services
         }
 
         /// <summary>
+        /// Gets the update history URL for a specific Windows edition
+        /// </summary>
+        private string GetUpdateHistoryUrl(WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.Windows10 => Windows10UpdateHistoryUrl,
+                WindowsEdition.Windows11 => Windows11UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2016 => WindowsServer2016UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2019 => WindowsServer2019UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2022 => WindowsServer2022UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2025 => WindowsServer2025UpdateHistoryUrl,
+                _ => throw new ArgumentException($"Unknown Windows edition: {edition}")
+            };
+        }
+
+        /// <summary>
+        /// Gets the release information URL for a specific Windows edition
+        /// </summary>
+        private string GetReleaseInfoUrl(WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.Windows10 => Windows10ReleaseInfoUrl,
+                WindowsEdition.Windows11 => Windows11ReleaseInfoUrl,
+                // Windows Server editions share update pages with client editions
+                WindowsEdition.WindowsServer2016 => Windows10ReleaseInfoUrl,
+                WindowsEdition.WindowsServer2019 => Windows10ReleaseInfoUrl,
+                WindowsEdition.WindowsServer2022 => Windows11ReleaseInfoUrl,
+                WindowsEdition.WindowsServer2025 => Windows11ReleaseInfoUrl,
+                _ => throw new ArgumentException($"Unknown Windows edition: {edition}")
+            };
+        }
+
+        /// <summary>
         /// Generates a complete product name with servicing type information
         /// </summary>
         /// <param name="edition">Windows edition (10 or 11)</param>
@@ -478,8 +525,8 @@ namespace OfficeVersionsCore.Services
             {
                 _logger.LogInformation("Scraping Windows data for {Edition}", edition);
 
-                var updateHistoryUrl = edition == WindowsEdition.Windows10 ? Windows10UpdateHistoryUrl : Windows11UpdateHistoryUrl;
-                var releaseInfoUrl = edition == WindowsEdition.Windows10 ? Windows10ReleaseInfoUrl : Windows11ReleaseInfoUrl;
+                var updateHistoryUrl = GetUpdateHistoryUrl(edition);
+                var releaseInfoUrl = GetReleaseInfoUrl(edition);
 
                 var updates = await ScrapeUpdateHistoryAsync(updateHistoryUrl, edition);
                 updates = UpdateDataCleaner.CleanWindowsUpdates(updates);
