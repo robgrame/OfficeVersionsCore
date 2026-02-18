@@ -292,6 +292,83 @@ namespace OfficeVersionsCore.Controllers
         }
 
         /// <summary>
+        /// Gets Windows 10 releases for a specific version
+        /// </summary>
+        /// <param name="version">Windows 10 version (e.g., 22H2, LTSC 2021)</param>
+        /// <returns>List of Windows 10 releases for the specified version</returns>
+        [HttpGet("windows10/version/{version}/releases")]
+        public async Task<ActionResult<List<object>>> GetWindows10ReleasesByVersion(string version)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(version))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Version is required."
+                    });
+                }
+
+                var normalizedVersion = version.Trim();
+                var versionAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "ltsc-2021", "21H2" },
+                    { "ltsc2021", "21H2" },
+                    { "ltsc-2019", "1809" },
+                    { "ltsc2019", "1809" },
+                    { "ltsc-2016", "1607" },
+                    { "ltsc2016", "1607" }
+                };
+
+                if (versionAliases.TryGetValue(normalizedVersion, out var mappedVersion))
+                {
+                    normalizedVersion = mappedVersion;
+                }
+
+                _logger.LogInformation("Fetching Windows 10 releases for version {Version}", normalizedVersion);
+
+                var releases = new List<object>();
+                var win10UpdatesResponse = await _windowsService.GetWindowsUpdatesAsync(WindowsEdition.Windows10);
+
+                if (win10UpdatesResponse.Success && win10UpdatesResponse.Data != null)
+                {
+                    foreach (var update in win10UpdatesResponse.Data.Where(update => string.Equals(update.Version, normalizedVersion, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = update.SupportUrl ?? string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows 10 {Version} releases retrieved successfully with {Count} items", normalizedVersion, sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows 10 releases for version {Version}", version);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Gets Windows 11 releases for display in the releases table
         /// </summary>
         /// <returns>List of Windows 11 releases only</returns>

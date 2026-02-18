@@ -100,8 +100,7 @@ namespace OfficeVersionsCore.Models
         WindowsServer2016,
         WindowsServer2019,
         WindowsServer2022,
-        WindowsServer2025,
-        WindowsServer2012R2
+        WindowsServer2025
     }
 
     /// <summary>

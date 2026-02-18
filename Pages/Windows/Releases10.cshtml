@@ -34,23 +34,148 @@
             </li>
         </ul>
 
-        <div class="modern-table-container table-responsive">
-            <table id="windows10Releases" class="table modern-table" width="100%">
-                <thead>
-                    <tr>
-                        <th><i class="bi bi-tag me-2"></i>Version</th>
-                        <th><i class="bi bi-hash me-2"></i>Build</th>
-                        <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
-                        <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
-                        <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
-                        <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
-                        <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data loaded via AJAX -->
-                </tbody>
-            </table>
+        <ul class="nav nav-pills mb-4 ps-3" id="windows10VersionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="win10-overview-tab" data-bs-toggle="tab" data-bs-target="#win10-overview" type="button" role="tab" aria-controls="win10-overview" aria-selected="true">Overview</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="win10-22h2-tab" data-bs-toggle="tab" data-bs-target="#win10-22h2" type="button" role="tab" aria-controls="win10-22h2" aria-selected="false">22H2</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="win10-21h2-tab" data-bs-toggle="tab" data-bs-target="#win10-21h2" type="button" role="tab" aria-controls="win10-21h2" aria-selected="false">21H2</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="win10-ltsc-2021-tab" data-bs-toggle="tab" data-bs-target="#win10-ltsc-2021" type="button" role="tab" aria-controls="win10-ltsc-2021" aria-selected="false">LTSC 2021</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="win10-ltsc-2019-tab" data-bs-toggle="tab" data-bs-target="#win10-ltsc-2019" type="button" role="tab" aria-controls="win10-ltsc-2019" aria-selected="false">LTSC 2019</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="win10-ltsc-2016-tab" data-bs-toggle="tab" data-bs-target="#win10-ltsc-2016" type="button" role="tab" aria-controls="win10-ltsc-2016" aria-selected="false">LTSC 2016</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="windows10VersionTabContent">
+            <div class="tab-pane fade show active" id="win10-overview" role="tabpanel" aria-labelledby="win10-overview-tab" tabindex="0">
+                <div class="modern-table-container table-responsive">
+                    <table id="windows10Releases" class="table modern-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag me-2"></i>Version</th>
+                                <th><i class="bi bi-hash me-2"></i>Build</th>
+                                <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                                <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="win10-22h2" role="tabpanel" aria-labelledby="win10-22h2-tab" tabindex="0">
+                <div class="modern-table-container table-responsive">
+                    <table id="windows10Releases22h2" class="table modern-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag me-2"></i>Version</th>
+                                <th><i class="bi bi-hash me-2"></i>Build</th>
+                                <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                                <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="win10-21h2" role="tabpanel" aria-labelledby="win10-21h2-tab" tabindex="0">
+                <div class="modern-table-container table-responsive">
+                    <table id="windows10Releases21h2" class="table modern-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag me-2"></i>Version</th>
+                                <th><i class="bi bi-hash me-2"></i>Build</th>
+                                <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                                <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="win10-ltsc-2021" role="tabpanel" aria-labelledby="win10-ltsc-2021-tab" tabindex="0">
+                <div class="modern-table-container table-responsive">
+                    <table id="windows10ReleasesLtsc2021" class="table modern-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag me-2"></i>Version</th>
+                                <th><i class="bi bi-hash me-2"></i>Build</th>
+                                <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                                <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="win10-ltsc-2019" role="tabpanel" aria-labelledby="win10-ltsc-2019-tab" tabindex="0">
+                <div class="modern-table-container table-responsive">
+                    <table id="windows10ReleasesLtsc2019" class="table modern-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag me-2"></i>Version</th>
+                                <th><i class="bi bi-hash me-2"></i>Build</th>
+                                <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                                <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="win10-ltsc-2016" role="tabpanel" aria-labelledby="win10-ltsc-2016-tab" tabindex="0">
+                <div class="modern-table-container table-responsive">
+                    <table id="windows10ReleasesLtsc2016" class="table modern-table" width="100%">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag me-2"></i>Version</th>
+                                <th><i class="bi bi-hash me-2"></i>Build</th>
+                                <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                                <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                                <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                                <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -92,123 +217,166 @@
                 return getWindowsVersionSortValue(version);
             };
 
-            const table = $('#windows10Releases').DataTable({
-                processing: true,
-                serverSide: false,
-                ajax: {
-                    url: '/api/WindowsVersions/windows10/releases',
-                    type: 'GET',
-                    dataType: 'json',
-                    dataSrc: '',
-                    error: function(xhr, error, code) {
-                        console.error('DataTable AJAX error:', error, code);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error Loading Data',
-                            text: 'Could not load Windows 10 releases data. Please try again later.'
+            const columns = [
+                {
+                    data: 'version',
+                    className: 'version-column',
+                    type: 'windows-version-pre',
+                    render: function(data) {
+                        if (!data) return '';
+                        
+                        // Map version to specific color class
+                        const versionClass = data.toLowerCase().replace(/\s+/g, '-');
+                        return `<span class="version-badge win10-${versionClass}">${data}</span>`;
+                    }
+                },
+                {
+                    data: 'buildNumber',
+                    className: 'build-column',
+                    render: function(data, type, row) {
+                        if (!data) return '';
+                        
+                        // Apply same color class as version
+                        const versionClass = row.version ? row.version.toLowerCase().replace(/\s+/g, '-') : '';
+                        return `<code class="build-code win10-${versionClass}">${data}</code>`;
+                    }
+                },
+                {
+                    data: 'releaseDate',
+                    className: 'release-date-column',
+                    render: function(data) {
+                        if (!data) return '';
+                        const date = new Date(data);
+                        return isNaN(date) ? data : date.toISOString().substring(0,10);
+                    }
+                },
+                {
+                    data: 'servicingOption',
+                    className: 'd-none d-md-table-cell'
+                },
+                {
+                    data: 'kb',
+                    className: 'd-none d-lg-table-cell',
+                    render: function(data, type, row) {
+                        if (!data) return '-';
+                        if (row.url) {
+                            return `<a href="${row.url}" target="_blank" rel="noopener">${data}</a>`;
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: 'type',
+                    className: 'd-none d-lg-table-cell',
+                    render: function(data) {
+                        if (!data) return '<span class="badge bg-secondary">Unknown</span>';
+
+                        // Color-coded badges for each update type
+                        const typeMap = {
+                            'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
+                            'Preview': '<span class="badge bg-info">Preview</span>',
+                            'Security Update': '<span class="badge bg-danger">Quality Update</span>',
+                            'Optional': '<span class="badge bg-secondary">Optional</span>',
+                            'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
+                            'Feature': '<span class="badge bg-success">Feature</span>'
+                        };
+
+                        return typeMap[data] || `<span class="badge bg-secondary">${data}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    className: 'text-center',
+                    orderable: false,
+                    render: function() {
+                        return `<button type="button" class="btn btn-sm btn-outline-primary btn-details"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="View update details">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>`;
+                    }
+                }
+            ];
+
+            function initializeTable(tableId, url, enableSearchBuilder) {
+                const table = $(tableId).DataTable({
+                    processing: true,
+                    serverSide: false,
+                    ajax: {
+                        url: url,
+                        type: 'GET',
+                        dataType: 'json',
+                        dataSrc: '',
+                        error: function(xhr, error, code) {
+                            console.error('DataTable AJAX error:', error, code);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error Loading Data',
+                                text: 'Could not load Windows 10 releases data. Please try again later.'
+                            });
+                        }
+                    },
+                    columns: columns,
+                    order: [[ 2, 'desc' ], [ 0, 'desc' ]],  // Sort by Release Date (desc) then Version (desc)
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                    dom: enableSearchBuilder ? 'QBlfrtip' : 'lfrtip',
+                    searchBuilder: enableSearchBuilder ? { columns: [0, 1, 4] } : undefined,
+                    drawCallback: function() {
+                        if (window.bootstrap && bootstrap.Tooltip) {
+                            const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                            tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+                        }
+
+                        $(tableId + ' .btn-details').off('click').on('click', function() {
+                            const rowData = table.row($(this).parents('tr')).data();
+                            showUpdateDetails(rowData);
                         });
                     }
-                },
-                columns: [
-                    {
-                        data: 'version',
-                        className: 'version-column',
-                        type: 'windows-version-pre',
-                        render: function(data) {
-                            if (!data) return '';
-                            
-                            // Map version to specific color class
-                            const versionClass = data.toLowerCase().replace(/\s+/g, '-');
-                            return `<span class="version-badge win10-${versionClass}">${data}</span>`;
-                        }
-                    },
-                    {
-                        data: 'buildNumber',
-                        className: 'build-column',
-                        render: function(data, type, row) {
-                            if (!data) return '';
-                            
-                            // Apply same color class as version
-                            const versionClass = row.version ? row.version.toLowerCase().replace(/\s+/g, '-') : '';
-                            return `<code class="build-code win10-${versionClass}">${data}</code>`;
-                        }
-                    },
-                    {
-                        data: 'releaseDate',
-                        className: 'release-date-column',
-                        render: function(data) {
-                            if (!data) return '';
-                            const date = new Date(data);
-                            return isNaN(date) ? data : date.toISOString().substring(0,10);
-                        }
-                    },
-                    {
-                        data: 'servicingOption',
-                        className: 'd-none d-md-table-cell'
-                    },
-                    {
-                        data: 'kb',
-                        className: 'd-none d-lg-table-cell',
-                        render: function(data, type, row) {
-                            if (!data) return '-';
-                            if (row.url) {
-                                return `<a href="${row.url}" target="_blank" rel="noopener">${data}</a>`;
-                            }
-                            return data;
-                        }
-                    },
-                    {
-                        data: 'type',
-                        className: 'd-none d-lg-table-cell',
-                        render: function(data) {
-                            if (!data) return '<span class="badge bg-secondary">Unknown</span>';
+                });
 
-                            // Color-coded badges for each update type
-                            const typeMap = {
-                                'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
-                                'Preview': '<span class="badge bg-info">Preview</span>',
-                                'Security Update': '<span class="badge bg-danger">Quality Update</span>',
-                                'Optional': '<span class="badge bg-secondary">Optional</span>',
-                                'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
-                                'Feature': '<span class="badge bg-success">Feature</span>'
-                            };
+                return table;
+            }
 
-                            return typeMap[data] || `<span class="badge bg-secondary">${data}</span>`;
-                        }
-                    },
-                    {
-                        data: null,
-                        className: 'text-center',
-                        orderable: false,
-                        render: function(data, type, row) {
-                            return `<button type="button" class="btn btn-sm btn-outline-primary btn-details"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="View update details">
-                                        <i class="bi bi-info-circle"></i>
-                                    </button>`;
-                        }
-                    }
-                ],
-                order: [[ 2, 'desc' ], [ 0, 'desc' ]],  // Sort by Release Date (desc) then Version (desc)
-                pageLength: 25,
-                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                dom: 'QBlfrtip',  // Add SearchBuilder (Q) to the DOM
-                searchBuilder: {
-                    columns: [0, 1, 4]  // Enable SearchBuilder on Version, Build, KB columns
-                },
-                drawCallback: function() {
-                    if (window.bootstrap && bootstrap.Tooltip) {
-                        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-                        tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
-                    }
+            const initializedTables = new Set();
 
-                    // Attach click handlers to details buttons
-                    $('.btn-details').off('click').on('click', function() {
-                        const rowData = table.row($(this).parents('tr')).data();
-                        showUpdateDetails(rowData);
-                    });
+            function ensureTableInitialized(targetId) {
+                if (initializedTables.has(targetId)) {
+                    return;
                 }
+
+                switch (targetId) {
+                    case '#win10-overview':
+                        initializeTable('#windows10Releases', '/api/WindowsVersions/windows10/releases', true);
+                        break;
+                    case '#win10-22h2':
+                        initializeTable('#windows10Releases22h2', '/api/WindowsVersions/windows10/version/22h2/releases', false);
+                        break;
+                    case '#win10-21h2':
+                        initializeTable('#windows10Releases21h2', '/api/WindowsVersions/windows10/version/21h2/releases', false);
+                        break;
+                    case '#win10-ltsc-2021':
+                        initializeTable('#windows10ReleasesLtsc2021', '/api/WindowsVersions/windows10/version/ltsc-2021/releases', false);
+                        break;
+                    case '#win10-ltsc-2019':
+                        initializeTable('#windows10ReleasesLtsc2019', '/api/WindowsVersions/windows10/version/ltsc-2019/releases', false);
+                        break;
+                    case '#win10-ltsc-2016':
+                        initializeTable('#windows10ReleasesLtsc2016', '/api/WindowsVersions/windows10/version/ltsc-2016/releases', false);
+                        break;
+                }
+
+                initializedTables.add(targetId);
+            }
+
+            ensureTableInitialized('#win10-overview');
+
+            document.querySelectorAll('#windows10VersionTabs [data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', event => {
+                    const targetId = event.target.getAttribute('data-bs-target');
+                    ensureTableInitialized(targetId);
+                });
             });
 
             // Helper function to get update type badge
@@ -545,3 +713,4 @@
                 }
     </style>
 }
+

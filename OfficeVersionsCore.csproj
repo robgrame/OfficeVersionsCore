@@ -86,6 +86,7 @@
   
   <!-- Explicitly include GSC CSV file in publish -->
   <ItemGroup>
+    <None Include=".github\copilot-instructions.md" />
     <None Include="Logs\.gitkeep" />
     <None Include="wwwroot\data\gsc-export.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

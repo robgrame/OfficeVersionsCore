@@ -34,13 +34,15 @@ Get instant access to:
 
 ---
 
-### ?? **Windows Version Tracking**
+### ??? **Windows Version Tracking**
 
 Stay informed about Windows releases:
 
 - ?? **Windows 11** - All releases with intelligent build sorting
-- ??? **Windows 10** - Complete version history
-- ?? Smart version sorting (22H2, 21H2, 20H2, etc.)
+- ?? **Windows 11 26H1** - Dedicated update history page and overview
+- ?? **Windows 10** - Complete version history
+- ??? **Windows Server** - Dedicated release pages (2012 R2 through 2025)
+- ? Smart version sorting (22H2, 21H2, 20H2, etc.)
 - ?? Comprehensive release timeline
 
 ---
@@ -57,9 +59,11 @@ Integrate our data into your own applications:
 
 **Example endpoints:**
 ```
-GET /api/M365AppsReleases          - All Office 365 releases
-GET /api/WindowsVersions            - All Windows versions
-GET /api/WindowsVersions/latest     - Latest Windows releases
+GET /api/M365AppsReleases                        - All Office 365 releases
+GET /api/WindowsVersions                         - All Windows versions
+GET /api/WindowsVersions/latest                  - Latest Windows releases
+GET /api/WindowsVersions/windows11/version/26h1/releases - Windows 11 26H1 updates
+GET /api/WindowsVersions/server2016/releases     - Windows Server 2016 updates
 ```
 
 ---
@@ -164,12 +168,13 @@ curl https://www.office365versions.com/api/WindowsVersions/latest
 - ?? Release notes references
 
 ### ?? **Windows Versions**
-- ?? Windows 11 releases
-- ??? Windows 10 releases
+- ?? Windows 11 releases (including 26H1)
+- ?? Windows 10 releases
+- ??? Windows Server releases (2012 R2, 2016, 2019, 2022, 2025)
 - ?? Version identifiers (22H2, 21H2, etc.)
-- ??? Build numbers
+- ?? Build numbers
 - ?? Release dates
-- ??? Service pack information
+- ?? Service pack information
 
 ---
 
@@ -255,6 +260,6 @@ If you find this tool helpful:
 
 **Made with ?? for the IT Community**
 
-*Last updated: 2024*
+*Last updated: 2026*
 
 </div>
