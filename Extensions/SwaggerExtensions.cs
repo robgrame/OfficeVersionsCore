@@ -26,7 +26,7 @@ namespace OfficeVersionsCore
                     Contact = new OpenApiContact
                     {
                         Name = "Office Versions Core",
-                        Url = new Uri("https://github.com/robgrame/OfficeVersionsCore")
+                        Url = new Uri("https://github.com/rgp-net/Office365Versions.com")
                     }
                 });
 

@@ -2,7 +2,11 @@
 @model OfficeVersionsCore.Pages.Windows.Releases11Model
 @{
     ViewData["Title"] = "Windows 11 Releases";
-    ViewData["Description"] = "Complete release history of Windows 11 builds and updates.";
+    ViewData["Description"] = "Complete release history of Windows 11 builds and updates. Track version numbers (25H2, 24H2, 23H2, 22H2), build numbers, KB articles, and update types (Security, Preview, Out-of-band).";
+    ViewData["SeoTitle"] = "Windows 11 Release History - Version Tracker | Build Numbers & KB Articles";
+    ViewData["SeoDescription"] = "Track all Windows 11 releases with version numbers (25H2, 24H2, 23H2, 22H2, 21H2), build numbers, release dates, KB articles, and update types. Complete update history with latest builds.";
+    ViewData["SeoKeywords"] = "Windows 11 releases, Windows 11 versions, Windows 11 build numbers, Windows 11 KB articles, Windows 11 25H2, Windows 11 24H2, Windows 11 23H2, Windows 11 22H2, Windows 11 updates, Windows 11 update history, Windows 11 security updates, Windows 11 preview updates";
+    ViewData["CanonicalUrl"] = "https://www.office365versions.com/windows/releases11";
 }
 
 <div class="container">
@@ -111,14 +115,22 @@ $(document).ready(function() {
                 className: 'version-column',
                 type: 'windows-version-pre',
                 render: function(data) {
-                    return data ? `<span class="version-badge windows-11-version">${data}</span>` : '';
+                    if (!data) return '';
+                    
+                    // Map version to specific color class
+                    const versionClass = data.toLowerCase().replace(/\s+/g, '-');
+                    return `<span class="version-badge win11-${versionClass}">${data}</span>`;
                 }
             },
             {
                 data: 'buildNumber',
                 className: 'build-column',
-                render: function(data) {
-                    return data ? `<code class="build-code windows-11-build">${data}</code>` : '';
+                render: function(data, type, row) {
+                    if (!data) return '';
+                    
+                    // Apply same color class as version
+                    const versionClass = row.version ? row.version.toLowerCase().replace(/\s+/g, '-') : '';
+                    return `<code class="build-code win11-${versionClass}">${data}</code>`;
                 }
             },
             {
@@ -307,36 +319,53 @@ $(document).ready(function() {
 </script>
 
 <style>
-    /* Windows 11 styling - Blue theme */
-    .windows-11-version {
-        background-color: rgba(0, 120, 212, 0.15);
-        color: #0078D4;
-        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.2);
-    }
-    
-    .windows-11-build {
-        color: #0078D4;
-        background-color: rgba(0, 120, 212, 0.08);
-    }
-    
-    /* Base badge and code styling */
+    /* Windows 11 version badge styling - Color-coded by version */
     .version-badge {
         display: inline-block;
         padding: .35rem .6rem;
         font-weight: 600;
         font-size: .85rem;
         border-radius: .65rem;
-        letter-spacing: .5px;
-        white-space: nowrap;
     }
-    
-    /* Default style if no Windows version is matched */
-    .version-badge:not(.windows-11-version) {
-        background-color: rgba(13,110,253,.15);
-        color: var(--bs-primary);
-        box-shadow: 0 0 0 1px rgba(13,110,253,.2);
+
+    /* Windows 11 Version-specific colors */
+    .win11-25h2 {
+        background-color: rgba(102, 16, 242, 0.15);
+        color: #6610f2;
+        box-shadow: 0 0 0 1px rgba(102, 16, 242, 0.2);
     }
-    
+
+    .win11-24h2 {
+        background-color: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
+        box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.2);
+    }
+
+    .win11-23h2 {
+        background-color: rgba(253, 126, 20, 0.15);
+        color: #fd7e14;
+        box-shadow: 0 0 0 1px rgba(253, 126, 20, 0.2);
+    }
+
+    .win11-22h2 {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.2);
+    }
+
+    .win11-21h2 {
+        background-color: rgba(25, 135, 84, 0.15);
+        color: #198754;
+        box-shadow: 0 0 0 1px rgba(25, 135, 84, 0.2);
+    }
+
+    /* Fallback for any other versions */
+    .version-badge:not([class*="win11-"]) {
+        background-color: rgba(0, 120, 212, 0.15);
+        color: #0078D4;
+        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.2);
+    }
+
     .build-code {
         font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         padding: .2rem .4rem;
@@ -344,13 +373,39 @@ $(document).ready(function() {
         border-radius: .25rem;
         white-space: nowrap;
     }
-    
-    /* Default style if no Windows version is matched */
-    .build-code:not(.windows-11-build) {
-        background-color: rgba(13,110,253,.1);
-        color: var(--bs-primary);
+
+    /* Apply version colors to build codes */
+    .build-code.win11-25h2 {
+        background-color: rgba(102, 16, 242, 0.1);
+        color: #6610f2;
     }
-    
+
+    .build-code.win11-24h2 {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .build-code.win11-23h2 {
+        background-color: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+
+    .build-code.win11-22h2 {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+
+    .build-code.win11-21h2 {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+
+    /* Fallback for build codes */
+    .build-code:not([class*="win11-"]) {
+        background-color: rgba(0, 120, 212, 0.1);
+        color: #0078D4;
+    }
+
     .nav-tabs .nav-link.active {
         border-bottom: 3px solid var(--bs-primary);
         font-weight: 600;

@@ -2,7 +2,11 @@
 @model OfficeVersionsCore.Pages.Windows.Releases10Model
 @{
     ViewData["Title"] = "Windows 10 Releases";
-    ViewData["Description"] = "Complete release history of Windows 10 builds and updates.";
+    ViewData["Description"] = "Complete release history of Windows 10 builds and updates. Track version numbers (22H2, 21H2, 20H2), build numbers, KB articles, and update types (Security, Preview, Out-of-band).";
+    ViewData["SeoTitle"] = "Windows 10 Release History - Version Tracker | Build Numbers & KB Articles";
+    ViewData["SeoDescription"] = "Track all Windows 10 releases with version numbers (22H2, 21H2, 20H2), build numbers, release dates, KB articles, and update types. Complete update history from RTM to latest.";
+    ViewData["SeoKeywords"] = "Windows 10 releases, Windows 10 versions, Windows 10 build numbers, Windows 10 KB articles, Windows 10 22H2, Windows 10 21H2, Windows 10 updates, Windows 10 update history, Windows 10 security updates, Windows 10 preview updates";
+    ViewData["CanonicalUrl"] = "https://www.office365versions.com/windows/releases10";
 }
 
 <div class="container">
@@ -111,14 +115,22 @@
                         className: 'version-column',
                         type: 'windows-version-pre',
                         render: function(data) {
-                            return data ? `<span class="version-badge windows-10-version">${data}</span>` : '';
+                            if (!data) return '';
+                            
+                            // Map version to specific color class
+                            const versionClass = data.toLowerCase().replace(/\s+/g, '-');
+                            return `<span class="version-badge win10-${versionClass}">${data}</span>`;
                         }
                     },
                     {
                         data: 'buildNumber',
                         className: 'build-column',
-                        render: function(data) {
-                            return data ? `<code class="build-code windows-10-build">${data}</code>` : '';
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            
+                            // Apply same color class as version
+                            const versionClass = row.version ? row.version.toLowerCase().replace(/\s+/g, '-') : '';
+                            return `<code class="build-code win10-${versionClass}">${data}</code>`;
                         }
                     },
                     {
@@ -307,14 +319,105 @@
     </script>
 
     <style>
+        /* Windows 10 version badge styling - Color-coded by version */
         .version-badge {
             display: inline-block;
             padding: .35rem .6rem;
             font-weight: 600;
             font-size: .85rem;
             border-radius: .65rem;
+        }
+
+        /* Windows 10 Version-specific colors */
+        .win10-22h2 {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.2);
+        }
+
+        .win10-21h2 {
+            background-color: rgba(253, 126, 20, 0.15);
+            color: #fd7e14;
+            box-shadow: 0 0 0 1px rgba(253, 126, 20, 0.2);
+        }
+
+        .win10-21h1 {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+            box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.2);
+        }
+
+        .win10-20h2 {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #198754;
+            box-shadow: 0 0 0 1px rgba(25, 135, 84, 0.2);
+        }
+
+        .win10-2004 {
+            background-color: rgba(13, 202, 240, 0.15);
+            color: #0dcaf0;
+            box-shadow: 0 0 0 1px rgba(13, 202, 240, 0.2);
+        }
+
+        .win10-1909 {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #0d6efd;
+            box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.2);
+        }
+
+        .win10-1903 {
+            background-color: rgba(111, 66, 193, 0.15);
+            color: #6f42c1;
+            box-shadow: 0 0 0 1px rgba(111, 66, 193, 0.2);
+        }
+
+        .win10-1809 {
+            background-color: rgba(214, 51, 132, 0.15);
+            color: #d63384;
+            box-shadow: 0 0 0 1px rgba(214, 51, 132, 0.2);
+        }
+
+        .win10-1803 {
+            background-color: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+            box-shadow: 0 0 0 1px rgba(108, 117, 125, 0.2);
+        }
+
+        .win10-1709 {
+            background-color: rgba(102, 16, 242, 0.15);
+            color: #6610f2;
+            box-shadow: 0 0 0 1px rgba(102, 16, 242, 0.2);
+        }
+
+        .win10-1703 {
+            background-color: rgba(32, 201, 151, 0.15);
+            color: #20c997;
+            box-shadow: 0 0 0 1px rgba(32, 201, 151, 0.2);
+        }
+
+        .win10-1607 {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #0d6efd;
+            box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.2);
+        }
+
+        .win10-1511 {
+            background-color: rgba(111, 66, 193, 0.15);
+            color: #6f42c1;
+            box-shadow: 0 0 0 1px rgba(111, 66, 193, 0.2);
+        }
+
+        .win10-1507 {
+            background-color: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+            box-shadow: 0 0 0 1px rgba(108, 117, 125, 0.2);
+        }
+
+        /* Fallback for any other versions */
+        .version-badge:not([class*="win10-"]) {
             background-color: rgba(13,110,253,.15);
             color: var(--bs-primary);
+            box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.2);
         }
 
         .build-code {
@@ -322,6 +425,81 @@
             padding: .2rem .4rem;
             font-size: .85rem;
             border-radius: .25rem;
+        }
+
+        /* Apply version colors to build codes */
+        .build-code.win10-22h2 {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .build-code.win10-21h2 {
+            background-color: rgba(253, 126, 20, 0.1);
+            color: #fd7e14;
+        }
+
+        .build-code.win10-21h1 {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .build-code.win10-20h2 {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+
+        .build-code.win10-2004 {
+            background-color: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+        }
+
+        .build-code.win10-1909 {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+
+        .build-code.win10-1903 {
+            background-color: rgba(111, 66, 193, 0.1);
+            color: #6f42c1;
+        }
+
+        .build-code.win10-1809 {
+            background-color: rgba(214, 51, 132, 0.1);
+            color: #d63384;
+        }
+
+        .build-code.win10-1803 {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        .build-code.win10-1709 {
+            background-color: rgba(102, 16, 242, 0.1);
+            color: #6610f2;
+        }
+
+        .build-code.win10-1703 {
+            background-color: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+
+        .build-code.win10-1607 {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+
+        .build-code.win10-1511 {
+            background-color: rgba(111, 66, 193, 0.1);
+            color: #6f42c1;
+        }
+
+        .build-code.win10-1507 {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+
+        /* Fallback for build codes */
+        .build-code:not([class*="win10-"]) {
             background-color: rgba(13,110,253,.1);
             color: var(--bs-primary);
         }
