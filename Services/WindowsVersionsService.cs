@@ -33,6 +33,7 @@ namespace OfficeVersionsCore.Services
         private readonly IStorageService _storageService;
         private readonly ILogger<WindowsVersionsService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IWindowsVersionMapper _versionMapper;
         private readonly string _windowsStoragePath;
 
         // Microsoft documentation URLs
@@ -51,12 +52,14 @@ namespace OfficeVersionsCore.Services
             HttpClient httpClient,
             IStorageService storageService,
             ILogger<WindowsVersionsService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IWindowsVersionMapper versionMapper)
         {
             _httpClient = httpClient;
             _storageService = storageService;
             _logger = logger;
             _configuration = configuration;
+            _versionMapper = versionMapper;
 
             // Storage path from configuration (WindowsVersions:StoragePath), default to "windowsversions"
             _windowsStoragePath = _configuration["WindowsVersions:StoragePath"] ?? "windowsversions";
@@ -534,6 +537,11 @@ namespace OfficeVersionsCore.Services
                 // Duplicate multi-build updates to ensure each build has its own entry
                 updates = DuplicateMultiBuildUpdates(updates);
 
+                // Filter updates by edition-specific build numbers
+                // Windows Server editions share update pages with Windows 10/11,
+                // so we need to filter out updates for different OS versions
+                updates = _versionMapper.FilterUpdatesByEdition(updates, edition);
+
                 var recentUpdates = updates
                     .OrderByDescending(u => u.ReleaseDate)
                     .Take(10)
@@ -953,7 +961,7 @@ namespace OfficeVersionsCore.Services
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
-                                Version = version,
+                                Version = version ?? string.Empty,
                                 KBNumber = kbNumber,
                                 UpdateTitle = kbOrTitle,
                                 ReleaseDate = releaseDate,
@@ -1031,7 +1039,7 @@ namespace OfficeVersionsCore.Services
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
-                                Version = version,
+                                Version = version ?? string.Empty,
                                 KBNumber = colKbNumber,
                                 UpdateTitle = title,
                                 ReleaseDate = colDate,
@@ -1055,7 +1063,7 @@ namespace OfficeVersionsCore.Services
             var updates = new List<WindowsUpdate>();
             try
             {
-                var updateLinks = updatesList.SelectNodes(".//li/a[@class='supLeftNavLink']");
+                var updateLinks = updatesList.SelectNodes(".//li/a[@class='supLeftNavLink']"); 
                 if (updateLinks != null)
                 {
                     _logger.LogInformation("ExtractUpdatesFromNavLinks: Found {Count} update links for version {Version}", 
@@ -1122,7 +1130,6 @@ namespace OfficeVersionsCore.Services
                             {
                                 Edition = edition,
                                 Version = version ?? string.Empty,
-                                Build = string.Empty,
                                 KBNumber = kbNumber,
                                 UpdateTitle = updateText,
                                 ReleaseDate = releaseDate,
@@ -1294,54 +1301,8 @@ namespace OfficeVersionsCore.Services
 
         private string DetermineVersionFromBuild(string build)
         {
-            if (string.IsNullOrEmpty(build)) return string.Empty;
-
-            // Validate build format - must be 5 digits minimum for Windows 10/11
-            var buildMatch = Regex.Match(build, @"^(\d{5,})(?:\.\d+)?$");
-            if (!buildMatch.Success)
-            {
-                _logger.LogWarning("Invalid build format: {Build}", build);
-                return string.Empty;
-            }
-
-            string majorBuild = build.Split('.')[0];
-
-            // Validate major build is exactly 5 digits
-            if (majorBuild.Length != 5)
-            {
-                _logger.LogWarning("Invalid major build length: {MajorBuild}", majorBuild);
-                return string.Empty;
-            }
-
-            switch (majorBuild)
-            {
-                // Windows 11 build numbers
-                case "26200": return "25H2"; // Windows 11 25H2
-                case "26100": return "24H2"; // Windows 11 24H2
-                case "22631": return "23H2"; // Windows 11 23H2
-                case "22621": return "22H2"; // Windows 11 22H2
-                case "22000": return "21H2"; // Windows 11 initial release
-
-                // Windows 10 build numbers
-                case "19045": return "22H2"; // Windows 10 22H2
-                case "19044": return "21H2"; // Windows 10 21H2
-                case "19043": return "21H1"; // Windows 10 21H1
-                case "19042": return "20H2"; // Windows 10 20H2
-                case "19041": return "2004"; // Windows 10 2004
-                case "18363": return "1909"; // Windows 10 1909
-                case "18362": return "1903"; // Windows 10 1903
-                case "17763": return "1809"; // Windows 10 1809
-                case "17134": return "1803"; // Windows 10 1803
-                case "16299": return "1709"; // Windows 10 1709
-                case "15254": return "1709 Mobile";
-                case "15063": return "1703"; // Windows 10 1703
-                case "14393": return "1607"; // Windows 10 1607
-                case "10586": return "1511"; // Windows 10 1511
-                case "10240": return "1507"; // Windows 10 initial release
-                default:
-                    _logger.LogWarning("Unrecognized Windows build number: {MajorBuild}", majorBuild);
-                    return string.Empty;
-            }
+            // Delegate to WindowsVersionMapper
+            return _versionMapper.DetermineVersionFromBuild(build);
         }
 
         private DateTime? ExtractDateFromText(string text)
@@ -1442,6 +1403,7 @@ namespace OfficeVersionsCore.Services
                 if (node != null) return node;
                 // case-insensitive contains
                 node = doc.DocumentNode.SelectSingleNode($"//table[contains(translate(@aria-label,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'), '{label.ToLower()}')]");
+
                 if (node != null) return node;
             }
             return null;
@@ -1917,7 +1879,7 @@ namespace OfficeVersionsCore.Services
             return list;
         }
 
-        private async Task<List<WindowsVersion>?> LoadVersionsFromStorageAsync(WindowsEdition edition)
+        private async Task<List<WindowsVersion>?> LoadVersionsFromStorageAsync( WindowsEdition edition)
         {
             try
             {

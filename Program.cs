@@ -114,6 +114,9 @@ builder.Services.AddScoped<IOffice365Service, Office365Service>();
 // Register Windows versions service
 builder.Services.AddScoped<IWindowsVersionsService, WindowsVersionsService>();
 
+// Register Windows version mapper service
+builder.Services.AddScoped<IWindowsVersionMapper, WindowsVersionMapper>();
+
 // Register the background service for Office 365 version scraping
 // Only register if enabled in configuration
 if (builder.Configuration.GetValue<bool>("Office365Scraper:Enabled", false))
