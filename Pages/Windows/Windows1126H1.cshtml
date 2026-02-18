@@ -1,12 +1,12 @@
-@page
-@model OfficeVersionsCore.Pages.Windows.Releases11Model
+@page "/windows/26h1"
+@model OfficeVersionsCore.Pages.Windows.Windows1126H1Model
 @{
-    ViewData["Title"] = "Windows 11 Releases";
-    ViewData["Description"] = "Complete release history of Windows 11 builds and updates. Track version numbers (26H1, 25H2, 24H2, 23H2, 22H2), build numbers, KB articles, and update types (Security, Preview, Out-of-band).";
-    ViewData["SeoTitle"] = "Windows 11 Release History - Version Tracker | Build Numbers & KB Articles";
-    ViewData["SeoDescription"] = "Track all Windows 11 releases with version numbers (26H1, 25H2, 24H2, 23H2, 22H2, 21H2), build numbers, release dates, KB articles, and update types. Complete update history with latest builds.";
-    ViewData["SeoKeywords"] = "Windows 11 releases, Windows 11 versions, Windows 11 build numbers, Windows 11 KB articles, Windows 11 26H1, Windows 11 25H2, Windows 11 24H2, Windows 11 23H2, Windows 11 22H2, Windows 11 updates, Windows 11 update history, Windows 11 security updates, Windows 11 preview updates";
-    ViewData["CanonicalUrl"] = "https://www.office365versions.com/windows/releases11";
+    ViewData["Title"] = "Windows 11 26H1 Releases";
+    ViewData["Description"] = "Complete update history of Windows 11 version 26H1 builds and updates. Track build numbers, KB articles, and update types (Security, Preview, Out-of-band).";
+    ViewData["SeoTitle"] = "Windows 11 26H1 Update History - Build 28000 | KB Articles";
+    ViewData["SeoDescription"] = "Track Windows 11 26H1 updates with build numbers (28000), release dates, KB articles, and update types. Complete update history with the latest build details.";
+    ViewData["SeoKeywords"] = "Windows 11 26H1, Windows 11 26H1 update history, Windows 11 26H1 build 28000, Windows 11 26H1 KB articles, Windows 11 26H1 updates";
+    ViewData["CanonicalUrl"] = "https://www.office365versions.com/windows/26h1";
 }
 
 <div class="container">
@@ -16,8 +16,39 @@
                 <i class="bi bi-windows me-2"></i>
             </div>
             <div>
-                <h1 class="card-title">Windows 11 Releases</h1>
-                <p class="text-muted mb-0">Complete history of all Windows 11 builds and updates</p>
+                <h1 class="card-title">Windows 11 26H1 Releases</h1>
+                <p class="text-muted mb-0">Update history for Windows 11 version 26H1 (Build 28000)</p>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Source:</strong> Updates are sourced from <a href="https://support.microsoft.com/en-us/topic/windows-11-version-26h1-update-history-253c73cd-cab1-4bfd-94dc-76c452273fc9" target="_blank" rel="noopener">Microsoft's official update history</a>.
+        </div>
+
+        <div class="modern-card mb-4">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Windows 11 26H1 Overview</h2>
+                    <p class="text-muted mb-0">Highlights from Microsoft's release description</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">Windows 11 version 26H1 is a specialized release for next-generation hardware platforms, available only preinstalled on select new devices launching in early 2026. It isn't an annual feature update and isn't offered through Windows Update for in-place upgrades on existing devices.</p>
+                <p class="mb-3">For enterprise deployment, Microsoft recommends continuing with versions 24H2 and 25H2. Version 26H1 follows the standard Windows 11 servicing timeline (24 months for Pro and 36 months for Enterprise) and continues to receive monthly security and preview updates.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="https://learn.microsoft.com/en-us/windows/whats-new/windows-11-version-26h1" target="_blank" rel="noopener" class="btn-modern btn-primary">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        Read the full overview
+                    </a>
+                    <a href="https://aka.ms/26H1-for-IT-pros" target="_blank" rel="noopener" class="btn-modern btn-secondary">
+                        <i class="bi bi-link-45deg"></i>
+                        IT pro guidance
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -27,7 +58,10 @@
                 <a class="nav-link" href="/windows/releases10" role="tab">Windows 10</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link active" href="/windows/releases11" role="tab">Windows 11</a>
+                <a class="nav-link" href="/windows/releases11" role="tab">Windows 11</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" href="/windows/26h1" role="tab">Windows 11 26H1</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" href="/windows/releases" role="tab">All Releases</a>
@@ -35,7 +69,7 @@
         </ul>
 
         <div class="modern-table-container table-responsive">
-            <table id="windows11Releases" class="table modern-table" width="100%">
+            <table id="windows1126h1Releases" class="table modern-table" width="100%">
                 <thead>
                     <tr>
                         <th><i class="bi bi-tag me-2"></i>Version</th>
@@ -66,7 +100,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="updateDetailsBody">
-                <!-- Details loaded dynamically -->
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -82,21 +115,18 @@
 
 @section Scripts {
 <script src="~/js/windows-version-sort.js"></script>
-<script src="https://cdn.datatables.net/searchbuilder/1.6.0/js/dataTables.searchBuilder.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/searchbuilder/1.6.0/css/searchBuilder.bootstrap5.min.css" />
 
 <script type="text/javascript">
 $(document).ready(function() {
-    // Register custom sorting type for Windows versions
     $.fn.dataTable.ext.type.order['windows-version-pre'] = function(version) {
         return getWindowsVersionSortValue(version);
     };
 
-    const table = $('#windows11Releases').DataTable({
+    const table = $('#windows1126h1Releases').DataTable({
         processing: true,
         serverSide: false,
         ajax: {
-            url: '/api/WindowsVersions/windows11/releases',
+            url: '/api/WindowsVersions/windows11/version/26h1/releases',
             type: 'GET',
             dataType: 'json',
             dataSrc: '',
@@ -105,7 +135,7 @@ $(document).ready(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error Loading Data',
-                    text: 'Could not load Windows 11 releases data. Please try again later.'
+                    text: 'Could not load Windows 11 26H1 releases data. Please try again later.'
                 });
             }
         },
@@ -116,21 +146,15 @@ $(document).ready(function() {
                 type: 'windows-version-pre',
                 render: function(data) {
                     if (!data) return '';
-                    
-                    // Map version to specific color class
-                    const versionClass = data.toLowerCase().replace(/\s+/g, '-');
-                    return `<span class="version-badge win11-${versionClass}">${data}</span>`;
+                    return `<span class="version-badge win11-26h1">${data}</span>`;
                 }
             },
             {
                 data: 'buildNumber',
                 className: 'build-column',
-                render: function(data, type, row) {
+                render: function(data) {
                     if (!data) return '';
-                    
-                    // Apply same color class as version
-                    const versionClass = row.version ? row.version.toLowerCase().replace(/\s+/g, '-') : '';
-                    return `<code class="build-code win11-${versionClass}">${data}</code>`;
+                    return `<code class="build-code win11-26h1">${data}</code>`;
                 }
             },
             {
@@ -162,8 +186,7 @@ $(document).ready(function() {
                 className: 'd-none d-lg-table-cell',
                 render: function(data) {
                     if (!data) return '<span class="badge bg-secondary">Unknown</span>';
-                    
-                    // Color-coded badges for each update type
+
                     const typeMap = {
                         'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
                         'Preview': '<span class="badge bg-info">Preview</span>',
@@ -172,7 +195,7 @@ $(document).ready(function() {
                         'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
                         'Feature': '<span class="badge bg-success">Feature</span>'
                     };
-                    
+
                     return typeMap[data] || `<span class="badge bg-secondary">${data}</span>`;
                 }
             },
@@ -180,41 +203,35 @@ $(document).ready(function() {
                 data: null,
                 className: 'text-center',
                 orderable: false,
-                render: function(data, type, row) {
-                    return `<button type="button" class="btn btn-sm btn-outline-primary btn-details" 
-                                data-bs-toggle="tooltip" 
-                                data-bs-placement="top" 
+                render: function() {
+                    return `<button type="button" class="btn btn-sm btn-outline-primary btn-details"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
                                 title="View update details">
                                 <i class="bi bi-info-circle"></i>
                             </button>`;
                 }
             }
         ],
-        order: [[ 2, 'desc' ], [ 0, 'desc' ]],  // Sort by Release Date (desc) then Version (desc)
+        order: [[ 2, 'desc' ]],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-        dom: 'QBlfrtip',  // Add SearchBuilder (Q) to the DOM
-        searchBuilder: {
-            columns: [0, 1, 4]  // Enable SearchBuilder on Version, Build, KB columns
-        },
         drawCallback: function() {
             if (window.bootstrap && bootstrap.Tooltip) {
                 const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
                 tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
             }
-            
-            // Attach click handlers to details buttons
+
             $('.btn-details').off('click').on('click', function() {
                 const rowData = table.row($(this).parents('tr')).data();
                 showUpdateDetails(rowData);
             });
         }
     });
-    
-    // Helper function to get update type badge
+
     function getUpdateTypeBadge(type) {
         if (!type) return '<span class="badge bg-secondary">Unknown</span>';
-        
+
         const typeMap = {
             'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
             'Preview': '<span class="badge bg-info">Preview</span>',
@@ -223,20 +240,17 @@ $(document).ready(function() {
             'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
             'Feature': '<span class="badge bg-success">Feature</span>'
         };
-        
+
         return typeMap[type] || `<span class="badge bg-secondary">${type}</span>`;
     }
-    
-    // Function to show update details modal
+
     function showUpdateDetails(update) {
         const modal = new bootstrap.Modal(document.getElementById('updateDetailsModal'));
         const modalBody = document.getElementById('updateDetailsBody');
-        
-        // Extract KB number from the KB field
+
         const kbNumber = update.kb ? update.kb.replace('KB', '') : null;
         const supportUrl = kbNumber ? `https://support.microsoft.com/help/${kbNumber}` : null;
-        
-        // Build the modal content
+
         let content = `
             <div class="update-details-content">
                 <div class="row mb-3">
@@ -249,7 +263,7 @@ $(document).ready(function() {
                         <p class="h5"><code class="build-code">${update.buildNumber || 'N/A'}</code></p>
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <h6 class="text-muted mb-2"><i class="bi bi-calendar-event me-2"></i>Release Date</h6>
@@ -260,7 +274,7 @@ $(document).ready(function() {
                         <p>${update.servicingOption || 'N/A'}</p>
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>KB Article</h6>
@@ -271,14 +285,14 @@ $(document).ready(function() {
                         <p>${getUpdateTypeBadge(update.type)}</p>
                     </div>
                 </div>
-                
+
                 ${update.description ? `
                 <div class="mb-3">
                     <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>Description</h6>
                     <p class="text-muted">${update.description}</p>
                 </div>
                 ` : ''}
-                
+
                 ${update.highlights && update.highlights.length > 0 ? `
                 <div class="mb-3">
                     <h6 class="text-muted mb-2"><i class="bi bi-star me-2"></i>Highlights</h6>
@@ -287,7 +301,7 @@ $(document).ready(function() {
                     </ul>
                 </div>
                 ` : ''}
-                
+
                 ${update.knownIssues && update.knownIssues.length > 0 ? `
                 <div class="mb-3">
                     <h6 class="text-muted mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Known Issues</h6>
@@ -296,7 +310,7 @@ $(document).ready(function() {
                     </ul>
                 </div>
                 ` : ''}
-                
+
                 ${supportUrl ? `
                 <div class="d-grid gap-2">
                     <a href="${supportUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
@@ -311,7 +325,7 @@ $(document).ready(function() {
                 ` : ''}
             </div>
         `;
-        
+
         modalBody.innerHTML = content;
         modal.show();
     }
@@ -319,7 +333,6 @@ $(document).ready(function() {
 </script>
 
 <style>
-    /* Windows 11 version badge styling - Color-coded by version */
     .version-badge {
         display: inline-block;
         padding: .35rem .6rem;
@@ -328,48 +341,10 @@ $(document).ready(function() {
         border-radius: .65rem;
     }
 
-    /* Windows 11 Version-specific colors */
     .win11-26h1 {
         background-color: rgba(13, 110, 253, 0.15);
         color: #0d6efd;
         box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.2);
-    }
-
-    .win11-25h2 {
-        background-color: rgba(102, 16, 242, 0.15);
-        color: #6610f2;
-        box-shadow: 0 0 0 1px rgba(102, 16, 242, 0.2);
-    }
-
-    .win11-24h2 {
-        background-color: rgba(220, 53, 69, 0.15);
-        color: #dc3545;
-        box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.2);
-    }
-
-    .win11-23h2 {
-        background-color: rgba(253, 126, 20, 0.15);
-        color: #fd7e14;
-        box-shadow: 0 0 0 1px rgba(253, 126, 20, 0.2);
-    }
-
-    .win11-22h2 {
-        background-color: rgba(255, 193, 7, 0.15);
-        color: #ffc107;
-        box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.2);
-    }
-
-    .win11-21h2 {
-        background-color: rgba(25, 135, 84, 0.15);
-        color: #198754;
-        box-shadow: 0 0 0 1px rgba(25, 135, 84, 0.2);
-    }
-
-    /* Fallback for any other versions */
-    .version-badge:not([class*="win11-"]) {
-        background-color: rgba(0, 120, 212, 0.15);
-        color: #0078D4;
-        box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.2);
     }
 
     .build-code {
@@ -380,82 +355,31 @@ $(document).ready(function() {
         white-space: nowrap;
     }
 
-    /* Apply version colors to build codes */
     .build-code.win11-26h1 {
         background-color: rgba(13, 110, 253, 0.1);
         color: #0d6efd;
     }
 
-    .build-code.win11-25h2 {
-        background-color: rgba(102, 16, 242, 0.1);
-        color: #6610f2;
-    }
-
-    .build-code.win11-24h2 {
-        background-color: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-    }
-
-    .build-code.win11-23h2 {
-        background-color: rgba(253, 126, 20, 0.1);
-        color: #fd7e14;
-    }
-
-    .build-code.win11-22h2 {
-        background-color: rgba(255, 193, 7, 0.1);
-        color: #ffc107;
-    }
-
-    .build-code.win11-21h2 {
-        background-color: rgba(25, 135, 84, 0.1);
-        color: #198754;
-    }
-
-    /* Fallback for build codes */
-    .build-code:not([class*="win11-"]) {
-        background-color: rgba(0, 120, 212, 0.1);
-        color: #0078D4;
-    }
-
-    .nav-tabs .nav-link.active {
-        border-bottom: 3px solid var(--bs-primary);
-        font-weight: 600;
-    }
-    
-    /* SearchBuilder styling adjustments */
-    .dtsb-titleRow {
-        background-color: #f8f9fa;
-        border-radius: .5rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .dtsb-logicalOperator button {
-        margin-right: 0.5rem;
-    }
-    
-    /* Update Details Modal Styling */
     .update-details-content {
         padding: 1rem;
     }
-    
+
     .update-details-content h6 {
         font-weight: 600;
         text-transform: uppercase;
         font-size: 0.75rem;
         letter-spacing: 0.5px;
     }
-    
+
     .update-details-content .list-group-item {
         border-left: 3px solid var(--bs-primary);
         border-right: none;
         border-top: none;
         border-bottom: 1px solid rgba(0,0,0,.125);
     }
-    
+
     .update-details-content .list-group-item:last-child {
         border-bottom: none;
     }
 </style>
 }
-

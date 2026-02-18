@@ -80,6 +80,7 @@ namespace OfficeVersionsCore.Controllers
                 AddUrlToSitemap(sitemap, baseUrl, "/Windows/Index", changeFreq: "daily", priority: "0.85");
                 AddUrlToSitemap(sitemap, baseUrl, "/Windows/Releases", changeFreq: "daily", priority: "0.8");
                 AddUrlToSitemap(sitemap, baseUrl, "/Windows/Releases11", changeFreq: "daily", priority: "0.85");
+                AddUrlToSitemap(sitemap, baseUrl, "/Windows/26H1", changeFreq: "daily", priority: "0.85");
                 AddUrlToSitemap(sitemap, baseUrl, "/Windows/Releases10", changeFreq: "daily", priority: "0.8");
                 
                 // Informational Pages

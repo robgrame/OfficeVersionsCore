@@ -345,6 +345,67 @@ namespace OfficeVersionsCore.Controllers
         }
 
         /// <summary>
+        /// Gets Windows 11 releases for a specific version
+        /// </summary>
+        /// <param name="version">Windows 11 version (e.g., 26H1)</param>
+        /// <returns>List of Windows 11 releases for the specified version</returns>
+        [HttpGet("windows11/version/{version}/releases")]
+        public async Task<ActionResult<List<object>>> GetWindows11ReleasesByVersion(string version)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(version))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Version is required."
+                    });
+                }
+
+                _logger.LogInformation("Fetching Windows 11 releases for version {Version}", version);
+
+                var releases = new List<object>();
+                var win11UpdatesResponse = await _windowsService.GetWindowsUpdatesAsync(WindowsEdition.Windows11);
+
+                if (win11UpdatesResponse.Success && win11UpdatesResponse.Data != null)
+                {
+                    foreach (var update in win11UpdatesResponse.Data.Where(update => string.Equals(update.Version, version, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = update.SupportUrl ?? string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows 11 {Version} releases retrieved successfully with {Count} items", version, sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows 11 releases for version {Version}", version);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
         /// Gets Windows Server 2016 releases for display in the releases table
         /// </summary>
         /// <returns>List of Windows Server 2016 releases only</returns>

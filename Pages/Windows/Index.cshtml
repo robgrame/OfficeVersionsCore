@@ -266,6 +266,7 @@ $(document).ready(function() {
         const productLower = product.toLowerCase();
         
         // Windows 11 versions (newer to older)
+        if (productLower.includes('26h1')) return 'win11-26h1';
         if (productLower.includes('25h2')) return 'win11-25h2';
         if (productLower.includes('24h2')) return 'win11-24h2';
         if (productLower.includes('23h2')) return 'win11-23h2';
@@ -501,6 +502,17 @@ $(document).ready(function() {
         white-space: nowrap;
         color: var(--bs-primary);
         background-color: rgba(13,110,253,.1);
+    }
+    
+    /* Windows 11 26H1 - Azure Blue */
+    .version-badge.win11-26h1 {
+        background-color: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
+        box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.3);
+    }
+    .build-code.win11-26h1 {
+        color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.1);
     }
     
     /* Windows 11 25H2 - Deep Blue */
