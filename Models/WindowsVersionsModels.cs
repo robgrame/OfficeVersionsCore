@@ -123,6 +123,13 @@ namespace OfficeVersionsCore.Models
         public bool IsSecurityUpdate { get; set; }
         public bool IsOptionalUpdate { get; set; }
         public string SourceUrl { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Servicing channel: LTSC (Long-Term Servicing Channel) or AC (Annual Channel)
+        /// For Windows Server: LTSC provides 5-10 years support, AC provides 6 months support
+        /// Legacy SAC (Semi-Annual Channel) was retired August 9, 2022
+        /// </summary>
+        public string? ServicingChannel { get; set; } // LTSC, AC, or null for non-server editions
     }
 
     /// <summary>

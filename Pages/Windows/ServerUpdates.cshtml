@@ -37,17 +37,37 @@
             </li>
         </ul>
 
-        <!-- Version Filter -->
+        <!-- Version & Servicing Channel Filters -->
         <div class="mb-4 p-3 bg-light rounded">
-            <label for="versionFilter" class="form-label"><strong>Filter by Version:</strong></label>
-            <select id="versionFilter" class="form-select" style="max-width: 300px;">
-                <option value="">All Versions</option>
-                <option value="2025">Windows Server 2025</option>
-                <option value="2022">Windows Server 2022</option>
-                <option value="2019">Windows Server 2019</option>
-                <option value="2016">Windows Server 2016</option>
-                <option value="2012">Windows Server 2012 R2</option>
-            </select>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="versionFilter" class="form-label"><strong>Filter by Version:</strong></label>
+                    <select id="versionFilter" class="form-select">
+                        <option value="">All Versions</option>
+                        <option value="2025">Windows Server 2025</option>
+                        <option value="2022">Windows Server 2022</option>
+                        <option value="2019">Windows Server 2019</option>
+                        <option value="2016">Windows Server 2016</option>
+                        <option value="2012">Windows Server 2012 R2</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="servicingFilter" class="form-label"><strong>Filter by Servicing Channel:</strong></label>
+                    <select id="servicingFilter" class="form-select">
+                        <option value="">All Channels</option>
+                        <option value="LTSC">Long-Term Servicing Channel (LTSC)</option>
+                        <option value="AC">Annual Channel (AC)</option>
+                    </select>
+                    <small class="text-muted d-block mt-1">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>LTSC:</strong> Longer support lifecycle (5-10 years) | 
+                        <strong>AC:</strong> Frequent updates, shorter support (6 months)
+                    </small>
+                </div>
+            </div>
+            <small class="text-muted d-block mt-2">
+                <em>Note: Windows Server Semi-Annual Channel (SAC) was retired on August 9, 2022. Only LTSC and Annual Channel (AC) are currently supported.</em>
+            </small>
         </div>
 
         <div class="modern-table-container table-responsive">
@@ -231,11 +251,29 @@
         $('#versionFilter').on('change', function() {
         const filterValue = $(this).val();
         if (filterValue) {
-        table.column(0).search(filterValue, true, false).draw();
+            table.column(0).search(filterValue, true, false).draw();
         } else {
-        table.column(0).search('').draw();
+            table.column(0).search('').draw();
         }
-        });
+    });
+
+    // Servicing channel filter
+    $('#servicingFilter').on('change', function() {
+        const filterValue = $(this).val();
+        if (filterValue) {
+            // Filter by servicing channel in the update title or type field
+            table.column(4).search(filterValue === 'LTSC' ? 'LTSC|Enterprise' : 'Annual Channel|23H2|24H2|25H2', true, false).draw();
+        } else {
+            table.column(4).search('').draw();
+        }
+    });
+    
+        // Reset both filters together
+        function resetFilters() {
+        $('#versionFilter').val('');
+        $('#servicingFilter').val('');
+        table.column(0).search('').column(4).search('').draw();
+    }
     
         // Helper function to get update type badge
         function getUpdateTypeBadge(type) {
