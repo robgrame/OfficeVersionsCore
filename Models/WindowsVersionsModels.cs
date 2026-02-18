@@ -80,6 +80,10 @@ namespace OfficeVersionsCore.Models
             {
                 WindowsEdition.Windows10 => "Windows 10",
                 WindowsEdition.Windows11 => "Windows 11",
+                WindowsEdition.WindowsServer2022 => "Windows Server 2022",
+                WindowsEdition.WindowsServer2019 => "Windows Server 2019",
+                WindowsEdition.WindowsServer2016 => "Windows Server 2016",
+                WindowsEdition.WindowsServer2012R2 => "Windows Server 2012 R2",
                 _ => "Windows"
             };
     }
@@ -90,7 +94,11 @@ namespace OfficeVersionsCore.Models
     public enum WindowsEdition
     {
         Windows10,
-        Windows11
+        Windows11,
+        WindowsServer2022,
+        WindowsServer2019,
+        WindowsServer2016,
+        WindowsServer2012R2
     }
 
     /// <summary>
@@ -232,3 +240,4 @@ namespace OfficeVersionsCore.Models
         public string? UpgradePath { get; set; }
     }
 }
+

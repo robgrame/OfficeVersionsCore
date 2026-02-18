@@ -681,5 +681,142 @@ namespace OfficeVersionsCore.Controllers
                 });
             }
         }
+
+        /// <summary>
+        /// Gets all Windows Server releases
+        /// </summary>
+        /// <returns>List of all Windows Server releases</returns>
+        [HttpGet("server/releases")]
+        public async Task<ActionResult<List<object>>> GetWindowsServerReleases()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Server releases");
+
+                var releases = new List<object>();
+
+                // Get releases for all Windows Server editions
+                var serverEditions = new[] 
+                { 
+                    WindowsEdition.WindowsServer2022, 
+                    WindowsEdition.WindowsServer2019, 
+                    WindowsEdition.WindowsServer2016, 
+                    WindowsEdition.WindowsServer2012R2 
+                };
+
+                foreach (var edition in serverEditions)
+                {
+                    var updateResponse = await _windowsService.GetWindowsUpdatesAsync(edition);
+
+                    if (updateResponse.Success && updateResponse.Data != null)
+                    {
+                        foreach (var update in updateResponse.Data)
+                        {
+                            releases.Add(new
+                            {
+                                version = update.Version,
+                                buildNumber = update.Build,
+                                releaseDate = update.ReleaseDate,
+                                servicingOption = update.Edition.ToString(),
+                                kb = update.KBNumber,
+                                url = string.Empty,
+                                updateTitle = update.UpdateTitle,
+                                isSecurityUpdate = update.IsSecurityUpdate,
+                                type = update.Type
+                            });
+                        }
+                    }
+                }
+
+                // Sort by release date descending
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows Server releases retrieved successfully with {Count} items", sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Server releases");
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets releases for a specific Windows Server version
+        /// </summary>
+        /// <param name="version">Windows Server version (2022, 2019, 2016, 2012R2)</param>
+        /// <returns>List of releases for the specified version</returns>
+        [HttpGet("server/{version}/releases")]
+        public async Task<ActionResult<List<object>>> GetWindowsServerVersionReleases(string version)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching Windows Server {Version} releases", version);
+
+                WindowsEdition? edition = version.ToLower() switch
+                {
+                    "2022" => WindowsEdition.WindowsServer2022,
+                    "2019" => WindowsEdition.WindowsServer2019,
+                    "2016" => WindowsEdition.WindowsServer2016,
+                    "2012r2" or "2012" => WindowsEdition.WindowsServer2012R2,
+                    _ => null
+                };
+
+                if (edition == null)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = $"Invalid Windows Server version: {version}. Valid versions are: 2022, 2019, 2016, 2012R2"
+                    });
+                }
+
+                var releases = new List<object>();
+                var updateResponse = await _windowsService.GetWindowsUpdatesAsync(edition.Value);
+
+                if (updateResponse.Success && updateResponse.Data != null)
+                {
+                    foreach (var update in updateResponse.Data)
+                    {
+                        releases.Add(new
+                        {
+                            version = update.Version,
+                            buildNumber = update.Build,
+                            releaseDate = update.ReleaseDate,
+                            servicingOption = update.Edition.ToString(),
+                            kb = update.KBNumber,
+                            url = string.Empty,
+                            updateTitle = update.UpdateTitle,
+                            isSecurityUpdate = update.IsSecurityUpdate,
+                            type = update.Type
+                        });
+                    }
+                }
+
+                // Sort by release date descending
+                var sortedReleases = releases
+                    .OrderByDescending(r => ((dynamic)r).releaseDate)
+                    .ToList();
+
+                _logger.LogInformation("Windows Server {Version} releases retrieved successfully with {Count} items", version, sortedReleases.Count);
+                return Ok(sortedReleases);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Windows Server {Version} releases", version);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Internal server error: {ex.Message}"
+                });
+            }
+        }
     }
 }
+
