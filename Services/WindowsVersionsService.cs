@@ -1685,15 +1685,51 @@ namespace OfficeVersionsCore.Services
         {
             try
             {
+                // Map Windows Server versions to correct display values before saving
+                var processedUpdates = updates.Select(u => new WindowsUpdate
+                {
+                    Version = MapWindowsServerVersion(u.Version, edition),
+                    Build = u.Build,
+                    KBNumber = u.KBNumber,
+                    ReleaseDate = u.ReleaseDate,
+                    Edition = u.Edition,
+                    UpdateTitle = u.UpdateTitle,
+                    Description = u.Description,
+                    Type = u.Type,
+                    Highlights = u.Highlights,
+                    KnownIssues = u.KnownIssues,
+                    SupportUrl = u.SupportUrl,
+                    IsSecurityUpdate = u.IsSecurityUpdate,
+                    IsOptionalUpdate = u.IsOptionalUpdate,
+                    SourceUrl = u.SourceUrl,
+                    ServicingChannel = u.ServicingChannel
+                }).ToList();
+
                 var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-updates.json";
-                var json = JsonSerializer.Serialize(updates, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(processedUpdates, new JsonSerializerOptions { WriteIndented = true });
                 await _storageService.WriteAsync(fileName, json);
-                _logger.LogInformation("Saved {Count} updates for {Edition} to local storage", updates.Count, edition);
+                _logger.LogInformation("Saved {Count} updates for {Edition} to local storage", processedUpdates.Count, edition);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving updates to storage for {Edition}", edition);
             }
+        }
+
+        /// <summary>
+        /// Maps Windows Server version strings to the correct display versions
+        /// For Windows Server 2022: maps 21H2 to 2022
+        /// For Windows Server 2025: maps 24H2 to 2025
+        /// For other versions: returns the version as-is
+        /// </summary>
+        private string MapWindowsServerVersion(string version, WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.WindowsServer2022 when version == "21H2" => "2022",
+                WindowsEdition.WindowsServer2025 when version == "24H2" => "2025",
+                _ => version
+            };
         }
 
         private async Task SaveReleaseVersionsToStorageAsync(WindowsEdition edition, WindowsReleaseVersions releaseVersions)

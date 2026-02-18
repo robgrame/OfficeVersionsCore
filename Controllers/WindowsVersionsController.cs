@@ -575,19 +575,33 @@ namespace OfficeVersionsCore.Controllers
 
                 foreach (var edition in serverEditions)
                 {
-                    var latestResponse = await _windowsService.GetLatestVersionAsync(edition);
-                    
-                    if (latestResponse.Success && latestResponse.Data != null)
+                    var updatesResponse = await _windowsService.GetWindowsUpdatesAsync(edition);
+                    var latestUpdate = updatesResponse.Success
+                        ? updatesResponse.Data?
+                            .OrderByDescending(update => update.ReleaseDate ?? DateTime.MinValue)
+                            .FirstOrDefault()
+                        : null;
+
+                    var latestVersionResponse = latestUpdate == null
+                        ? await _windowsService.GetLatestVersionAsync(edition)
+                        : null;
+
+                    var versionFallback = latestVersionResponse?.Success == true
+                        ? latestVersionResponse.Data
+                        : null;
+
+                    if (latestUpdate != null || versionFallback != null)
                     {
-                        var latest = latestResponse.Data;
                         summary.Add(new
                         {
                             product = edition.GetDisplayName(),
-                            version = latest.Version,
-                            buildNumber = latest.Build,
-                            kb = latest.KBNumber,
-                            releaseDate = latest.ReleaseDate,
-                            servicingOption = latest.ServiceOption
+                            version = latestUpdate?.Version ?? versionFallback?.Version,
+                            buildNumber = latestUpdate?.Build ?? versionFallback?.Build,
+                            kb = latestUpdate?.KBNumber ?? versionFallback?.KBNumber,
+                            releaseDate = latestUpdate?.ReleaseDate ?? versionFallback?.ReleaseDate,
+                            servicingOption = !string.IsNullOrWhiteSpace(latestUpdate?.ServicingChannel)
+                                ? latestUpdate.ServicingChannel
+                                : versionFallback?.ServiceOption
                         });
                     }
                 }
