@@ -62,19 +62,15 @@
                         <div class="stat-box-content flex-wrap">
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows-server-2025">-</span>
-                                <span class="stat-label">2025</span>
                             </div>
                             <div class="stat-item compact">
-                                <span class="stat-number" id="windows-server-2022">-</span>
-                                <span class="stat-label">2022</span>
+                                <span class="stat-number" id="windows-server-2022">-</span>                               
                             </div>
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows-server-2019">-</span>
-                                <span class="stat-label">2019</span>
                             </div>
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows-server-2016">-</span>
-                                <span class="stat-label">2016</span>
                             </div>
                         </div>
                     </div>
@@ -790,8 +786,20 @@ $(document).ready(function() {
                 const setServerStat = (targetId, item) => {
                     if (!item) return;
                     const version = item.version || '-';
-                    const build = item.buildNumber ? ` (${item.buildNumber})` : '';
-                    document.getElementById(targetId).textContent = version + build;
+                    const build = item.buildNumber || '';
+                    
+                    // Per Windows Server 2019 e 2016, mostra l'anno sopra e il build sotto (stessa dimensione)
+                    if (targetId === 'windows-server-2019' || targetId === 'windows-server-2016') {
+                        const year = targetId === 'windows-server-2019' ? '2019' : '2016';
+                        const buildHtml = build 
+                            ? `<div class="server-build-number">${build}</div>` 
+                            : '';
+                        document.getElementById(targetId).innerHTML = `${year}${buildHtml}`;
+                    } else {
+                        // Per 2022 e 2025, mantieni il formato attuale: version (build)
+                        const buildText = build ? ` (${build})` : '';
+                        document.getElementById(targetId).textContent = version + buildText;
+                    }
                 };
 
                 const byProduct = data.reduce((acc, item) => {
@@ -1103,6 +1111,15 @@ $(document).ready(function() {
     color: rgba(255, 255, 255, 0.65);
     text-transform: uppercase;
     letter-spacing: 0.4px;
+}
+
+/* Windows Server build number styling - stessa dimensione dell'anno */
+.server-build-number {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin-top: 0.1rem;
+    line-height: 1.2;
 }
 
 /* Responsive adjustments for smaller screens */

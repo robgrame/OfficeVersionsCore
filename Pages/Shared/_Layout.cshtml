@@ -424,6 +424,13 @@
                                     <i class="bi bi-bug-fill me-1"></i>DEV
                                 </span>
                             }
+                            else if (Environment.IsStaging())
+                            {
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="bi bi-bug-fill me-1"></i>BETA
+                                </span>
+
+                            }
                             else
                             {
                                 <span class="badge bg-success ms-2">
