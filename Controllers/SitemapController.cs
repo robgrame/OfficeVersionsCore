@@ -17,6 +17,7 @@ namespace OfficeVersionsCore.Controllers
     [Route("[controller]")]
     [ApiController]
     [EnableRateLimiting("api")]  // Standard rate limiting for sitemap
+    [ApiExplorerSettings(IgnoreApi = true)]  // Hide from Swagger documentation
     public class SitemapController : ControllerBase
     {
         private readonly IConfiguration _configuration;

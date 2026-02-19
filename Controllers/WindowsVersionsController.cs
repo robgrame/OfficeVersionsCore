@@ -1069,6 +1069,7 @@ namespace OfficeVersionsCore.Controllers
         /// <returns>Result of refresh operation</returns>
         [HttpPost("refresh")]
         [EnableRateLimiting("api-strict")]  // Strict rate limiting for resource-intensive operations
+        [ApiExplorerSettings(IgnoreApi = true)]  // Hide from Swagger to prevent DoS attacks
         public async Task<ActionResult<object>> RefreshData()
         {
             try
