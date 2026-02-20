@@ -44,11 +44,11 @@
                         <div class="stat-box-content">
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows-latest-version">-</span>
-                                <span class="stat-label">Win 11</span>
+                                <span class="stat-label">Windows 11</span>
                             </div>
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows10-latest-version">-</span>
-                                <span class="stat-label">Win 10</span>
+                                <span class="stat-label">Windows 10</span>
                             </div>
                         </div>
                     </div>
@@ -319,7 +319,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="mb-4">In addition to Microsoft 365 Apps, this site also tracks Windows 10 and Windows 11 releases. Monitor version numbers, build updates, and servicing timelines for both operating systems.</p>
+                    <p class="mb-4">In addition to Microsoft 365 Apps, this site also tracks Windows client and Windows Server releases. Monitor version numbers, build updates, and servicing timelines for both operating systems.</p>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="modern-card h-100 border-start border-primary border-2">
@@ -468,28 +468,44 @@
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="modern-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="bi bi-cup-hot"></i>
+    @if (Model.BuyMeACoffeeEnabled)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="bi bi-cup-hot"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title">Support the Project</h3>
+                            <p class="text-muted mb-0">Help keep this service free and up-to-date</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="card-title">Support the Project</h3>
-                        <p class="text-muted mb-0">Buy me a coffee to keep the tracker running</p>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <p class="mb-2">This tracking service is <strong>free</strong> and <strong>ad-free</strong>, maintained by a solo developer in their spare time.</p>
+                                <ul class="list-unstyled small mb-0">
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Real-time data updates from Microsoft sources</li>
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Public REST API for automation</li>
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>No ads, no tracking, no paywalls</li>
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Server costs & development time</li>
+                                </ul>
+                                <p class="small text-muted mt-2 mb-0">Your support helps cover hosting costs and keeps new features coming. Even $1 makes a difference!</p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <a href="@Model.BuyMeACoffeeUrl" target="_blank" rel="noopener" class="d-inline-block">
+                                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 50px; width: 180px;">
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="card-body text-center">
-                    <p class="text-muted mb-3">Did you find this site useful? Support us — even $1 counts.</p>
-                    <a href="https://buymeacoffee.com/office365versions" target="_blank" rel="noopener" class="d-inline-block">
-                        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 45px; width: 162px;">
-                    </a>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    }
+}
 
 @section Scripts {
 <script type="text/javascript">

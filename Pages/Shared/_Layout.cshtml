@@ -394,9 +394,16 @@
                         <a asp-page="/Contact">Contact</a>
                         <a asp-page="/Privacy">Privacy</a>
                         <a href="/swagger" target="_blank">API Docs</a>
-                        <a href="https://buymeacoffee.com/office365versions" target="_blank" rel="noopener" class="d-inline-flex align-items-center">
-                            <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 26px; width: 94px;">
-                        </a>
+                        @{
+                            var buyMeACoffeeUrl = Configuration["BuyMeACoffee:Url"] ?? "https://buymeacoffee.com/office365versions";
+                            var buyMeACoffeeEnabled = Configuration.GetValue<bool>("BuyMeACoffee:Enabled", true);
+                        }
+                        @if (buyMeACoffeeEnabled)
+                        {
+                            <a href="@buyMeACoffeeUrl" target="_blank" rel="noopener" class="d-inline-flex align-items-center">
+                                <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 26px; width: 94px;">
+                            </a>
+                        }
                         @if (Environment.IsDevelopment())
                         {
                             <a asp-page="/CookieTest" class="text-warning">

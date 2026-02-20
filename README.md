@@ -16,6 +16,33 @@
 
 ---
 
+## ?? What's New (2025)
+
+### ? **Major Updates**
+
+- **??? Windows Server Comprehensive Tracking**
+  - Full release history for Server 2016, 2019, 2022, and 2025
+  - Dedicated pages per version with KB articles and update details
+  - Latest build tracking in homepage hero stats
+  - Custom display format for legacy versions (2016/2019)
+
+- **?? Enhanced API Security**
+  - SEO and admin endpoints hidden from public Swagger documentation
+  - Rate limiting on resource-intensive operations
+  - Protection against DoS attacks on refresh endpoints
+
+- **?? Centralized Configuration**
+  - BuyMeACoffee integration configurable via `appsettings.json`
+  - Easy enable/disable of donation features
+  - Single source of truth for external URLs
+
+- **?? Improved Hero Stats Display**
+  - Real-time Windows Server version tracking
+  - Optimized layout for better mobile experience
+  - Consistent formatting with Windows 10/11 stats
+
+---
+
 ## ? What We Offer
 
 ### ?? **Microsoft 365 Apps Tracking**
@@ -34,16 +61,21 @@ Get instant access to:
 
 ---
 
-### ??? **Windows Version Tracking**
+### ?? **Windows Version Tracking**
 
-Stay informed about Windows releases:
+Stay informed about Windows releases across all platforms:
 
 - ?? **Windows 11** - All releases with intelligent build sorting
 - ?? **Windows 11 26H1** - Dedicated update history page and overview
-- ?? **Windows 10** - Complete version history
-- ??? **Windows Server** - Dedicated release pages (2012 R2 through 2025)
-- ? Smart version sorting (22H2, 21H2, 20H2, etc.)
+- ??? **Windows 10** - Complete version history
+- ?? **Windows Server** - Comprehensive tracking across all supported versions:
+  - Windows Server 2025 - Latest enterprise server OS
+  - Windows Server 2022 - Current LTSC release
+  - Windows Server 2019 - Extended support version
+  - Windows Server 2016 - Legacy support tracking
+- ?? Smart version sorting (22H2, 21H2, 20H2, etc.)
 - ?? Comprehensive release timeline
+- ?? Dedicated per-version detail pages with KB articles
 
 ---
 
@@ -61,8 +93,12 @@ Integrate our data into your own applications:
 ```
 GET /api/M365AppsReleases                        - All Office 365 releases
 GET /api/WindowsVersions                         - All Windows versions
-GET /api/WindowsVersions/latest                  - Latest Windows releases
+GET /api/WindowsVersions/latest-versions         - Latest Windows releases
 GET /api/WindowsVersions/windows11/version/26h1/releases - Windows 11 26H1 updates
+GET /api/WindowsVersions/servers/summary         - All Windows Server versions summary
+GET /api/WindowsVersions/server2025/releases     - Windows Server 2025 updates
+GET /api/WindowsVersions/server2022/releases     - Windows Server 2022 updates
+GET /api/WindowsVersions/server2019/releases     - Windows Server 2019 updates
 GET /api/WindowsVersions/server2016/releases     - Windows Server 2016 updates
 ```
 
@@ -78,11 +114,14 @@ GET /api/WindowsVersions/server2016/releases     - Windows Server 2016 updates
 - ?? **Clean, intuitive interface** with Bootstrap 5
 
 ### ?? **Privacy & Security**
-- ??? **GDPR & CCPA compliant** - your privacy matters
+- ? **GDPR & CCPA compliant** - your privacy matters
 - ?? **Cookie consent banner** - transparent data usage
 - ?? **HTTPS-only** - encrypted connections
 - ?? **No personal data collection** - anonymous analytics only
-- ? **Transparent privacy policy** at `/Privacy`
+- ?? **Transparent privacy policy** at `/Privacy`
+- ??? **API Security** - rate limiting and DoS protection
+- ?? **Hidden admin endpoints** - security through obscurity
+- ? **Strict rate limits** - resource-intensive operations protected
 
 ### ?? **Performance & Reliability**
 - ? **GZIP compression** - faster page loads
@@ -127,7 +166,9 @@ GET /api/WindowsVersions/server2016/releases     - Windows Server 2016 updates
 | ?? **Auto Updates** | ? Real-time | ? Manual |
 | ?? **Privacy First** | ? GDPR compliant | ?? Varies |
 | ?? **Windows Data** | ? Included | ? Separate sites |
+| ?? **Windows Server** | ? 2016-2025 | ? Not available |
 | ?? **Data Export** | ? API available | ? No export |
+| ??? **Rate Limiting** | ? Protected | ?? Varies |
 
 ---
 
@@ -170,10 +211,12 @@ curl https://www.office365versions.com/api/WindowsVersions/latest
 ### ?? **Windows Versions**
 - ?? Windows 11 releases (including 26H1)
 - ?? Windows 10 releases
-- ??? Windows Server releases (2012 R2, 2016, 2019, 2022, 2025)
-- ?? Version identifiers (22H2, 21H2, etc.)
+- ??? Windows Server releases (2016, 2019, 2022, 2025)
+- ??? Version identifiers (22H2, 21H2, etc.)
 - ?? Build numbers
 - ?? Release dates
+- ?? KB article numbers
+- ?? Update types (Security, Feature, Cumulative)
 - ?? Service pack information
 
 ---
@@ -236,6 +279,51 @@ Special thanks to:
 - ?? The IT community for feedback and suggestions
 - ?? Contributors who report issues and improvements
 - ?? Everyone who uses and shares this resource!
+
+---
+
+## ??? Technical Details
+
+### ??? **Architecture**
+- **Framework:** ASP.NET Core (.NET 10) with Razor Pages
+- **Data Storage:** JSON-based with Azure Blob Storage integration
+- **Scraping:** Background services with configurable intervals
+- **Caching:** In-memory caching for optimal performance
+- **Logging:** Serilog with file and console outputs
+
+### ?? **Configuration**
+
+Key configuration options in `appsettings.json`:
+
+```json
+{
+  "Office365Scraper": {
+    "Enabled": true,
+    "intervalMinutes": 10
+  },
+  "WindowsScraper": {
+    "Enabled": true,
+    "intervalMinutes": 10
+  },
+  "BuyMeACoffee": {
+    "Url": "https://buymeacoffee.com/office365versions",
+    "Enabled": true
+  }
+}
+```
+
+### ?? **Security Features**
+- **Rate Limiting:** Multiple tiers (standard, sliding, strict)
+- **Endpoint Protection:** Admin/SEO endpoints hidden from Swagger
+- **CORS:** Configured for secure cross-origin requests
+- **Response Compression:** GZIP for better performance
+- **Health Checks:** `/health` endpoint for monitoring
+
+### ?? **API Rate Limits**
+- **Standard API:** 100 requests per minute
+- **Sliding Window:** 60 requests per minute
+- **Strict (Admin):** 10 requests per minute
+- **Automatic throttling:** 429 response when exceeded
 
 ---
 
