@@ -373,6 +373,133 @@
                         </div>
                     </div>
 
+                    <!-- Latest Windows Updates Summary (moved inside) -->
+                    <div class="latest-updates-section mb-4">
+                        <h5 class="section-heading mb-3">
+                            <i class="bi bi-arrow-down-circle text-primary me-2"></i>
+                            Latest Updates
+                        </h5>
+                        
+                        <!-- Client OS Updates -->
+                        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-pc-display me-2"></i>Client Operating Systems
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div id="windows11-latest-update" class="update-summary-card">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-success">
+                                            <i class="bi bi-window"></i>
+                                            <span>Windows 11</span>
+                                        </div>
+                                        <span class="update-date">-</span>
+                                    </div>
+                                    <div class="update-summary-body">
+                                        <div class="update-version">-</div>
+                                        <div class="update-kb">-</div>
+                                        <div class="update-type">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="windows10-latest-update" class="update-summary-card">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-warning text-dark">
+                                            <i class="bi bi-window"></i>
+                                            <span>Windows 10</span>
+                                        </div>
+                                        <span class="update-date">-</span>
+                                    </div>
+                                    <div class="update-summary-body">
+                                        <div class="update-version">-</div>
+                                        <div class="update-kb">-</div>
+                                        <div class="update-type">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Server OS Updates -->
+                        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-server me-2"></i>Server Operating Systems
+                        </h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2025-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-success">
+                                            <i class="bi bi-server"></i>
+                                            <span>2025</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2022-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-primary">
+                                            <i class="bi bi-server"></i>
+                                            <span>2022</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2019-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-info text-dark">
+                                            <i class="bi bi-server"></i>
+                                            <span>2019</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2016-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-secondary">
+                                            <i class="bi bi-server"></i>
+                                            <span>2016</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4">
+                            <p class="small text-muted mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Showing the most recent update for each Windows version. Click through to version pages for complete update history.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Version Details Cards -->
+                    <h5 class="section-heading mb-3">
+                        <i class="bi bi-grid-3x2-gap text-primary me-2"></i>
+                        Explore by Version
+                    </h5>
+
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="modern-card h-100 border-start border-primary border-3">
@@ -524,137 +651,6 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Latest Windows Updates Summary -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="modern-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="bi bi-arrow-down-circle"></i>
-                    </div>
-                    <div>
-                        <h3 class="card-title">Latest Windows Updates</h3>
-                        <p class="text-muted mb-0">Most recent patches and cumulative updates across all versions</p>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <!-- Client OS Updates -->
-                    <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                        <i class="bi bi-pc-display me-2"></i>Client Operating Systems
-                    </h6>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <div id="windows11-latest-update" class="update-summary-card">
-                                <div class="update-summary-header">
-                                    <div class="update-os-badge bg-success">
-                                        <i class="bi bi-window"></i>
-                                        <span>Windows 11</span>
-                                    </div>
-                                    <span class="update-date">-</span>
-                                </div>
-                                <div class="update-summary-body">
-                                    <div class="update-version">-</div>
-                                    <div class="update-kb">-</div>
-                                    <div class="update-type">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div id="windows10-latest-update" class="update-summary-card">
-                                <div class="update-summary-header">
-                                    <div class="update-os-badge bg-warning text-dark">
-                                        <i class="bi bi-window"></i>
-                                        <span>Windows 10</span>
-                                    </div>
-                                    <span class="update-date">-</span>
-                                </div>
-                                <div class="update-summary-body">
-                                    <div class="update-version">-</div>
-                                    <div class="update-kb">-</div>
-                                    <div class="update-type">-</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Server OS Updates -->
-                    <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                        <i class="bi bi-server me-2"></i>Server Operating Systems
-                    </h6>
-                    <div class="row g-3">
-                        <div class="col-md-6 col-lg-3">
-                            <div id="server2025-latest-update" class="update-summary-card compact">
-                                <div class="update-summary-header">
-                                    <div class="update-os-badge bg-success">
-                                        <i class="bi bi-server"></i>
-                                        <span>2025</span>
-                                    </div>
-                                    <span class="update-date small">-</span>
-                                </div>
-                                <div class="update-summary-body compact">
-                                    <div class="update-kb small">-</div>
-                                    <div class="update-type small">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div id="server2022-latest-update" class="update-summary-card compact">
-                                <div class="update-summary-header">
-                                    <div class="update-os-badge bg-primary">
-                                        <i class="bi bi-server"></i>
-                                        <span>2022</span>
-                                    </div>
-                                    <span class="update-date small">-</span>
-                                </div>
-                                <div class="update-summary-body compact">
-                                    <div class="update-kb small">-</div>
-                                    <div class="update-type small">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div id="server2019-latest-update" class="update-summary-card compact">
-                                <div class="update-summary-header">
-                                    <div class="update-os-badge bg-info text-dark">
-                                        <i class="bi bi-server"></i>
-                                        <span>2019</span>
-                                    </div>
-                                    <span class="update-date small">-</span>
-                                </div>
-                                <div class="update-summary-body compact">
-                                    <div class="update-kb small">-</div>
-                                    <div class="update-type small">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div id="server2016-latest-update" class="update-summary-card compact">
-                                <div class="update-summary-header">
-                                    <div class="update-os-badge bg-secondary">
-                                        <i class="bi bi-server"></i>
-                                        <span>2016</span>
-                                    </div>
-                                    <span class="update-date small">-</span>
-                                </div>
-                                <div class="update-summary-body compact">
-                                    <div class="update-kb small">-</div>
-                                    <div class="update-type small">-</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <p class="small text-muted mb-2">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Showing the most recent update for each Windows version. Click through to version pages for complete update history.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -1944,24 +1940,26 @@ $(document).ready(function() {
         font-size: 0.75rem;
     }
 
-    /* Responsive for update cards */
-    @@media (max-width: 768px) {
-        .update-summary-card {
-            padding: 0.75rem;
-        }
+    /* Other existing styles */
+    .about-points li {position:relative;padding-left:1rem;margin-bottom:.4rem;}
+    .about-points li:before {content:"•";position:absolute;left:0;color:var(--bs-primary,#0d6efd);}
 
-        .update-os-badge {
-            font-size: 0.8rem;
-            padding: 0.3rem 0.5rem;
-        }
-
-        .update-date {
-            font-size: 0.75rem;
-        }
-
-        .update-summary-body {
-            font-size: 0.85rem;
-        }
+    /* Section Headings within cards */
+    .section-heading {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
     }
 
-    /* Responsive table adjustments */
+    /* Latest Updates Section spacing */
+    .latest-updates-section {
+        background: rgba(13, 110, 253, 0.03);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(13, 110, 253, 0.1);
+    }
+
+    /* Windows Metrics Cards */
