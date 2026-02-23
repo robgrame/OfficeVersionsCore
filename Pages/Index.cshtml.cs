@@ -20,6 +20,6 @@ public class IndexModel : PageModel
     public void OnGet()
     {
         BuyMeACoffeeUrl = _configuration["BuyMeACoffee:Url"] ?? "https://buymeacoffee.com/office365versions";
-        BuyMeACoffeeEnabled = _configuration.GetValue<bool>("BuyMeACoffee:Enabled", true);
+        BuyMeACoffeeEnabled = _configuration.GetValue<bool>("BuyMeACoffee:Enabled", false);
     }
 }
