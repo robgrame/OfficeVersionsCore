@@ -21,5 +21,8 @@ public class IndexModel : PageModel
     {
         BuyMeACoffeeUrl = _configuration["BuyMeACoffee:Url"] ?? "https://buymeacoffee.com/office365versions";
         BuyMeACoffeeEnabled = _configuration.GetValue<bool>("BuyMeACoffee:Enabled", false);
+        
+        // Log the configuration value for debugging
+        _logger.LogInformation($"BuyMeACoffee:Enabled = {BuyMeACoffeeEnabled}");
     }
 }

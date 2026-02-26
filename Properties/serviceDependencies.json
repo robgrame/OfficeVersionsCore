@@ -8,15 +8,19 @@
       "ignored": "true",
       "type": "apis.azure"
     },
+    "storage1": {
+      "type": "storage",
+      "connectionId": "StorageConnection",
+      "dynamicId": null
+    },
     "appInsights1": {
       "type": "appInsights",
       "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING",
       "dynamicId": null
     },
-    "storage1": {
-      "type": "storage",
-      "connectionId": "StorageConnection",
-      "dynamicId": null
+    "appConfig1": {
+      "type": "appConfig",
+      "connectionId": "AppConfig"
     }
   }
 }
