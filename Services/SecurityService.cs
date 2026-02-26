@@ -111,17 +111,17 @@ public class SecurityService : ISecurityService
         _rapidRequestThresholdPerSecond = configuration.GetValue<int>("SecurityMonitoring:SuspiciousActivity:RapidRequestThresholdPerSecond", 50);
         _botDetectionEnabled = configuration.GetValue<bool>("SecurityMonitoring:SuspiciousActivity:EnableBotDetection", true);
         _maxBotRequestsPerMinute = configuration.GetValue<int>("SecurityMonitoring:SuspiciousActivity:MaxBotRequestsPerMinute", 200);
-        _suspiciousBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:ScannerDetection404BlockMinutes", 120);
+        _suspiciousBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:SuspiciousBlockMinutes", 120);
 
         // RequestRate
         _maxPerIpPerMinute = configuration.GetValue<int>("SecurityMonitoring:RequestRate:MaxPerIpPerMinute", 100);
-        _rateExceededBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:ScannerDetection404BlockMinutes", 120);
+        _rateExceededBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:RateExceededBlockMinutes", 60);
 
         // AuthFailures
         _maxAuthFailuresPerIpPer5Min = configuration.GetValue<int>("SecurityMonitoring:AuthFailures:MaxFailuresPerIpPer5Min", 10);
         _maxAuthFailuresPerUserPer5Min = configuration.GetValue<int>("SecurityMonitoring:AuthFailures:MaxFailuresPerUserPer5Min", 5);
         _maxTotalAuthFailuresPer5Min = configuration.GetValue<int>("SecurityMonitoring:AuthFailures:MaxTotalFailuresPer5Min", 50);
-        _authFailureBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:ScannerDetection404BlockMinutes", 120);
+        _authFailureBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:AuthFailureBlockMinutes", 180);
 
         // Persistence – use WebRootPath to align with LocalStorageService (wwwroot/content/)
         var relativePath = configuration.GetValue<string>(

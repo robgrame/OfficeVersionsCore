@@ -78,16 +78,31 @@ builder.Host.UseSerilog((ctx, services, config) =>
         // Use Azure Active Directory authentication.
         // The identity of this app should be assigned 'App Configuration Data Reader' or 'App Configuration Data Owner' role in App Configuration.
         // For more information, please visit https://aka.ms/vs/azure-app-configuration/concept-enable-rbac
-        builder.Configuration.AddAzureAppConfiguration(options =>
+        try
         {
-            options.Connect(endpoint, new DefaultAzureCredential())
-            .ConfigureRefresh(refresh =>
+            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
             {
-                // All configuration values will be refreshed if the sentinel key changes.
-                refresh.Register("TestApp:Settings:Sentinel", refreshAll: true);
+                // Reduce timeout so startup doesn't hang for ~100s when identity is unavailable
+                Retry = { NetworkTimeout = TimeSpan.FromSeconds(10) }
             });
-        });
-        builder.Services.AddAzureAppConfiguration();
+
+            builder.Configuration.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(endpoint, credential)
+                .ConfigureRefresh(refresh =>
+                {
+                    // All configuration values will be refreshed if the sentinel key changes.
+                    refresh.Register("TestApp:Settings:Sentinel", refreshAll: true);
+                });
+            });
+            builder.Services.AddAzureAppConfiguration();
+            Console.WriteLine("[STARTUP] Azure App Configuration: CONNECTED");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[STARTUP] Azure App Configuration: FAILED - {ex.Message}");
+            Console.WriteLine("[STARTUP] Continuing without Azure App Configuration (using local settings)");
+        }
     }
 
     // Add services to the container.
@@ -431,9 +446,17 @@ app.UseRewriter(rewriteOptions);
 app.UseStaticFiles();
 
 app.UseCors();
-if (Uri.TryCreate(builder.Configuration["AppConfig"], UriKind.Absolute, out _))
+// Only use App Configuration middleware if it was successfully registered during startup
+try
 {
-    app.UseAzureAppConfiguration();
+    if (Uri.TryCreate(builder.Configuration["AppConfig"], UriKind.Absolute, out _))
+    {
+        app.UseAzureAppConfiguration();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[STARTUP] UseAzureAppConfiguration skipped: {ex.Message}");
 }
 app.UseRouting();
 

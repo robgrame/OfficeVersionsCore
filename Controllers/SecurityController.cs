@@ -15,6 +15,7 @@ namespace OfficeVersionsCore.Controllers;
 [Route("api/[controller]")]
 [EnableRateLimiting("api-strict")]
 [SecurityAdminApiKey]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class SecurityController : ControllerBase
 {
     private readonly ISecurityService _securityService;

@@ -3,6 +3,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Net.Mail;
 using System.Text;
+using Azure.Identity;
+using Microsoft.Graph;
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Users.Item.SendMail;
 using OfficeVersionsCore.Models;
 
 namespace OfficeVersionsCore.Services;
@@ -70,6 +74,79 @@ public class SecurityAlertService : ISecurityAlertService
     // ---------------------------------------------------------------
 
     private async Task SendEmailAsync(SecurityAlert alert, CancellationToken cancellationToken)
+    {
+        var provider = _configuration.GetValue<string>("SecurityMonitoring:Alerting:EmailProvider") ?? "Smtp";
+
+        if (provider.Equals("Graph", StringComparison.OrdinalIgnoreCase))
+            await SendEmailViaGraphAsync(alert, cancellationToken);
+        else
+            await SendEmailViaSmtpAsync(alert, cancellationToken);
+    }
+
+    // ---------------------------------------------------------------
+    // Email – Microsoft Graph
+    // ---------------------------------------------------------------
+
+    private async Task SendEmailViaGraphAsync(SecurityAlert alert, CancellationToken cancellationToken)
+    {
+        var tenantId = _configuration.GetValue<string>("SecurityMonitoring:Alerting:AzureAd:TenantId");
+        var clientId = _configuration.GetValue<string>("SecurityMonitoring:Alerting:AzureAd:ClientId");
+        var clientSecret = _configuration.GetValue<string>("SecurityMonitoring:Alerting:AzureAd:ClientSecret");
+        var fromEmail = _configuration.GetValue<string>("SecurityMonitoring:Alerting:FromEmail");
+        var alertEmails = _configuration
+            .GetSection("SecurityMonitoring:Alerting:AlertEmails")
+            .Get<string[]>() ?? [];
+
+        if (string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(clientId)
+            || string.IsNullOrWhiteSpace(clientSecret) || string.IsNullOrWhiteSpace(fromEmail)
+            || alertEmails.Length == 0)
+        {
+            _logger.LogDebug("Graph email alerting skipped: Azure AD App Registration not fully configured");
+            return;
+        }
+
+        try
+        {
+            var includeDetails = _configuration.GetValue<bool>("SecurityMonitoring:Alerting:IncludeDetails", true);
+            var subject = $"[{alert.Level}] Security Alert – {alert.Title}";
+            var body = BuildEmailBody(alert, includeDetails);
+
+            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+            var graphClient = new GraphServiceClient(credential, ["https://graph.microsoft.com/.default"]);
+
+            var message = new Message
+            {
+                Subject = subject,
+                Body = new ItemBody
+                {
+                    ContentType = BodyType.Text,
+                    Content = body
+                },
+                ToRecipients = alertEmails.Select(email => new Recipient
+                {
+                    EmailAddress = new EmailAddress { Address = email }
+                }).ToList()
+            };
+
+            await graphClient.Users[fromEmail].SendMail.PostAsync(
+                new SendMailPostRequestBody { Message = message, SaveToSentItems = false },
+                cancellationToken: cancellationToken);
+
+            _logger.LogInformation(
+                "Security alert email sent via Graph for '{Title}' to {Recipients}",
+                alert.Title, string.Join(", ", alertEmails));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send Graph security alert email for '{Title}'", alert.Title);
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // Email – SMTP
+    // ---------------------------------------------------------------
+
+    private async Task SendEmailViaSmtpAsync(SecurityAlert alert, CancellationToken cancellationToken)
     {
         var smtpHost = _configuration.GetValue<string>("SecurityMonitoring:Alerting:SmtpHost");
         var fromEmail = _configuration.GetValue<string>("SecurityMonitoring:Alerting:FromEmail");
@@ -150,8 +227,13 @@ public class SecurityAlertService : ISecurityAlertService
 
     private async Task SendTelegramAsync(SecurityAlert alert, CancellationToken cancellationToken)
     {
-        var botToken = _configuration.GetValue<string>("SecurityMonitoring:Alerting:TelegramBotToken");
-        var chatId = _configuration.GetValue<string>("SecurityMonitoring:Alerting:TelegramChatId");
+        // Read from new nested section, with fallback to legacy flat keys
+        var botToken = _configuration.GetValue<string>("SecurityMonitoring:Alerting:Telegram:BotToken")
+                       ?? _configuration.GetValue<string>("SecurityMonitoring:Alerting:TelegramBotToken");
+        var chatId = _configuration.GetValue<string>("SecurityMonitoring:Alerting:Telegram:ChatId")
+                     ?? _configuration.GetValue<string>("SecurityMonitoring:Alerting:TelegramChatId");
+        var parseMode = _configuration.GetValue<string>("SecurityMonitoring:Alerting:Telegram:ParseMode") ?? "HTML";
+        var disableNotification = _configuration.GetValue<bool>("SecurityMonitoring:Alerting:Telegram:DisableNotification", false);
 
         if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
         {
@@ -166,7 +248,13 @@ public class SecurityAlertService : ISecurityAlertService
             var text = BuildTelegramMessage(alert, emoji, includeDetails);
 
             var url = $"https://api.telegram.org/bot{botToken}/sendMessage";
-            var payload = new { chat_id = chatId, text, parse_mode = "HTML" };
+            var payload = new
+            {
+                chat_id = chatId,
+                text,
+                parse_mode = parseMode,
+                disable_notification = disableNotification
+            };
 
             var httpClient = _httpClientFactory.CreateClient();
             var response = await httpClient.PostAsJsonAsync(url, payload, cancellationToken);
