@@ -102,6 +102,9 @@ builder.Services.AddMemoryCache();
 // Register cache service
 builder.Services.AddScoped<ICacheService, DistributedCacheService>();
 
+// Register Security Monitoring service (Singleton - tracks state across requests)
+builder.Services.AddSingleton<ISecurityService, SecurityService>();
+
 // Register Google Search Console service
 builder.Services.AddScoped<IGoogleSearchConsoleService, GoogleSearchConsoleService>();
 
@@ -377,6 +380,13 @@ app.Use(async (context, next) =>
     
     await next();
 });
+
+// Apply Security Monitoring Middleware (IP blocking + suspicious request detection)
+// Must run early, before routing and static files
+if (builder.Configuration.GetValue<bool>("SecurityMonitoring:Enabled", true))
+{
+    app.UseMiddleware<SecurityMiddleware>();
+}
 
 // Enable Response Compression
 app.UseResponseCompression();
