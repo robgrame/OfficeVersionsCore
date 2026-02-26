@@ -105,6 +105,15 @@ builder.Services.AddScoped<ICacheService, DistributedCacheService>();
 // Register Security Monitoring service (Singleton - tracks state across requests)
 builder.Services.AddSingleton<ISecurityService, SecurityService>();
 
+// Register Security Alert service (email + Telegram)
+builder.Services.AddSingleton<ISecurityAlertService, SecurityAlertService>();
+
+// Register the background service for periodic security analysis and alerting
+if (builder.Configuration.GetValue<bool>("SecurityMonitoring:Enabled", true))
+{
+    builder.Services.AddHostedService<SecurityMonitoringBackgroundService>();
+}
+
 // Register Google Search Console service
 builder.Services.AddScoped<IGoogleSearchConsoleService, GoogleSearchConsoleService>();
 

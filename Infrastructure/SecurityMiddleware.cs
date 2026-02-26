@@ -5,13 +5,18 @@ namespace OfficeVersionsCore.Infrastructure;
 
 /// <summary>
 /// Middleware that blocks requests from known-bad IPs and detects vulnerability-scanning
-/// patterns (common exploit paths, malicious user-agents, etc.).
+/// patterns (common exploit paths, malicious user-agents, SQL injection, honeypot access, etc.).
+/// All requests are recorded for rate and error tracking.
 /// </summary>
 public class SecurityMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<SecurityMiddleware> _logger;
     private readonly bool _enabled;
+    private readonly bool _sqlInjectionDetectionEnabled;
+    private readonly bool _pathTraversalDetectionEnabled;
+    private readonly bool _botDetectionEnabled;
+    private readonly string[] _honeypotExtensions;
 
     // Paths commonly probed by vulnerability scanners / bots
     private static readonly HashSet<string> SuspiciousPaths = new(StringComparer.OrdinalIgnoreCase)
@@ -71,7 +76,6 @@ public class SecurityMiddleware
         "/setup.cgi",
         "/HNAP1",
         "/index.php?s=/Index/index",
-        "/.well-known/security.txt",
     };
 
     // Substrings of User-Agent headers associated with scanners/attack tools
@@ -105,11 +109,48 @@ public class SecurityMiddleware
         "libwww-perl",
     ];
 
+    // SQL injection pattern fragments (simple heuristic, not exhaustive)
+    private static readonly string[] SqlInjectionPatterns =
+    [
+        "' or '",
+        "' or 1=1",
+        "\" or \"",
+        " or 1=1",
+        " or 1=1--",
+        "' or 'x'='x",
+        " union select",
+        " union all select",
+        "drop table",
+        "insert into",
+        "delete from",
+        "exec(",
+        "execute(",
+        "xp_cmdshell",
+        "'; --",
+        "';--",
+        "%27 or",
+        "%27or",
+        "0x",           // hex encoding common in SQLi
+        "char(0x",
+        "cast(",
+        "convert(",
+        "information_schema",
+        "sys.tables",
+        "load_file(",
+        "into outfile",
+    ];
+
     public SecurityMiddleware(RequestDelegate next, ILogger<SecurityMiddleware> logger, IConfiguration configuration)
     {
         _next = next;
         _logger = logger;
         _enabled = configuration.GetValue<bool>("SecurityMonitoring:Enabled", true);
+        _sqlInjectionDetectionEnabled = configuration.GetValue<bool>("SecurityMonitoring:SuspiciousActivity:EnableSqlInjectionDetection", true);
+        _pathTraversalDetectionEnabled = configuration.GetValue<bool>("SecurityMonitoring:SuspiciousActivity:EnablePathTraversalDetection", true);
+        _botDetectionEnabled = configuration.GetValue<bool>("SecurityMonitoring:SuspiciousActivity:EnableBotDetection", true);
+        _honeypotExtensions = configuration
+            .GetSection("SecurityMonitoring:Honeypot:SuspiciousExtensions")
+            .Get<string[]>() ?? [".php", ".asp", ".aspx", ".jsp", ".cgi"];
     }
 
     public async Task InvokeAsync(HttpContext context, ISecurityService securityService)
@@ -137,10 +178,30 @@ public class SecurityMiddleware
         }
 
         var path = context.Request.Path.Value ?? string.Empty;
+        var queryString = context.Request.QueryString.Value ?? string.Empty;
         var method = context.Request.Method;
         var userAgent = context.Request.Headers.UserAgent.ToString();
 
-        // 2. Check for suspicious path
+        // 2. Honeypot: request to a suspicious file extension (e.g. .php on a .NET app)
+        if (IsHoneypotRequest(path))
+        {
+            var autoBlocked = securityService.RecordSuspiciousRequest(
+                ipAddress, path, method, userAgent,
+                SecurityThreatType.HoneypotAccess,
+                $"Honeypot access – suspicious extension in path: {path}");
+
+            context.Response.StatusCode = autoBlocked
+                ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status404NotFound;
+            if (autoBlocked)
+            {
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Forbidden", message = "Access denied." });
+            }
+            return;
+        }
+
+        // 3. Check for suspicious path (known scanner probes)
         if (IsSuspiciousPath(path))
         {
             var autoBlocked = securityService.RecordSuspiciousRequest(
@@ -161,8 +222,46 @@ public class SecurityMiddleware
             return;
         }
 
-        // 3. Check for suspicious User-Agent
-        if (IsSuspiciousUserAgent(userAgent))
+        // 4. Path traversal detection
+        if (_pathTraversalDetectionEnabled && ContainsPathTraversal(path + queryString))
+        {
+            var autoBlocked = securityService.RecordSuspiciousRequest(
+                ipAddress, path, method, userAgent,
+                SecurityThreatType.PathTraversal,
+                $"Path traversal attempt detected: {TruncateString(path + queryString, 200)}");
+
+            context.Response.StatusCode = autoBlocked
+                ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status400BadRequest;
+            if (autoBlocked)
+            {
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Forbidden", message = "Access denied." });
+            }
+            return;
+        }
+
+        // 5. SQL injection detection in query string
+        if (_sqlInjectionDetectionEnabled && ContainsSqlInjection(queryString))
+        {
+            var autoBlocked = securityService.RecordSuspiciousRequest(
+                ipAddress, path, method, userAgent,
+                SecurityThreatType.SqlInjection,
+                $"SQL injection attempt detected in query: {TruncateString(queryString, 200)}");
+
+            context.Response.StatusCode = autoBlocked
+                ? StatusCodes.Status403Forbidden
+                : StatusCodes.Status400BadRequest;
+            if (autoBlocked)
+            {
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = "Forbidden", message = "Access denied." });
+            }
+            return;
+        }
+
+        // 6. Check for suspicious User-Agent (bot detection)
+        if (_botDetectionEnabled && IsSuspiciousUserAgent(userAgent))
         {
             var autoBlocked = securityService.RecordSuspiciousRequest(
                 ipAddress, path, method, userAgent,
@@ -178,7 +277,19 @@ public class SecurityMiddleware
             }
         }
 
+        // 7. Pass through and record the response status for metrics.
+        // NOTE: Recording happens after the response so we capture the real HTTP status code
+        // (needed for 404-based scanner detection). A mid-stream auto-block will take effect
+        // on the IP's next request. This is an intentional trade-off.
         await _next(context);
+
+        // Record request after pipeline completes so we have the real status code
+        var blocked = securityService.RecordRequest(ipAddress, path, context.Response.StatusCode, userAgent);
+        if (blocked)
+        {
+            // IP was just auto-blocked mid-stream; log but don't change already-sent response
+            _logger.LogWarning("IP {IpAddress} auto-blocked after response was already sent for {Path}", ipAddress, path);
+        }
     }
 
     // ---------------------------------------------------------------
@@ -201,6 +312,16 @@ public class SecurityMiddleware
         return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }
 
+    private bool IsHoneypotRequest(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        var ext = Path.GetExtension(path);
+        return !string.IsNullOrWhiteSpace(ext)
+            && _honeypotExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+    }
+
     private static bool IsSuspiciousPath(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -217,9 +338,49 @@ public class SecurityMiddleware
                 return true;
         }
 
-        // Check for path-traversal attempts
-        if (path.Contains("../") || path.Contains("..\\") || path.Contains("%2e%2e") || path.Contains("%252e"))
-            return true;
+        return false;
+    }
+
+    private static bool ContainsPathTraversal(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        return value.Contains("../") || value.Contains("..\\")
+            || value.Contains("%2e%2e", StringComparison.OrdinalIgnoreCase)
+            || value.Contains("%252e", StringComparison.OrdinalIgnoreCase)
+            || value.Contains("..%2f", StringComparison.OrdinalIgnoreCase)
+            || value.Contains("..%5c", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ContainsSqlInjection(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        // Decode up to 3 times to catch double/triple URL-encoded attack payloads
+        var decoded = value;
+        for (var i = 0; i < 3; i++)
+        {
+            try
+            {
+                var next = Uri.UnescapeDataString(decoded);
+                if (next == decoded) break; // no more encoding
+                decoded = next;
+            }
+            catch (UriFormatException)
+            {
+                break; // malformed encoding — stop decoding
+            }
+        }
+
+        decoded = decoded.ToLowerInvariant();
+
+        foreach (var pattern in SqlInjectionPatterns)
+        {
+            if (decoded.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
 
         return false;
     }
