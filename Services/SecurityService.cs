@@ -123,11 +123,11 @@ public class SecurityService : ISecurityService
         _maxTotalAuthFailuresPer5Min = configuration.GetValue<int>("SecurityMonitoring:AuthFailures:MaxTotalFailuresPer5Min", 50);
         _authFailureBlockMinutes = configuration.GetValue<int>("SecurityMonitoring:IpBlocking:ScannerDetection404BlockMinutes", 120);
 
-        // Persistence
+        // Persistence – use WebRootPath to align with LocalStorageService (wwwroot/content/)
         var relativePath = configuration.GetValue<string>(
             "SecurityMonitoring:BlockedIpsPersistencePath",
             "content/security/blocked-ips.json");
-        _persistencePath = Path.Combine(env.ContentRootPath, relativePath);
+        _persistencePath = Path.Combine(env.WebRootPath, relativePath);
 
         LoadPersistedBlockedIps();
     }
