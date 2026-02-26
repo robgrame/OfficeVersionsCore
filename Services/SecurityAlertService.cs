@@ -50,7 +50,7 @@ public class SecurityAlertService : ISecurityAlertService
         if (_lastSentAt.TryGetValue(cooldownKey, out var lastSent)
             && (DateTime.UtcNow - lastSent).TotalMinutes < cooldownMinutes)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Alert '{Title}' suppressed (cooldown). Last sent: {LastSent}", alert.Title, lastSent);
             return;
         }
@@ -101,7 +101,7 @@ public class SecurityAlertService : ISecurityAlertService
             || string.IsNullOrWhiteSpace(clientSecret) || string.IsNullOrWhiteSpace(fromEmail)
             || alertEmails.Length == 0)
         {
-            _logger.LogDebug("Graph email alerting skipped: Azure AD App Registration not fully configured");
+            _logger.LogWarning("Graph email alerting skipped: Azure AD App Registration not fully configured (check TenantId, ClientId, ClientSecret, FromEmail in App Settings or App Configuration)");
             return;
         }
 
@@ -156,7 +156,7 @@ public class SecurityAlertService : ISecurityAlertService
 
         if (string.IsNullOrWhiteSpace(smtpHost) || string.IsNullOrWhiteSpace(fromEmail) || alertEmails.Length == 0)
         {
-            _logger.LogDebug("Email alerting skipped: SMTP not fully configured");
+            _logger.LogWarning("Email alerting skipped: SMTP not fully configured (check SmtpHost and FromEmail)");
             return;
         }
 
@@ -237,7 +237,7 @@ public class SecurityAlertService : ISecurityAlertService
 
         if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(chatId))
         {
-            _logger.LogDebug("Telegram alerting skipped: bot token or chat ID not configured");
+            _logger.LogWarning("Telegram alerting skipped: bot token or chat ID not configured (check Telegram:BotToken and Telegram:ChatId in App Settings or App Configuration)");
             return;
         }
 

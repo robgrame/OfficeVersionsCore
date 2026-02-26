@@ -13,6 +13,7 @@ using Microsoft.OpenApi;
 using System.Reflection;
 using System.Threading.RateLimiting;
 using Azure.Identity;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 
 try
 {
@@ -86,17 +87,29 @@ builder.Host.UseSerilog((ctx, services, config) =>
                 Retry = { NetworkTimeout = TimeSpan.FromSeconds(10) }
             });
 
+            // Determine the label for this application instance.
+            // Use APPCONFIG_LABEL env var if set, otherwise fall back to the environment name.
+            var appConfigLabel = builder.Configuration["AppConfigLabel"]
+                                 ?? builder.Environment.EnvironmentName;
+
             builder.Configuration.AddAzureAppConfiguration(options =>
             {
                 options.Connect(endpoint, credential)
+                // 1. Load keys with no label (shared/common settings)
+                .Select(KeyFilter.Any, LabelFilter.Null)
+                // 2. Load keys with the app-specific label (overrides shared ones)
+                .Select(KeyFilter.Any, appConfigLabel)
                 .ConfigureRefresh(refresh =>
                 {
                     // All configuration values will be refreshed if the sentinel key changes.
-                    refresh.Register("TestApp:Settings:Sentinel", refreshAll: true);
-                });
+                    refresh.Register("TestApp:Settings:Sentinel", refreshAll: true)
+                           .SetRefreshInterval(TimeSpan.FromMinutes(5));
+                })
+                // Trim prefix if using key-prefix strategy (optional, harmless if not)
+                .TrimKeyPrefix("Office365Versions/");
             });
             builder.Services.AddAzureAppConfiguration();
-            Console.WriteLine("[STARTUP] Azure App Configuration: CONNECTED");
+            Console.WriteLine($"[STARTUP] Azure App Configuration: CONNECTED (label: {appConfigLabel})");
         }
         catch (Exception ex)
         {
