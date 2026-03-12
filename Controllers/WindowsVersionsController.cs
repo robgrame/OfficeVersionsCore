@@ -28,8 +28,21 @@ namespace OfficeVersionsCore.Controllers
         /// </summary>
         /// <returns>Aggregated Windows versions data</returns>
         [HttpGet(Name = "GetAllWindowsVersions")]
-        [HttpGet("data", Name = "GetAllWindowsVersionsData")]
         public async Task<ActionResult<object>> GetAllVersionsData()
+        {
+            return await GetAllVersionsDataInternal();
+        }
+
+        /// <summary>
+        /// Gets aggregated Windows versions data (alias endpoint)
+        /// </summary>
+        [HttpGet("data", Name = "GetAllWindowsVersionsData")]
+        public async Task<ActionResult<object>> GetAllVersionsDataAlias()
+        {
+            return await GetAllVersionsDataInternal();
+        }
+
+        private async Task<ActionResult<object>> GetAllVersionsDataInternal()
         {
             try
             {

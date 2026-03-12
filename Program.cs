@@ -119,6 +119,8 @@ builder.Host.UseSerilog((ctx, services, config) =>
                     refresh.Register("Office365Versions:Settings:Sentinel", "Office365Versions", refreshAll: true)
                            .SetRefreshInterval(TimeSpan.FromMinutes(5));
                 })
+                // Resolve Key Vault references using the same credential
+                .ConfigureKeyVault(kv => kv.SetCredential(credential))
                 // Trim the app-specific prefix so keys map to standard config paths
                 .TrimKeyPrefix("Office365Versions:");
             });

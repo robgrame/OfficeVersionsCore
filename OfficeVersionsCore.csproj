@@ -36,6 +36,7 @@
   <ItemGroup>
     <!-- Swashbuckle packages (version 10.0.1 is compatible with .NET 10) -->
     <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.9.0" />
     <PackageReference Include="Azure.Storage.Files.Shares" Version="12.22.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.22.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
