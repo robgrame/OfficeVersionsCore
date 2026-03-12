@@ -27,8 +27,8 @@ namespace OfficeVersionsCore.Controllers
         /// Gets aggregated Windows versions data from all editions
         /// </summary>
         /// <returns>Aggregated Windows versions data</returns>
-        [HttpGet]
-        [HttpGet("data")]
+        [HttpGet(Name = "GetAllWindowsVersions")]
+        [HttpGet("data", Name = "GetAllWindowsVersionsData")]
         public async Task<ActionResult<object>> GetAllVersionsData()
         {
             try
