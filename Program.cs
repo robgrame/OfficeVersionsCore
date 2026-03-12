@@ -116,11 +116,11 @@ builder.Host.UseSerilog((ctx, services, config) =>
                 .ConfigureRefresh(refresh =>
                 {
                     // All configuration values will be refreshed if the sentinel key changes.
-                    refresh.Register("TestApp:Settings:Sentinel", refreshAll: true)
+                    refresh.Register("Office365Versions:Settings:Sentinel", "Office365Versions", refreshAll: true)
                            .SetRefreshInterval(TimeSpan.FromMinutes(5));
                 })
-                // Trim prefix if using key-prefix strategy (optional, harmless if not)
-                .TrimKeyPrefix("Office365Versions/");
+                // Trim the app-specific prefix so keys map to standard config paths
+                .TrimKeyPrefix("Office365Versions:");
             });
             builder.Services.AddAzureAppConfiguration();
             Console.WriteLine($"[STARTUP] Azure App Configuration: CONNECTED (label: {appConfigLabel})");
