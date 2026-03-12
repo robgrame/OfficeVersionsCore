@@ -129,7 +129,7 @@
                             <h5 class="mb-2">
                                 <i class="bi bi-code-square text-success me-2"></i>REST API Available
                             </h5>
-                            <p class="small text-muted mb-0">Access version data programmatically via our public API for automation and integration.</p>
+                            <p class="small text-muted mb-0">Access version data programmatically via our <a asp-page="/ApiDocs">free public API</a> for automation and integration.</p>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -670,37 +670,23 @@
                         <p class="text-muted mb-0">Programmatic access to version data</p>
                     </div>
                 </div>
-                <p>Access Office 365 and Windows release data programmatically through our REST API.</p>
-                <div class="d-flex gap-2 flex-column mb-3">
-                    <div>
-                        <strong class="text-sm">Microsoft 365 Apps Endpoints:</strong>
-                        <div class="d-flex gap-2 flex-wrap mt-1">
-                            <a href="/api/M365AppsReleases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                Latest Versions
-                            </a>
-                            <a href="/swagger" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-book"></i>
-                                Full Docs
-                            </a>
-                        </div>
+                <p>Access Office 365 and Windows release data programmatically through our free REST API via Azure API Management.</p>
+                <div class="mb-3">
+                    <div class="p-2 rounded mb-2" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <small class="text-muted">API Base URL</small>
+                        <div><code>https://api.office365versions.com</code></div>
                     </div>
-                    <div>
-                        <strong class="text-sm">Windows Releases Endpoints:</strong>
-                        <div class="d-flex gap-2 flex-wrap mt-1">
-                            <a href="/api/WindowsVersions/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                All Releases
-                            </a>
-                            <a href="/api/WindowsVersions/windows10/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                Windows 10
-                            </a>
-                            <a href="/api/WindowsVersions/windows11/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                Windows 11
-                            </a>
-                        </div>
+                    <div class="p-2 rounded mb-3" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <small class="text-muted">Public API Key</small>
+                        <div><code>49bf26efd7714a989237922df7d115f9</code></div>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-page="/ApiDocs" class="btn btn-sm btn-primary">
+                            <i class="bi bi-book me-1"></i>API Documentation
+                        </a>
+                        <a href="/swagger" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-braces me-1"></i>Swagger UI
+                        </a>
                     </div>
                 </div>
             </div>
