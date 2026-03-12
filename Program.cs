@@ -51,6 +51,20 @@ builder.Host.UseSerilog((ctx, services, config) =>
         .Enrich.WithProperty("Environment", ctx.HostingEnvironment.EnvironmentName)
         .Enrich.WithProperty("Version", "1.0.0");
 
+    // On Azure App Service, write logs to D:\home\LogFiles\Application\ so they appear in Log Stream.
+    // The HOME env var is always set by Azure App Service (e.g. D:\home).
+    var azureHome = System.Environment.GetEnvironmentVariable("HOME");
+    if (!string.IsNullOrEmpty(azureHome))
+    {
+        var azureLogPath = Path.Combine(azureHome, "LogFiles", "Application", "log-.log");
+        config.WriteTo.File(
+            azureLogPath,
+            rollingInterval: Serilog.RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}");
+        Console.WriteLine($"[STARTUP] Serilog file sink: {azureLogPath}");
+    }
+
     // Add Application Insights sink if running in Azure (non-Development)
     // Only add if Application Insights is properly configured
     if (!ctx.HostingEnvironment.IsDevelopment())
@@ -251,8 +265,9 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
 });
 
-// Add Rate Limiting for API endpoints (.NET 10 built-in)
-// Multiple policies for different use cases
+// Add Rate Limiting for endpoints (.NET 10 built-in)
+// API rate limiting is primarily handled by Azure API Management (APIM).
+// In-app rate limiting is kept for Razor Pages and as a secondary defense layer.
 builder.Services.AddRateLimiter(rateLimiterOptions =>
 {
     // Rejection behavior when limit is exceeded
@@ -277,16 +292,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         }, cancellationToken: cancellationToken);
     };
 
-    // 1. API - General rate limit (100 requests per minute)
-    rateLimiterOptions.AddFixedWindowLimiter(policyName: "api", options =>
-    {
-        options.PermitLimit = 100;
-        options.Window = TimeSpan.FromMinutes(1);
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 5;
-    });
-
-    // 2. API Strict - For expensive endpoints (20 requests per minute)
+    // API Strict - Secondary defense for expensive endpoints (20 requests per minute)
     rateLimiterOptions.AddFixedWindowLimiter(policyName: "api-strict", options =>
     {
         options.PermitLimit = 20;
@@ -295,27 +301,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         options.QueueLimit = 2;
     });
 
-    // 3. Sliding Window - More sophisticated rate limiting (150 requests per minute, distributed)
-    rateLimiterOptions.AddSlidingWindowLimiter(policyName: "api-sliding", options =>
-    {
-        options.PermitLimit = 150;
-        options.Window = TimeSpan.FromMinutes(1);
-        options.SegmentsPerWindow = 6; // Check every 10 seconds
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 5;
-    });
-
-    // 4. Token Bucket - For burst traffic (30 requests burst, refill 1 per 2 seconds)
-    rateLimiterOptions.AddTokenBucketLimiter(policyName: "api-burst", options =>
-    {
-        options.TokenLimit = 30;
-        options.ReplenishmentPeriod = TimeSpan.FromSeconds(2);
-        options.TokensPerPeriod = 1;
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 10;
-    });
-
-    // 5. Concurrency Limiter - For resource-intensive operations (max 10 concurrent)
+    // Concurrency Limiter - For resource-intensive operations (max 10 concurrent)
     rateLimiterOptions.AddConcurrencyLimiter(policyName: "api-concurrent", options =>
     {
         options.PermitLimit = 10;
@@ -323,7 +309,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         options.QueueLimit = 5;
     });
 
-    // 6. Razor Pages - Permissive (1000 requests per minute)
+    // Razor Pages - Permissive (1000 requests per minute)
     rateLimiterOptions.AddFixedWindowLimiter(policyName: "pages", options =>
     {
         options.PermitLimit = 1000;
@@ -332,7 +318,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         options.QueueLimit = 20;
     });
 
-    // Global per-IP rate limiting (50 requests per minute per IP)
+    // Global per-IP rate limiting (200 requests per minute per IP)
     rateLimiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
     {
         var ipAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault() 
@@ -441,6 +427,13 @@ app.Use(async (context, next) =>
 if (builder.Configuration.GetValue<bool>("SecurityMonitoring:Enabled", true))
 {
     app.UseMiddleware<SecurityMiddleware>();
+}
+
+// Apply API Gateway enforcement middleware
+// Blocks direct access to /api/* endpoints unless the request comes through APIM
+if (builder.Configuration.GetValue<bool>("ApiManagement:Enabled", false))
+{
+    app.UseMiddleware<ApiGatewayMiddleware>();
 }
 
 // Enable Response Compression

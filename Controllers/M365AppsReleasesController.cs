@@ -12,7 +12,7 @@ namespace OfficeVersionsCore.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    [EnableRateLimiting("api-sliding")]  // Apply sliding window rate limiting to all endpoints
+    [EnableRateLimiting("api-strict")]  // Secondary defense; primary rate limiting via APIM
     public class M365AppsReleasesController : ControllerBase
     {
         private readonly IOffice365Service _office365Service;
