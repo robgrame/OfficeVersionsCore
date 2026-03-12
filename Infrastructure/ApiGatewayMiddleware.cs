@@ -3,8 +3,10 @@ using System.Net;
 namespace OfficeVersionsCore.Infrastructure
 {
     /// <summary>
-    /// Middleware that restricts direct access to API endpoints (/api/*).
-    /// When enabled, only requests proxied through Azure API Management (carrying the correct gateway header) are allowed.
+    /// Middleware that restricts direct external access to API endpoints (/api/*).
+    /// Allows requests that either:
+    ///   1. Come through Azure API Management (carry the correct gateway header), OR
+    ///   2. Are same-origin browser requests (Referer matches the app's own host) — needed for Razor Pages fetch() calls.
     /// Razor Pages and static files are unaffected.
     /// </summary>
     public class ApiGatewayMiddleware
@@ -33,26 +35,61 @@ namespace OfficeVersionsCore.Infrastructure
             if (_enforceGateway
                 && context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
             {
+                // Allow if the request carries a valid APIM gateway key
                 var headerValue = context.Request.Headers[_headerName].FirstOrDefault();
-
-                if (string.IsNullOrEmpty(headerValue) || headerValue != _gatewayKey)
+                if (!string.IsNullOrEmpty(headerValue) && headerValue == _gatewayKey)
                 {
-                    _logger.LogWarning(
-                        "Direct API access blocked from {IP} to {Path}",
-                        context.Connection.RemoteIpAddress,
-                        context.Request.Path);
-
-                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    await context.Response.WriteAsJsonAsync(new
-                    {
-                        error = "Forbidden",
-                        message = "Direct API access is not allowed. Please use the API gateway."
-                    });
+                    await _next(context);
                     return;
                 }
+
+                // Allow same-origin browser requests (Razor Pages JavaScript fetch calls)
+                if (IsSameOriginRequest(context))
+                {
+                    await _next(context);
+                    return;
+                }
+
+                _logger.LogWarning(
+                    "Direct API access blocked from {IP} to {Path}",
+                    context.Connection.RemoteIpAddress,
+                    context.Request.Path);
+
+                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    error = "Forbidden",
+                    message = "Direct API access is not allowed. Please use the API gateway."
+                });
+                return;
             }
 
             await _next(context);
+        }
+
+        private static bool IsSameOriginRequest(HttpContext context)
+        {
+            var requestHost = context.Request.Host.Host;
+
+            // Check Referer header (set by browsers on fetch/XHR from same page)
+            var referer = context.Request.Headers.Referer.FirstOrDefault();
+            if (!string.IsNullOrEmpty(referer)
+                && Uri.TryCreate(referer, UriKind.Absolute, out var refererUri)
+                && string.Equals(refererUri.Host, requestHost, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Check Origin header (set by browsers on CORS/fetch requests)
+            var origin = context.Request.Headers.Origin.FirstOrDefault();
+            if (!string.IsNullOrEmpty(origin)
+                && Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
+                && string.Equals(originUri.Host, requestHost, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
