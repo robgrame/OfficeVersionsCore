@@ -4,9 +4,10 @@ namespace OfficeVersionsCore.Infrastructure
 {
     /// <summary>
     /// Middleware that restricts direct external access to API endpoints (/api/*).
-    /// Allows requests that either:
-    ///   1. Come through Azure API Management (carry the correct gateway header), OR
-    ///   2. Are same-origin browser requests (Referer matches the app's own host) — needed for Razor Pages fetch() calls.
+    /// Three-layer validation:
+    ///   1. APIM gateway key + IP whitelist — for external API consumers via APIM
+    ///   2. Same-origin browser requests — for Razor Pages JavaScript fetch() calls
+    ///   3. All other direct access is blocked with 403
     /// Razor Pages and static files are unaffected.
     /// </summary>
     public class ApiGatewayMiddleware
@@ -16,6 +17,7 @@ namespace OfficeVersionsCore.Infrastructure
         private readonly string _gatewayKey;
         private readonly string _headerName;
         private readonly bool _enforceGateway;
+        private readonly HashSet<string> _allowedIps;
 
         public ApiGatewayMiddleware(
             RequestDelegate next,
@@ -27,6 +29,12 @@ namespace OfficeVersionsCore.Infrastructure
             _gatewayKey = configuration["ApiManagement:GatewayKey"] ?? string.Empty;
             _headerName = configuration["ApiManagement:GatewayHeaderName"] ?? "X-APIM-Gateway-Key";
             _enforceGateway = configuration.GetValue<bool>("ApiManagement:EnforceGateway", false);
+
+            // Load allowed APIM IP addresses from configuration
+            var allowedIps = configuration.GetSection("ApiManagement:AllowedIPs").Get<string[]>();
+            _allowedIps = allowedIps != null
+                ? new HashSet<string>(allowedIps, StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -35,12 +43,20 @@ namespace OfficeVersionsCore.Infrastructure
             if (_enforceGateway
                 && context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
             {
-                // Allow if the request carries a valid APIM gateway key
+                // Allow if the request carries a valid APIM gateway key AND comes from an allowed IP
                 var headerValue = context.Request.Headers[_headerName].FirstOrDefault();
                 if (!string.IsNullOrEmpty(headerValue) && headerValue == _gatewayKey)
                 {
-                    await _next(context);
-                    return;
+                    if (_allowedIps.Count == 0 || IsFromAllowedIp(context))
+                    {
+                        await _next(context);
+                        return;
+                    }
+
+                    _logger.LogWarning(
+                        "Valid gateway key but untrusted IP {IP} for {Path}",
+                        context.Connection.RemoteIpAddress,
+                        context.Request.Path);
                 }
 
                 // Allow same-origin browser requests (Razor Pages JavaScript fetch calls)
@@ -65,6 +81,25 @@ namespace OfficeVersionsCore.Infrastructure
             }
 
             await _next(context);
+        }
+
+        private bool IsFromAllowedIp(HttpContext context)
+        {
+            var remoteIp = context.Connection.RemoteIpAddress?.ToString();
+            if (string.IsNullOrEmpty(remoteIp))
+                return false;
+
+            // Also check X-Forwarded-For (Azure App Service sits behind a load balancer)
+            var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(forwardedFor))
+            {
+                // X-Forwarded-For may contain multiple IPs; the first is the original client
+                var clientIp = forwardedFor.Split(',')[0].Trim();
+                if (_allowedIps.Contains(clientIp))
+                    return true;
+            }
+
+            return _allowedIps.Contains(remoteIp);
         }
 
         private static bool IsSameOriginRequest(HttpContext context)
