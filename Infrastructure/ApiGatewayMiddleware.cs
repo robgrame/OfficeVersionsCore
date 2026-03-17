@@ -14,10 +14,7 @@ namespace OfficeVersionsCore.Infrastructure
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ApiGatewayMiddleware> _logger;
-        private readonly string _gatewayKey;
-        private readonly string _headerName;
-        private readonly bool _enforceGateway;
-        private readonly HashSet<string> _allowedIps;
+        private readonly IConfiguration _configuration;
 
         public ApiGatewayMiddleware(
             RequestDelegate next,
@@ -26,28 +23,28 @@ namespace OfficeVersionsCore.Infrastructure
         {
             _next = next;
             _logger = logger;
-            _gatewayKey = configuration["ApiManagement:GatewayKey"] ?? string.Empty;
-            _headerName = configuration["ApiManagement:GatewayHeaderName"] ?? "X-APIM-Gateway-Key";
-            _enforceGateway = configuration.GetValue<bool>("ApiManagement:EnforceGateway", false);
-
-            // Load allowed APIM IP addresses from configuration
-            var allowedIps = configuration.GetSection("ApiManagement:AllowedIPs").Get<string[]>();
-            _allowedIps = allowedIps != null
-                ? new HashSet<string>(allowedIps, StringComparer.OrdinalIgnoreCase)
-                : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _configuration = configuration;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Read config dynamically so App Config refresh is picked up
+            var enforceGateway = _configuration.GetValue<bool>("ApiManagement:EnforceGateway", false);
+
             // Only enforce on /api/* paths
-            if (_enforceGateway
+            if (enforceGateway
                 && context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
             {
+                var gatewayKey = _configuration["ApiManagement:GatewayKey"] ?? string.Empty;
+                var headerName = _configuration["ApiManagement:GatewayHeaderName"] ?? "X-APIM-Gateway-Key";
+
                 // Allow if the request carries a valid APIM gateway key AND comes from an allowed IP
-                var headerValue = context.Request.Headers[_headerName].FirstOrDefault();
-                if (!string.IsNullOrEmpty(headerValue) && headerValue == _gatewayKey)
+                var headerValue = context.Request.Headers[headerName].FirstOrDefault();
+                if (!string.IsNullOrEmpty(headerValue) && !string.IsNullOrEmpty(gatewayKey)
+                    && headerValue == gatewayKey)
                 {
-                    if (_allowedIps.Count == 0 || IsFromAllowedIp(context))
+                    var allowedIps = GetAllowedIps();
+                    if (allowedIps.Count == 0 || IsFromAllowedIp(context, allowedIps))
                     {
                         await _next(context);
                         return;
@@ -83,7 +80,15 @@ namespace OfficeVersionsCore.Infrastructure
             await _next(context);
         }
 
-        private bool IsFromAllowedIp(HttpContext context)
+        private HashSet<string> GetAllowedIps()
+        {
+            var allowedIps = _configuration.GetSection("ApiManagement:AllowedIPs").Get<string[]>();
+            return allowedIps != null
+                ? new HashSet<string>(allowedIps, StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static bool IsFromAllowedIp(HttpContext context, HashSet<string> allowedIps)
         {
             var remoteIp = context.Connection.RemoteIpAddress?.ToString();
             if (string.IsNullOrEmpty(remoteIp))
@@ -95,11 +100,11 @@ namespace OfficeVersionsCore.Infrastructure
             {
                 // X-Forwarded-For may contain multiple IPs; the first is the original client
                 var clientIp = forwardedFor.Split(',')[0].Trim();
-                if (_allowedIps.Contains(clientIp))
+                if (allowedIps.Contains(clientIp))
                     return true;
             }
 
-            return _allowedIps.Contains(remoteIp);
+            return allowedIps.Contains(remoteIp);
         }
 
         private static bool IsSameOriginRequest(HttpContext context)
