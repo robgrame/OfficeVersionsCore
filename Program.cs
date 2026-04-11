@@ -33,6 +33,20 @@ if (!string.IsNullOrWhiteSpace(aiConnectionString))
     builder.Services.AddApplicationInsightsTelemetry(options =>
     {
         options.ConnectionString = aiConnectionString;
+        options.EnableAdaptiveSampling = true;
+    });
+
+    // Reduce telemetry volume — target max 5 items/sec per type
+    builder.Services.PostConfigure<Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration>(config =>
+    {
+        foreach (var processor in config.DefaultTelemetrySink.TelemetryProcessors)
+        {
+            if (processor is Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.AdaptiveSamplingTelemetryProcessor sampler)
+            {
+                sampler.MaxTelemetryItemsPerSecond = 5;
+                sampler.ExcludedTypes = "Event;Exception";
+            }
+        }
     });
 }
 else
