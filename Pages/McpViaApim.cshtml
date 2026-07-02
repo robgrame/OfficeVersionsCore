@@ -20,56 +20,52 @@
                 <div class="privacy-section">
                     <h2><i class="bi bi-info-circle me-2"></i>Overview</h2>
                     <p>
-                        The Office Versions site already exposes an HTTP-based MCP endpoint at <code>/mcp</code>.
-                        Azure API Management can be used as the public entry point so you can add authentication,
-                        throttling, observability, and versioning without changing the backend implementation.
+                        The Office Versions MCP server is exposed publicly through Azure API Management (APIM).
+                        APIM is the front door for the endpoint, adding subscription-key authentication, rate limiting,
+                        and observability without changing the backend implementation.
                     </p>
                     <div class="alert alert-info" role="alert">
                         <i class="bi bi-lightbulb me-2"></i>
-                        <strong>Tip:</strong> the OpenAPI definition for import is available at <a href="/swagger/v1/mcp-openapi.json" target="_blank">/swagger/v1/mcp-openapi.json</a>.
+                        <strong>Tip:</strong> the OpenAPI definition is available at <a href="/swagger/v1/mcp-openapi.json" target="_blank">/swagger/v1/mcp-openapi.json</a>.
                     </div>
                 </div>
 
                 <div class="privacy-section">
-                    <h2><i class="bi bi-list-ol me-2"></i>Recommended setup</h2>
-                    <ol>
-                        <li>Create a new API in Azure API Management.</li>
-                        <li>Import the MCP OpenAPI definition from <code>/swagger/v1/mcp-openapi.json</code>.</li>
-                        <li>Configure the backend URL to the App Service host that serves the website.</li>
-                        <li>Set the API route so that requests to the APIM endpoint are forwarded to <code>/mcp</code> on the backend.</li>
-                        <li>Apply authentication and policies in APIM according to your environment requirements.</li>
-                    </ol>
+                    <h2><i class="bi bi-hdd-network me-2"></i>Public endpoint</h2>
+                    <p>The MCP server is reachable at the following APIM URL:</p>
+                    <pre><code>https://api.office365versions.com/office-mcp</code></pre>
+                    <ul>
+                        <li><strong>GET</strong> — returns MCP server information.</li>
+                        <li><strong>POST</strong> — JSON-RPC 2.0 endpoint (<code>initialize</code>, <code>ping</code>, <code>tools/list</code>, <code>tools/call</code>).</li>
+                    </ul>
                 </div>
 
                 <div class="privacy-section">
-                    <h2><i class="bi bi-sliders me-2"></i>APIM configuration example</h2>
+                    <h2><i class="bi bi-key me-2"></i>Authentication</h2>
                     <p>
-                        A simple APIM configuration looks like this:
+                        Every request must include a subscription key in the <code>Ocp-Apim-Subscription-Key</code> header.
+                        Use the public MCP key below:
                     </p>
-                    <ul>
-                        <li><strong>API name:</strong> OfficeVersions MCP</li>
-                        <li><strong>API URL suffix:</strong> <code>mcp</code></li>
-                        <li><strong>Web service URL:</strong> <code>https://&lt;your-app-service-host&gt;</code></li>
-                        <li><strong>Operations:</strong> <code>GET /mcp</code> and <code>POST /mcp</code></li>
-                    </ul>
-                    <p>
-                        If your APIM API uses a base path, make sure the backend request still targets the original MCP route.
-                        In practice this means forwarding the request path to <code>/mcp</code> rather than dropping it.
-                    </p>
+                    <pre><code>Ocp-Apim-Subscription-Key: ef386cc43d4b40278c78fb648b9cbc59</code></pre>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        <strong>Rate limits:</strong> up to <strong>50 requests per day</strong> per client IP address,
+                        with a short-term burst limit of 20 requests per minute. Exceeding the limits returns
+                        <code>HTTP 429 Too Many Requests</code>.
+                    </div>
                 </div>
 
                 <div class="privacy-section">
                     <h2><i class="bi bi-terminal me-2"></i>Example calls</h2>
-                    <p>Once the API is published, you can invoke it using the APIM hostname.</p>
+                    <p>Retrieve MCP server information:</p>
+                    <pre><code>curl https://api.office365versions.com/office-mcp \
+  -H "Ocp-Apim-Subscription-Key: ef386cc43d4b40278c78fb648b9cbc59"</code></pre>
 
-                    <pre><code>curl https://&lt;apim-hostname&gt;/mcp</code></pre>
-                    <pre><code>curl -X POST https://&lt;apim-hostname&gt;/mcp \
+                    <p>List the available tools via JSON-RPC:</p>
+                    <pre><code>curl -X POST https://api.office365versions.com/office-mcp \
+  -H "Ocp-Apim-Subscription-Key: ef386cc43d4b40278c78fb648b9cbc59" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</code></pre>
-
-                    <p>
-                        If your APIM instance expects a subscription key or OAuth token, include the relevant header in the request.
-                    </p>
                 </div>
 
                 <div class="privacy-section">
