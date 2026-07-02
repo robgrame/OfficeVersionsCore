@@ -33,6 +33,7 @@ namespace OfficeVersionsCore.Services
         private readonly IStorageService _storageService;
         private readonly ILogger<WindowsVersionsService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IWindowsVersionMapper _versionMapper;
         private readonly string _windowsStoragePath;
 
         // Microsoft documentation URLs
@@ -40,17 +41,25 @@ namespace OfficeVersionsCore.Services
         private const string Windows11UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-11-version-24h2-update-history-0929c747-1815-4543-8461-0160d16f15e5";
         private const string Windows10ReleaseInfoUrl = "https://learn.microsoft.com/en-us/windows/release-health/release-information";
         private const string Windows11ReleaseInfoUrl = "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information";
+        
+        // Windows Server update history URLs
+        private const string WindowsServer2016UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2016-update-history-4acfbc84-a290-1b54-536a-1c0430e9f3fd";
+        private const string WindowsServer2019UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-10-and-windows-server-2019-update-history-725fc2e1-4443-6831-a5ca-51ff5cbcb059";
+        private const string WindowsServer2022UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-server-2022-update-history-e1caa597-00c5-4ab9-9f3e-8212fe80b2ee";
+        private const string WindowsServer2025UpdateHistoryUrl = "https://support.microsoft.com/en-us/topic/windows-server-2025-update-history-10f58da7-e57b-4a9d-9c16-9f1dcd72d7d7";
 
         public WindowsVersionsService(
             HttpClient httpClient,
             IStorageService storageService,
             ILogger<WindowsVersionsService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IWindowsVersionMapper versionMapper)
         {
             _httpClient = httpClient;
             _storageService = storageService;
             _logger = logger;
             _configuration = configuration;
+            _versionMapper = versionMapper;
 
             // Storage path from configuration (WindowsVersions:StoragePath), default to "windowsversions"
             _windowsStoragePath = _configuration["WindowsVersions:StoragePath"] ?? "windowsversions";
@@ -420,8 +429,14 @@ namespace OfficeVersionsCore.Services
 
                 var windows10Success = await ScrapeWindowsDataAsync(WindowsEdition.Windows10);
                 var windows11Success = await ScrapeWindowsDataAsync(WindowsEdition.Windows11);
+                var server2016Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2016);
+                var server2019Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2019);
+                var server2022Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2022);
+                var server2025Success = await ScrapeWindowsDataAsync(WindowsEdition.WindowsServer2025);
 
-                var success = windows10Success && windows11Success;
+                var success = windows10Success && windows11Success &&
+                    server2016Success && server2019Success &&
+                    server2022Success && server2025Success;
                 _logger.LogInformation("Windows data refresh completed. Success: {Success}", success);
 
                 return success;
@@ -461,6 +476,41 @@ namespace OfficeVersionsCore.Services
         }
 
         /// <summary>
+        /// Gets the update history URL for a specific Windows edition
+        /// </summary>
+        private string GetUpdateHistoryUrl(WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.Windows10 => Windows10UpdateHistoryUrl,
+                WindowsEdition.Windows11 => Windows11UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2016 => WindowsServer2016UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2019 => WindowsServer2019UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2022 => WindowsServer2022UpdateHistoryUrl,
+                WindowsEdition.WindowsServer2025 => WindowsServer2025UpdateHistoryUrl,
+                _ => throw new ArgumentException($"Unknown Windows edition: {edition}")
+            };
+        }
+
+        /// <summary>
+        /// Gets the release information URL for a specific Windows edition
+        /// </summary>
+        private string GetReleaseInfoUrl(WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.Windows10 => Windows10ReleaseInfoUrl,
+                WindowsEdition.Windows11 => Windows11ReleaseInfoUrl,
+                // Windows Server editions share update pages with client editions
+                WindowsEdition.WindowsServer2016 => Windows10ReleaseInfoUrl,
+                WindowsEdition.WindowsServer2019 => Windows10ReleaseInfoUrl,
+                WindowsEdition.WindowsServer2022 => Windows11ReleaseInfoUrl,
+                WindowsEdition.WindowsServer2025 => Windows11ReleaseInfoUrl,
+                _ => throw new ArgumentException($"Unknown Windows edition: {edition}")
+            };
+        }
+
+        /// <summary>
         /// Generates a complete product name with servicing type information
         /// </summary>
         /// <param name="edition">Windows edition (10 or 11)</param>
@@ -478,14 +528,19 @@ namespace OfficeVersionsCore.Services
             {
                 _logger.LogInformation("Scraping Windows data for {Edition}", edition);
 
-                var updateHistoryUrl = edition == WindowsEdition.Windows10 ? Windows10UpdateHistoryUrl : Windows11UpdateHistoryUrl;
-                var releaseInfoUrl = edition == WindowsEdition.Windows10 ? Windows10ReleaseInfoUrl : Windows11ReleaseInfoUrl;
+                var updateHistoryUrl = GetUpdateHistoryUrl(edition);
+                var releaseInfoUrl = GetReleaseInfoUrl(edition);
 
                 var updates = await ScrapeUpdateHistoryAsync(updateHistoryUrl, edition);
                 updates = UpdateDataCleaner.CleanWindowsUpdates(updates);
 
                 // Duplicate multi-build updates to ensure each build has its own entry
                 updates = DuplicateMultiBuildUpdates(updates);
+
+                // Filter updates by edition-specific build numbers
+                // Windows Server editions share update pages with Windows 10/11,
+                // so we need to filter out updates for different OS versions
+                updates = _versionMapper.FilterUpdatesByEdition(updates, edition);
 
                 var recentUpdates = updates
                     .OrderByDescending(u => u.ReleaseDate)
@@ -780,7 +835,7 @@ namespace OfficeVersionsCore.Services
                                     var update = new WindowsUpdate
                                     {
                                         Edition = edition,
-                                        Version = buildVersion,
+                                        Version = buildVersion ?? build,
                                         Build = build,
                                         KBNumber = ExtractKBNumber(text),
                                         UpdateTitle = text,
@@ -882,12 +937,13 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in builds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
-                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version ?? build;
+
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(kbOrTitle);
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
-                                    Version = buildVersion,
+                                    Version = buildVersion ?? build,
                                     Build = build,
                                     KBNumber = kbNumber,
                                     UpdateTitle = kbOrTitle,
@@ -905,7 +961,7 @@ namespace OfficeVersionsCore.Services
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
-                                Version = version,
+                                Version = version ?? string.Empty,
                                 KBNumber = kbNumber,
                                 UpdateTitle = kbOrTitle,
                                 ReleaseDate = releaseDate,
@@ -959,13 +1015,13 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in colBuilds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
-                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version ?? build;
                                 var (updateType, isOptional) = DetermineUpdateTypeFromTitle(title);
 
                                 updates.Add(new WindowsUpdate
                                 {
                                     Edition = edition,
-                                    Version = buildVersion,
+                                    Version = buildVersion ?? build,
                                     Build = build,
                                     KBNumber = colKbNumber,
                                     UpdateTitle = title,
@@ -983,7 +1039,7 @@ namespace OfficeVersionsCore.Services
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
-                                Version = version,
+                                Version = version ?? string.Empty,
                                 KBNumber = colKbNumber,
                                 UpdateTitle = title,
                                 ReleaseDate = colDate,
@@ -1007,7 +1063,7 @@ namespace OfficeVersionsCore.Services
             var updates = new List<WindowsUpdate>();
             try
             {
-                var updateLinks = updatesList.SelectNodes(".//li/a[@class='supLeftNavLink']");
+                var updateLinks = updatesList.SelectNodes(".//li/a[@class='supLeftNavLink']"); 
                 if (updateLinks != null)
                 {
                     _logger.LogInformation("ExtractUpdatesFromNavLinks: Found {Count} update links for version {Version}", 
@@ -1036,7 +1092,7 @@ namespace OfficeVersionsCore.Services
                             foreach (var build in builds)
                             {
                                 string buildVersion = DetermineVersionFromBuild(build);
-                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version;
+                                if (string.IsNullOrEmpty(buildVersion)) buildVersion = version ?? build;
 
                                 _logger.LogDebug("Creating update entry: KB={KB}, Build={Build}, BuildVersion={BuildVersion}, FallbackVersion={FallbackVersion}",
                                     kbNumber, build, buildVersion ?? "NULL", version ?? "NULL");
@@ -1046,7 +1102,7 @@ namespace OfficeVersionsCore.Services
                                 var newUpdate = new WindowsUpdate
                                 {
                                     Edition = edition,
-                                    Version = buildVersion,
+                                    Version = buildVersion ?? build,
                                     Build = build,
                                     KBNumber = kbNumber,
                                     UpdateTitle = updateText,
@@ -1073,8 +1129,7 @@ namespace OfficeVersionsCore.Services
                             updates.Add(new WindowsUpdate
                             {
                                 Edition = edition,
-                                Version = version,
-                                Build = string.Empty,
+                                Version = version ?? string.Empty,
                                 KBNumber = kbNumber,
                                 UpdateTitle = updateText,
                                 ReleaseDate = releaseDate,
@@ -1246,54 +1301,8 @@ namespace OfficeVersionsCore.Services
 
         private string DetermineVersionFromBuild(string build)
         {
-            if (string.IsNullOrEmpty(build)) return string.Empty;
-
-            // Validate build format - must be 5 digits minimum for Windows 10/11
-            var buildMatch = Regex.Match(build, @"^(\d{5,})(?:\.\d+)?$");
-            if (!buildMatch.Success)
-            {
-                _logger.LogWarning("Invalid build format: {Build}", build);
-                return string.Empty;
-            }
-
-            string majorBuild = build.Split('.')[0];
-
-            // Validate major build is exactly 5 digits
-            if (majorBuild.Length != 5)
-            {
-                _logger.LogWarning("Invalid major build length: {MajorBuild}", majorBuild);
-                return string.Empty;
-            }
-
-            switch (majorBuild)
-            {
-                // Windows 11 build numbers
-                case "26200": return "25H2"; // Windows 11 25H2
-                case "26100": return "24H2"; // Windows 11 24H2
-                case "22631": return "23H2"; // Windows 11 23H2
-                case "22621": return "22H2"; // Windows 11 22H2
-                case "22000": return "21H2"; // Windows 11 initial release
-
-                // Windows 10 build numbers
-                case "19045": return "22H2"; // Windows 10 22H2
-                case "19044": return "21H2"; // Windows 10 21H2
-                case "19043": return "21H1"; // Windows 10 21H1
-                case "19042": return "20H2"; // Windows 10 20H2
-                case "19041": return "2004"; // Windows 10 2004
-                case "18363": return "1909"; // Windows 10 1909
-                case "18362": return "1903"; // Windows 10 1903
-                case "17763": return "1809"; // Windows 10 1809
-                case "17134": return "1803"; // Windows 10 1803
-                case "16299": return "1709"; // Windows 10 1709
-                case "15254": return "1709 Mobile";
-                case "15063": return "1703"; // Windows 10 1703
-                case "14393": return "1607"; // Windows 10 1607
-                case "10586": return "1511"; // Windows 10 1511
-                case "10240": return "1507"; // Windows 10 initial release
-                default:
-                    _logger.LogWarning("Unrecognized Windows build number: {MajorBuild}", majorBuild);
-                    return string.Empty;
-            }
+            // Delegate to WindowsVersionMapper
+            return _versionMapper.DetermineVersionFromBuild(build);
         }
 
         private DateTime? ExtractDateFromText(string text)
@@ -1394,6 +1403,7 @@ namespace OfficeVersionsCore.Services
                 if (node != null) return node;
                 // case-insensitive contains
                 node = doc.DocumentNode.SelectSingleNode($"//table[contains(translate(@aria-label,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'), '{label.ToLower()}')]");
+
                 if (node != null) return node;
             }
             return null;
@@ -1450,15 +1460,6 @@ namespace OfficeVersionsCore.Services
                         if (predicate(kvp.Value)) return kvp.Key;
                     }
                     return null;
-                }
-
-                bool ContainsAll(string text, params string[] tokens)
-                {
-                    foreach (var t in tokens)
-                    {
-                        if (!text.Contains(t, StringComparison.OrdinalIgnoreCase)) return false;
-                    }
-                    return true;
                 }
 
                 var rows = table.SelectNodes(".//tbody/tr") ?? table.SelectNodes(".//tr[not(th)]");
@@ -1684,15 +1685,51 @@ namespace OfficeVersionsCore.Services
         {
             try
             {
+                // Map Windows Server versions to correct display values before saving
+                var processedUpdates = updates.Select(u => new WindowsUpdate
+                {
+                    Version = MapWindowsServerVersion(u.Version, edition),
+                    Build = u.Build,
+                    KBNumber = u.KBNumber,
+                    ReleaseDate = u.ReleaseDate,
+                    Edition = u.Edition,
+                    UpdateTitle = u.UpdateTitle,
+                    Description = u.Description,
+                    Type = u.Type,
+                    Highlights = u.Highlights,
+                    KnownIssues = u.KnownIssues,
+                    SupportUrl = u.SupportUrl,
+                    IsSecurityUpdate = u.IsSecurityUpdate,
+                    IsOptionalUpdate = u.IsOptionalUpdate,
+                    SourceUrl = u.SourceUrl,
+                    ServicingChannel = u.ServicingChannel
+                }).ToList();
+
                 var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-updates.json";
-                var json = JsonSerializer.Serialize(updates, new JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(processedUpdates, new JsonSerializerOptions { WriteIndented = true });
                 await _storageService.WriteAsync(fileName, json);
-                _logger.LogInformation("Saved {Count} updates for {Edition} to local storage", updates.Count, edition);
+                _logger.LogInformation("Saved {Count} updates for {Edition} to local storage", processedUpdates.Count, edition);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving updates to storage for {Edition}", edition);
             }
+        }
+
+        /// <summary>
+        /// Maps Windows Server version strings to the correct display versions
+        /// For Windows Server 2022: maps 21H2 to 2022
+        /// For Windows Server 2025: maps 24H2 to 2025
+        /// For other versions: returns the version as-is
+        /// </summary>
+        private string MapWindowsServerVersion(string version, WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.WindowsServer2022 when version == "21H2" => "2022",
+                WindowsEdition.WindowsServer2025 when version == "24H2" => "2025",
+                _ => version
+            };
         }
 
         private async Task SaveReleaseVersionsToStorageAsync(WindowsEdition edition, WindowsReleaseVersions releaseVersions)
@@ -1878,7 +1915,7 @@ namespace OfficeVersionsCore.Services
             return list;
         }
 
-        private async Task<List<WindowsVersion>?> LoadVersionsFromStorageAsync(WindowsEdition edition)
+        private async Task<List<WindowsVersion>?> LoadVersionsFromStorageAsync( WindowsEdition edition)
         {
             try
             {

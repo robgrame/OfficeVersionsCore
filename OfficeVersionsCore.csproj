@@ -7,6 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateSwaggerOnPublish>true</GenerateSwaggerOnPublish>
+    <UserSecretsId>7895e7a6-28b2-46d5-8bd2-d8f49777ee8f</UserSecretsId>
   </PropertyGroup>
   
   <!-- Azure Deployment Configuration -->
@@ -35,9 +36,12 @@
   <ItemGroup>
     <!-- Swashbuckle packages (version 10.0.1 is compatible with .NET 10) -->
     <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
+    <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.9.0" />
     <PackageReference Include="Azure.Storage.Files.Shares" Version="12.22.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.22.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Graph" Version="5.78.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.0.1" />
@@ -46,7 +50,7 @@
     <!-- Azure Storage -->
     <PackageReference Include="Azure.Storage.Blobs" Version="12.25.1" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.0" />
-    <PackageReference Include="Azure.Identity" Version="1.16.0" />
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
     
     <!-- Application Insights -->
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
@@ -86,6 +90,7 @@
   
   <!-- Explicitly include GSC CSV file in publish -->
   <ItemGroup>
+    <None Include=".github\copilot-instructions.md" />
     <None Include="Logs\.gitkeep" />
     <None Include="wwwroot\data\gsc-export.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

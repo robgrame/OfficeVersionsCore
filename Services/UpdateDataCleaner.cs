@@ -42,7 +42,7 @@ namespace OfficeVersionsCore.Services
                 };
 
                 // Clean and decode update title
-                cleanedUpdate.UpdateTitle = CleanHtmlContent(update.UpdateTitle);
+                cleanedUpdate.UpdateTitle = CleanHtmlContent(update.UpdateTitle ?? string.Empty);
                 
                 // Extract version from the update title if missing
                 cleanedUpdate.Version = !string.IsNullOrWhiteSpace(update.Version) 
@@ -119,7 +119,7 @@ namespace OfficeVersionsCore.Services
                 var cleanedVersion = new WindowsVersion
                 {
                     Edition = version.Edition,
-                    Version = CleanVersionString(version.Version),
+                    Version = CleanVersionString(version.Version ?? string.Empty),
                     Build = CleanBuildString(version.Build),
                     ServiceOption = string.IsNullOrWhiteSpace(version.ServiceOption) ? 
                                     DetermineServiceOption(version) : version.ServiceOption,
@@ -268,7 +268,7 @@ namespace OfficeVersionsCore.Services
                             .OrderByDescending(v => v.ReleaseDate)
                             .ThenByDescending(v => ParseVersionNumber(v.Version))
                             .FirstOrDefault();
-                            
+                        
                         if (latestLtsc != null)
                         {
                             latestLtsc.IsCurrentVersion = true;
@@ -333,7 +333,7 @@ namespace OfficeVersionsCore.Services
             version = Regex.Replace(version, @"^version\s+", "", RegexOptions.IgnoreCase).Trim();
             
             // First try to match YYH# format (e.g., 22H2, 21H1, 20H2)
-            var versionMatch = Regex.Match(version, @"(\d{2}H\d)");
+            var versionMatch = Regex.Match(version, @"(\d{2}H\d)", RegexOptions.IgnoreCase);
             if (versionMatch.Success)
             {
                 return versionMatch.Groups[1].Value;
@@ -341,7 +341,7 @@ namespace OfficeVersionsCore.Services
             
             // Then try to match valid Windows 10 YYMM versions (1507-2004)
             // This regex only matches valid Windows 10 version ranges
-            versionMatch = Regex.Match(version, @"(1[5-9][0-1]\d|20[0-0][0-4])");
+            versionMatch = Regex.Match(version, @"(1[5-9][0-1]\d|20[0-0][0-4])", RegexOptions.IgnoreCase);
             if (versionMatch.Success)
             {
                 string candidate = versionMatch.Groups[1].Value;

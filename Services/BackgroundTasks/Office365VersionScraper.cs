@@ -53,7 +53,8 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
             
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Starting Office 365 version scraping at: {Time}", DateTimeOffset.Now);
+                var now = DateTimeOffset.Now;
+                _logger.LogInformation("Starting Office 365 version scraping at: {Time}", now);
                 try
                 {
                     await ScrapeAndUploadVersionsDataAsync(stoppingToken);
@@ -64,9 +65,48 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
                     _logger.LogError(ex, "Error occurred during Office 365 version scraping");
                 }
 
-                _logger.LogInformation("Next Office 365 version scraping scheduled for: {Time}", DateTimeOffset.Now.Add(_interval));
-                await Task.Delay(_interval, stoppingToken);
+                // Calculate delay until next scheduled interval (aligned to second 0)
+                var nextScheduledTime = CalculateNextScheduledTime(now, _interval);
+                var delayUntilNext = nextScheduledTime - DateTimeOffset.Now;
+                
+                _logger.LogInformation("Next Office 365 version scraping scheduled for: {Time} (in {Delay} seconds)", 
+                    nextScheduledTime, delayUntilNext.TotalSeconds);
+                
+                await Task.Delay(delayUntilNext, stoppingToken);
             }
+        }
+
+        /// <summary>
+        /// Calculates the next scheduled execution time aligned to the start of each interval at second 0
+        /// </summary>
+        private DateTimeOffset CalculateNextScheduledTime(DateTimeOffset currentTime, TimeSpan interval)
+        {
+            // Get total minutes from a reference point (e.g., midnight)
+            var minutesSinceMidnight = currentTime.TimeOfDay.TotalMinutes;
+            
+            // Calculate how many complete intervals have passed
+            var minutesPerInterval = interval.TotalMinutes;
+            var completedIntervals = Math.Floor(minutesSinceMidnight / minutesPerInterval);
+            
+            // Next interval starts at this time
+            var nextIntervalStartMinutes = (completedIntervals + 1) * minutesPerInterval;
+            
+            // Create the next scheduled time at second 0 of the next interval
+            var nextScheduled = new DateTimeOffset(
+                currentTime.Year,
+                currentTime.Month,
+                currentTime.Day,
+                0, 0, 0,
+                currentTime.Offset
+            ).AddMinutes(nextIntervalStartMinutes);
+            
+            // If the calculated time is before now, add another interval
+            if (nextScheduled <= currentTime)
+            {
+                nextScheduled = nextScheduled.Add(interval);
+            }
+            
+            return nextScheduled;
         }
 
         private async Task ScrapeAndUploadVersionsDataAsync(CancellationToken stoppingToken)
@@ -124,8 +164,14 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
                     versionHistoryTable.Length > 200 ? versionHistoryTable.Substring(0, 200) : versionHistoryTable);
                 
                 var allReleases = ProcessVersionHistoryTable(versionHistoryTable, elapsedMs);
+                if (allReleases == null)
+                {
+                    _logger.LogWarning("Version history parsing returned no data. Skipping channel filtering.");
+                    return;
+                }
+
                 _logger.LogInformation("Processed version history table, found {ReleaseCount} releases", 
-                    allReleases?.Data?.Count ?? 0);
+                    allReleases.Data?.Count ?? 0);
                 
                 // Upload all releases JSON
                 await UploadJsonDataAsync(allReleases, "m365releases.json", stoppingToken);
@@ -359,10 +405,16 @@ namespace OfficeVersionsCore.Services.BackgroundTasks
             }
         }
 
-        private async Task UploadJsonDataAsync(Office365VersionsData data, string fileName, CancellationToken cancellationToken)
+        private async Task UploadJsonDataAsync(Office365VersionsData? data, string fileName, CancellationToken cancellationToken)
         {
             try
             {
+                if (data == null)
+                {
+                    _logger.LogWarning("Cannot upload {FileName}: data is null", fileName);
+                    return;
+                }
+
                 _logger.LogInformation("Preparing to upload {FileName} to local storage", fileName);
                 
                 // Convert data to JSON - match PowerShell indentation and casing

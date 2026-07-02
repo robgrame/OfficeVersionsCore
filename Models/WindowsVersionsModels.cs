@@ -22,7 +22,7 @@ namespace OfficeVersionsCore.Models
         public bool IsLatestUpdate { get; set; }
         public string? AdditionalNotes { get; set; }
         public string? SecurityUpdates { get; set; }
-        
+
         // Additional properties to match Microsoft's documentation tables
         public string? EndOfServicingStandard { get; set; } // Home, Pro, Pro Education, Pro for Workstations
         public string? EndOfServicingEnterprise { get; set; } // Enterprise, Education, IoT Enterprise
@@ -30,7 +30,7 @@ namespace OfficeVersionsCore.Models
         public string? ExtendedSupportEndDate { get; set; } // For LTSC editions
         public string? LatestUpdate { get; set; }
         public string? LatestRevisionDate { get; set; }
-        
+
         // Servicing type property to distinguish between regular and LTSC editions
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public ServicingType ServicingType { get; set; } = ServicingType.Regular;
@@ -80,6 +80,11 @@ namespace OfficeVersionsCore.Models
             {
                 WindowsEdition.Windows10 => "Windows 10",
                 WindowsEdition.Windows11 => "Windows 11",
+                WindowsEdition.WindowsServer2012R2 => "Windows Server 2012 R2",
+                WindowsEdition.WindowsServer2016 => "Windows Server 2016",
+                WindowsEdition.WindowsServer2019 => "Windows Server 2019",
+                WindowsEdition.WindowsServer2022 => "Windows Server 2022",
+                WindowsEdition.WindowsServer2025 => "Windows Server 2025",
                 _ => "Windows"
             };
     }
@@ -90,7 +95,12 @@ namespace OfficeVersionsCore.Models
     public enum WindowsEdition
     {
         Windows10,
-        Windows11
+        Windows11,
+        WindowsServer2012R2,
+        WindowsServer2016,
+        WindowsServer2019,
+        WindowsServer2022,
+        WindowsServer2025
     }
 
     /// <summary>
@@ -112,6 +122,13 @@ namespace OfficeVersionsCore.Models
         public bool IsSecurityUpdate { get; set; }
         public bool IsOptionalUpdate { get; set; }
         public string SourceUrl { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Servicing channel: LTSC (Long-Term Servicing Channel) or AC (Annual Channel)
+        /// For Windows Server: LTSC provides 5-10 years support, AC provides 6 months support
+        /// Legacy SAC (Semi-Annual Channel) was retired August 9, 2022
+        /// </summary>
+        public string? ServicingChannel { get; set; } // LTSC, AC, or null for non-server editions
     }
 
     /// <summary>
@@ -127,7 +144,7 @@ namespace OfficeVersionsCore.Models
         public int SecurityUpdates { get; set; }
         public List<WindowsVersion> RecentVersions { get; set; } = new();
         public List<WindowsUpdate> RecentUpdates { get; set; } = new();
-        
+
         // Use specific models for each channel
         public List<RegularServicingVersion> RegularVersions { get; set; } = new();
         public List<LtscServicingVersion> LtscVersions { get; set; } = new();
@@ -232,3 +249,4 @@ namespace OfficeVersionsCore.Models
         public string? UpgradePath { get; set; }
     }
 }
+

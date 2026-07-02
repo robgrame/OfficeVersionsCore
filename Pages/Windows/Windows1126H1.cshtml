@@ -1,0 +1,385 @@
+@page "/windows/26h1"
+@model OfficeVersionsCore.Pages.Windows.Windows1126H1Model
+@{
+    ViewData["Title"] = "Windows 11 26H1 Releases";
+    ViewData["Description"] = "Complete update history of Windows 11 version 26H1 builds and updates. Track build numbers, KB articles, and update types (Security, Preview, Out-of-band).";
+    ViewData["SeoTitle"] = "Windows 11 26H1 Update History - Build 28000 | KB Articles";
+    ViewData["SeoDescription"] = "Track Windows 11 26H1 updates with build numbers (28000), release dates, KB articles, and update types. Complete update history with the latest build details.";
+    ViewData["SeoKeywords"] = "Windows 11 26H1, Windows 11 26H1 update history, Windows 11 26H1 build 28000, Windows 11 26H1 KB articles, Windows 11 26H1 updates";
+    ViewData["CanonicalUrl"] = "https://www.office365versions.com/windows/26h1";
+}
+
+<div class="container">
+    <div class="modern-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-windows me-2"></i>
+            </div>
+            <div>
+                <h1 class="card-title">Windows 11 26H1 Releases</h1>
+                <p class="text-muted mb-0">Update history for Windows 11 version 26H1 (Build 28000)</p>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Source:</strong> Updates are sourced from <a href="https://support.microsoft.com/en-us/topic/windows-11-version-26h1-update-history-253c73cd-cab1-4bfd-94dc-76c452273fc9" target="_blank" rel="noopener">Microsoft's official update history</a>.
+        </div>
+
+        <div class="modern-card mb-4">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Windows 11 26H1 Overview</h2>
+                    <p class="text-muted mb-0">Highlights from Microsoft's release description</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">Windows 11 version 26H1 is a specialized release for next-generation hardware platforms, available only preinstalled on select new devices launching in early 2026. It isn't an annual feature update and isn't offered through Windows Update for in-place upgrades on existing devices.</p>
+                <p class="mb-3">For enterprise deployment, Microsoft recommends continuing with versions 24H2 and 25H2. Version 26H1 follows the standard Windows 11 servicing timeline (24 months for Pro and 36 months for Enterprise) and continues to receive monthly security and preview updates.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="https://learn.microsoft.com/en-us/windows/whats-new/windows-11-version-26h1" target="_blank" rel="noopener" class="btn-modern btn-primary">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        Read the full overview
+                    </a>
+                    <a href="https://aka.ms/26H1-for-IT-pros" target="_blank" rel="noopener" class="btn-modern btn-secondary">
+                        <i class="bi bi-link-45deg"></i>
+                        IT pro guidance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4 ps-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/releases10" role="tab">Windows 10</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/releases11" role="tab">Windows 11</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" href="/windows/26h1" role="tab">Windows 11 26H1</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" href="/windows/releases" role="tab">All Releases</a>
+            </li>
+        </ul>
+
+        <div class="modern-table-container table-responsive">
+            <table id="windows1126h1Releases" class="table modern-table" width="100%">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-tag me-2"></i>Version</th>
+                        <th><i class="bi bi-hash me-2"></i>Build</th>
+                        <th><i class="bi bi-calendar-event me-2"></i>Release Date</th>
+                        <th class="d-none d-md-table-cell"><i class="bi bi-gear me-2"></i>Servicing</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-file-text me-2"></i>KB</th>
+                        <th class="d-none d-lg-table-cell"><i class="bi bi-tag-fill me-2"></i>Type</th>
+                        <th class="text-center"><i class="bi bi-info-circle me-2"></i>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data loaded via AJAX -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Update Details Modal -->
+<div class="modal fade" id="updateDetailsModal" tabindex="-1" aria-labelledby="updateDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateDetailsModalLabel">
+                    <i class="bi bi-windows me-2"></i>Update Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="updateDetailsBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="~/js/windows-version-sort.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $.fn.dataTable.ext.type.order['windows-version-pre'] = function(version) {
+        return getWindowsVersionSortValue(version);
+    };
+
+    const table = $('#windows1126h1Releases').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: '/api/WindowsVersions/windows11/version/26h1/releases',
+            type: 'GET',
+            dataType: 'json',
+            dataSrc: '',
+            error: function(xhr, error, code) {
+                console.error('DataTable AJAX error:', error, code);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Loading Data',
+                    text: 'Could not load Windows 11 26H1 releases data. Please try again later.'
+                });
+            }
+        },
+        columns: [
+            {
+                data: 'version',
+                className: 'version-column',
+                type: 'windows-version-pre',
+                render: function(data) {
+                    if (!data) return '';
+                    return `<span class="version-badge win11-26h1">${data}</span>`;
+                }
+            },
+            {
+                data: 'buildNumber',
+                className: 'build-column',
+                render: function(data) {
+                    if (!data) return '';
+                    return `<code class="build-code win11-26h1">${data}</code>`;
+                }
+            },
+            {
+                data: 'releaseDate',
+                className: 'release-date-column',
+                render: function(data) {
+                    if (!data) return '';
+                    const date = new Date(data);
+                    return isNaN(date) ? data : date.toISOString().substring(0,10);
+                }
+            },
+            {
+                data: 'servicingOption',
+                className: 'd-none d-md-table-cell'
+            },
+            {
+                data: 'kb',
+                className: 'd-none d-lg-table-cell',
+                render: function(data, type, row) {
+                    if (!data) return '-';
+                    if (row.url) {
+                        return `<a href="${row.url}" target="_blank" rel="noopener">${data}</a>`;
+                    }
+                    return data;
+                }
+            },
+            {
+                data: 'type',
+                className: 'd-none d-lg-table-cell',
+                render: function(data) {
+                    if (!data) return '<span class="badge bg-secondary">Unknown</span>';
+
+                    const typeMap = {
+                        'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
+                        'Preview': '<span class="badge bg-info">Preview</span>',
+                        'Security Update': '<span class="badge bg-danger">Quality Update</span>',
+                        'Optional': '<span class="badge bg-secondary">Optional</span>',
+                        'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
+                        'Feature': '<span class="badge bg-success">Feature</span>'
+                    };
+
+                    return typeMap[data] || `<span class="badge bg-secondary">${data}</span>`;
+                }
+            },
+            {
+                data: null,
+                className: 'text-center',
+                orderable: false,
+                render: function() {
+                    return `<button type="button" class="btn btn-sm btn-outline-primary btn-details"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="View update details">
+                                <i class="bi bi-info-circle"></i>
+                            </button>`;
+                }
+            }
+        ],
+        order: [[ 2, 'desc' ]],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        drawCallback: function() {
+            if (window.bootstrap && bootstrap.Tooltip) {
+                const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+            }
+
+            $('.btn-details').off('click').on('click', function() {
+                const rowData = table.row($(this).parents('tr')).data();
+                showUpdateDetails(rowData);
+            });
+        }
+    });
+
+    function getUpdateTypeBadge(type) {
+        if (!type) return '<span class="badge bg-secondary">Unknown</span>';
+
+        const typeMap = {
+            'Out-of-band': '<span class="badge bg-warning">Out-of-band</span>',
+            'Preview': '<span class="badge bg-info">Preview</span>',
+            'Security Update': '<span class="badge bg-danger">Quality Update</span>',
+            'Optional': '<span class="badge bg-secondary">Optional</span>',
+            'Cumulative': '<span class="badge bg-primary">Cumulative</span>',
+            'Feature': '<span class="badge bg-success">Feature</span>'
+        };
+
+        return typeMap[type] || `<span class="badge bg-secondary">${type}</span>`;
+    }
+
+    function showUpdateDetails(update) {
+        const modal = new bootstrap.Modal(document.getElementById('updateDetailsModal'));
+        const modalBody = document.getElementById('updateDetailsBody');
+
+        const kbNumber = update.kb ? update.kb.replace('KB', '') : null;
+        const supportUrl = kbNumber ? `https://support.microsoft.com/help/${kbNumber}` : null;
+
+        let content = `
+            <div class="update-details-content">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-tag me-2"></i>Version</h6>
+                        <p class="h5">${update.version || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-hash me-2"></i>Build Number</h6>
+                        <p class="h5"><code class="build-code">${update.buildNumber || 'N/A'}</code></p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-calendar-event me-2"></i>Release Date</h6>
+                        <p>${update.releaseDate ? new Date(update.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-gear me-2"></i>Servicing Option</h6>
+                        <p>${update.servicingOption || 'N/A'}</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>KB Article</h6>
+                        <p>${update.kb || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-2"><i class="bi bi-tag-fill me-2"></i>Update Type</h6>
+                        <p>${getUpdateTypeBadge(update.type)}</p>
+                    </div>
+                </div>
+
+                ${update.description ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-file-text me-2"></i>Description</h6>
+                    <p class="text-muted">${update.description}</p>
+                </div>
+                ` : ''}
+
+                ${update.highlights && update.highlights.length > 0 ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-star me-2"></i>Highlights</h6>
+                    <ul class="list-group list-group-flush">
+                        ${update.highlights.map(h => `<li class="list-group-item">${h}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+
+                ${update.knownIssues && update.knownIssues.length > 0 ? `
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Known Issues</h6>
+                    <ul class="list-group list-group-flush">
+                        ${update.knownIssues.map(issue => `<li class="list-group-item text-warning">${issue}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+
+                ${supportUrl ? `
+                <div class="d-grid gap-2">
+                    <a href="${supportUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>View Microsoft Support Article
+                    </a>
+                    ${update.url && update.url !== supportUrl ? `
+                    <a href="${update.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary">
+                        <i class="bi bi-link-45deg me-2"></i>Additional Information
+                    </a>
+                    ` : ''}
+                </div>
+                ` : ''}
+            </div>
+        `;
+
+        modalBody.innerHTML = content;
+        modal.show();
+    }
+});
+</script>
+
+<style>
+    .version-badge {
+        display: inline-block;
+        padding: .35rem .6rem;
+        font-weight: 600;
+        font-size: .85rem;
+        border-radius: .65rem;
+    }
+
+    .win11-26h1 {
+        background-color: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
+        box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.2);
+    }
+
+    .build-code {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        padding: .2rem .4rem;
+        font-size: .85rem;
+        border-radius: .25rem;
+        white-space: nowrap;
+    }
+
+    .build-code.win11-26h1 {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+
+    .update-details-content {
+        padding: 1rem;
+    }
+
+    .update-details-content h6 {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .update-details-content .list-group-item {
+        border-left: 3px solid var(--bs-primary);
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+
+    .update-details-content .list-group-item:last-child {
+        border-bottom: none;
+    }
+</style>
+}

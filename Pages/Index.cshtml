@@ -2,7 +2,7 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home";
-    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps, Windows 10, and Windows 11 releases. Track versions, build numbers, and release dates across all platforms.";
+    ViewData["Description"] = "Stay updated with the latest Microsoft 365 Apps, Windows client and Windows Server releases. Track versions, build numbers, and release dates across all platforms.";
 }
 
 <!-- Hero Section -->
@@ -11,7 +11,7 @@
         <div class="hero-content fade-in-up">
             <h1 class="hero-title">Office and Windows Updates</h1>
             <p class="hero-subtitle">
-                Track the latest Microsoft 365 Apps, Windows 10, and Windows 11 releases with version numbers, builds, and key dates
+                Track the latest Microsoft 365 Apps, Windows client and Windows Server releases with version numbers, builds, and key dates
             </p>
             
             <div class="hero-stats" id="hero-stats">
@@ -21,7 +21,7 @@
                     <div class="hero-stat-box">
                         <div class="stat-box-header">
                             <i class="bi bi-file-earmark-text"></i>
-                            <span>Microsoft 365</span>
+                            <span>Microsoft 365 Apps</span>
                         </div>
                         <div class="stat-box-content">
                             <div class="stat-item compact">
@@ -39,16 +39,38 @@
                     <div class="hero-stat-box">
                         <div class="stat-box-header">
                             <i class="bi bi-windows"></i>
-                            <span>Windows</span>
+                            <span>Windows Client</span>
                         </div>
                         <div class="stat-box-content">
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows-latest-version">-</span>
-                                <span class="stat-label">Win 11</span>
+                                <span class="stat-label">Windows 11</span>
                             </div>
                             <div class="stat-item compact">
                                 <span class="stat-number" id="windows10-latest-version">-</span>
-                                <span class="stat-label">Win 10</span>
+                                <span class="stat-label">Windows 10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Windows Server Stats -->
+                    <div class="hero-stat-box">
+                        <div class="stat-box-header">
+                            <i class="bi bi-server"></i>
+                            <span>Windows Server</span>
+                        </div>
+                        <div class="stat-box-content flex-wrap">
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2025">-</span>
+                            </div>
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2022">-</span>                               
+                            </div>
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2019">-</span>
+                            </div>
+                            <div class="stat-item compact">
+                                <span class="stat-number" id="windows-server-2016">-</span>
                             </div>
                         </div>
                     </div>
@@ -64,6 +86,59 @@
                             <div class="timestamp-time">-</div>
                         </div>                                                       
                         <span class="stat-label">Last Updated</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- News & Updates Banner -->
+<section class="updates-banner">
+    <div class="container">
+        <div class="modern-card bg-gradient-primary">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-megaphone"></i>
+                </div>
+                <div>
+                    <h3 class="card-title">What's New</h3>
+                    <p class="text-muted mb-0">Latest features and additions</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="update-item">
+                            <h5 class="mb-2">
+                                <i class="bi bi-star-fill text-warning me-2"></i>Windows Server Tracking
+                            </h5>
+                            <p class="small text-muted mb-0">Now tracking Windows Server 2016, 2019, 2022, and 2025 releases with comprehensive version history and build information.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="update-item">
+                            <h5 class="mb-2">
+                                <i class="bi bi-lightning-fill text-info me-2"></i>Real-time Updates
+                            </h5>
+                            <p class="small text-muted mb-0">Automatic tracking of the latest Microsoft 365 Apps and Windows releases across all channels and platforms.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="update-item">
+                            <h5 class="mb-2">
+                                <i class="bi bi-code-square text-success me-2"></i>REST API Available
+                            </h5>
+                            <p class="small text-muted mb-0">Access version data programmatically via our <a asp-page="/ApiDocs">free public API</a> for automation and integration.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="update-item">
+                            <h5 class="mb-2">
+                                <i class="bi bi-graph-up text-danger me-2"></i>Enhanced Analytics
+                            </h5>
+                            <p class="small text-muted mb-0">Track release patterns, view deployment timelines, and monitor end-of-service dates.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -240,45 +315,342 @@
                     </div>
                     <div>
                         <h3 class="card-title">Windows Operating System Releases</h3>
-                        <p class="text-muted mb-0">Track Windows 10 and Windows 11 versions and updates</p>
+                        <p class="text-muted mb-0">Comprehensive tracking for Windows client and server platforms</p>
                     </div>
                 </div>
                 <div class="card-body">
-                    <p class="mb-4">In addition to Microsoft 365 Apps, this site also tracks Windows 10 and Windows 11 releases. Monitor version numbers, build updates, and servicing timelines for both operating systems.</p>
+                    <p class="mb-3">
+                        Track every Windows release across client and server platforms. Our comprehensive database includes version histories, 
+                        build numbers, KB article references, security updates, and servicing timelines. Whether you're managing enterprise 
+                        deployments, planning upgrades, or monitoring compliance, all the data you need is here in one place.
+                    </p>
+                    
+                    <!-- Key Metrics Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3 col-6">
+                            <div class="windows-metric-card">
+                                <div class="metric-icon">
+                                    <i class="bi bi-pc-display-horizontal"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">2</div>
+                                    <div class="metric-label">Client OS</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="windows-metric-card">
+                                <div class="metric-icon">
+                                    <i class="bi bi-server"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">4</div>
+                                    <div class="metric-label">Server Versions</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="windows-metric-card">
+                                <div class="metric-icon">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">Daily</div>
+                                    <div class="metric-label">Updates</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="windows-metric-card">
+                                <div class="metric-icon">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">100%</div>
+                                    <div class="metric-label">KB Coverage</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Latest Windows Updates Summary (moved inside) -->
+                    <div class="latest-updates-section mb-4">
+                        <h5 class="section-heading mb-3">
+                            <i class="bi bi-arrow-down-circle text-primary me-2"></i>
+                            Latest Updates
+                        </h5>
+                        
+                        <!-- Client OS Updates -->
+                        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-pc-display me-2"></i>Client Operating Systems
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div id="windows11-latest-update" class="update-summary-card">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-success">
+                                            <i class="bi bi-window"></i>
+                                            <span>Windows 11</span>
+                                        </div>
+                                        <span class="update-date">-</span>
+                                    </div>
+                                    <div class="update-summary-body">
+                                        <div class="update-version">-</div>
+                                        <div class="update-kb">-</div>
+                                        <div class="update-type">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="windows10-latest-update" class="update-summary-card">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-warning text-dark">
+                                            <i class="bi bi-window"></i>
+                                            <span>Windows 10</span>
+                                        </div>
+                                        <span class="update-date">-</span>
+                                    </div>
+                                    <div class="update-summary-body">
+                                        <div class="update-version">-</div>
+                                        <div class="update-kb">-</div>
+                                        <div class="update-type">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Server OS Updates -->
+                        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-server me-2"></i>Server Operating Systems
+                        </h6>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2025-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-success">
+                                            <i class="bi bi-server"></i>
+                                            <span>2025</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2022-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-primary">
+                                            <i class="bi bi-server"></i>
+                                            <span>2022</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2019-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-info text-dark">
+                                            <i class="bi bi-server"></i>
+                                            <span>2019</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div id="server2016-latest-update" class="update-summary-card compact">
+                                    <div class="update-summary-header">
+                                        <div class="update-os-badge bg-secondary">
+                                            <i class="bi bi-server"></i>
+                                            <span>2016</span>
+                                        </div>
+                                        <span class="update-date small">-</span>
+                                    </div>
+                                    <div class="update-summary-body compact">
+                                        <div class="update-kb small">-</div>
+                                        <div class="update-type small">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4">
+                            <p class="small text-muted mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Showing the most recent update for each Windows version. Click through to version pages for complete update history.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Version Details Cards -->
+                    <h5 class="section-heading mb-3">
+                        <i class="bi bi-grid-3x2-gap text-primary me-2"></i>
+                        Explore by Version
+                    </h5>
+
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="modern-card h-100 border-start border-primary border-2">
+                            <div class="modern-card h-100 border-start border-primary border-3">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-2">
-                                        <i class="bi bi-window" style="color: #0d47a1;"></i>
-                                        Windows 10
-                                    </h5>
-                                    <p class="card-text small mb-3">Access comprehensive version history and build information for Windows 10, including all major releases and servicing updates.</p>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-window me-2" style="color: #0d47a1;"></i>
+                                            Windows 10
+                                        </h5>
+                                        <span class="badge bg-warning text-dark">Extended Support</span>
+                                    </div>
+                                    <p class="card-text small text-muted mb-3">
+                                        <strong>End of Support:</strong> October 14, 2025 (Home/Pro) • October 2032 (IoT Enterprise LTSC)
+                                    </p>
+                                    <p class="card-text small mb-3">
+                                        Access comprehensive version history for Windows 10, including all feature updates from 1507 through 22H2. 
+                                        Track monthly quality updates, security patches, and servicing timelines across all editions and channels.
+                                    </p>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <span class="badge bg-light text-dark"><i class="bi bi-shield-check me-1"></i>Security Updates</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-box me-1"></i>KB Articles</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-clock-history me-1"></i>Full History</span>
+                                    </div>
                                     <a asp-page="/Windows/Releases10" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-arrow-right"></i>
+                                        <i class="bi bi-arrow-right me-1"></i>
                                         View Windows 10 Releases
                                     </a>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="modern-card h-100 border-start border-primary border-2">
+                            <div class="modern-card h-100 border-start border-success border-3">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-2">
-                                        <i class="bi bi-window" style="color: #0d47a1;"></i>
-                                        Windows 11
-                                    </h5>
-                                    <p class="card-text small mb-3">Explore Windows 11 release information, including the latest versions, builds, and upcoming updates with advanced filtering options.</p>
-                                    <a asp-page="/Windows/Releases11" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-arrow-right"></i>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-window me-2" style="color: #0d47a1;"></i>
+                                            Windows 11
+                                        </h5>
+                                        <span class="badge bg-success">Active Support</span>
+                                    </div>
+                                    <p class="card-text small text-muted mb-3">
+                                        <strong>Latest Version:</strong> 24H2 • <strong>Support:</strong> Through October 2026+
+                                    </p>
+                                    <p class="card-text small mb-3">
+                                        Explore the latest Windows 11 release information with detailed version tracking from 21H2 to 26H1. 
+                                        Includes advanced filtering, monthly cumulative updates, feature updates, and out-of-band patches with full KB documentation.
+                                    </p>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <span class="badge bg-light text-dark"><i class="bi bi-stars me-1"></i>Latest Features</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-funnel me-1"></i>Advanced Filters</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-calendar3 me-1"></i>26H1 Tracking</span>
+                                    </div>
+                                    <a asp-page="/Windows/Releases11" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-arrow-right me-1"></i>
                                         View Windows 11 Releases
                                     </a>
                                 </div>
                             </div>
                         </div>
+                        <div class="col-12">
+                            <div class="modern-card h-100 border-start border-info border-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-server me-2" style="color: #0d47a1;"></i>
+                                            Windows Server
+                                        </h5>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="badge bg-success">2025 NEW</span>
+                                            <span class="badge bg-primary">2022 LTSC</span>
+                                            <span class="badge bg-info text-dark">2019 Extended</span>
+                                            <span class="badge bg-secondary">2016 Legacy</span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small mb-3">
+                                        Complete Windows Server tracking across all supported versions from 2016 to 2025. Monitor Long-Term Servicing Channel (LTSC) releases, 
+                                        Semi-Annual Channel updates, security patches, and cumulative updates. Each version includes dedicated release pages with detailed 
+                                        KB articles, build histories, and servicing timelines essential for enterprise server management.
+                                    </p>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-3 col-6">
+                                            <div class="server-version-card">
+                                                <div class="server-version-header">
+                                                    <i class="bi bi-stars text-success"></i>
+                                                    <strong>2025</strong>
+                                                </div>
+                                                <div class="server-version-detail">Latest LTSC</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="server-version-card">
+                                                <div class="server-version-header">
+                                                    <i class="bi bi-check-circle text-primary"></i>
+                                                    <strong>2022</strong>
+                                                </div>
+                                                <div class="server-version-detail">Current LTSC</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="server-version-card">
+                                                <div class="server-version-header">
+                                                    <i class="bi bi-shield-check text-info"></i>
+                                                    <strong>2019</strong>
+                                                </div>
+                                                <div class="server-version-detail">Extended Support</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <div class="server-version-card">
+                                                <div class="server-version-header">
+                                                    <i class="bi bi-hourglass-split text-secondary"></i>
+                                                    <strong>2016</strong>
+                                                </div>
+                                                <div class="server-version-detail">Legacy Support</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap mb-3">
+                                        <span class="badge bg-light text-dark"><i class="bi bi-server me-1"></i>LTSC Releases</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-shield-lock me-1"></i>Security Patches</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-arrow-repeat me-1"></i>Cumulative Updates</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-file-earmark-text me-1"></i>KB Documentation</span>
+                                        <span class="badge bg-light text-dark"><i class="bi bi-calendar-range me-1"></i>Servicing Timelines</span>
+                                    </div>
+                                    <a asp-page="/Windows/ServerIndex" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-arrow-right me-1"></i>
+                                        View Windows Server Releases
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <p class="small text-muted mb-0"><strong>Need all versions?</strong> Visit the <a asp-page="/Windows/Releases">consolidated Windows releases page</a> to see both Windows 10 and Windows 11 data together.</p>
+                    <div class="mt-4 p-3 bg-light rounded border border-primary">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-2">
+                                    <i class="bi bi-collection text-primary me-2"></i>
+                                    <strong>Consolidated View Available</strong>
+                                </h6>
+                                <p class="small text-muted mb-0">
+                                    Need to see all Windows client releases in one place? Our consolidated page combines Windows 10 and Windows 11 
+                                    data with advanced filtering, sorting, and search capabilities for cross-version analysis.
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <a asp-page="/Windows/Releases" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-grid-3x3-gap me-1"></i>
+                                    View All Windows Releases
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -298,37 +670,23 @@
                         <p class="text-muted mb-0">Programmatic access to version data</p>
                     </div>
                 </div>
-                <p>Access Office 365 and Windows release data programmatically through our REST API.</p>
-                <div class="d-flex gap-2 flex-column mb-3">
-                    <div>
-                        <strong class="text-sm">Microsoft 365 Apps Endpoints:</strong>
-                        <div class="d-flex gap-2 flex-wrap mt-1">
-                            <a href="/api/M365AppsReleases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                Latest Versions
-                            </a>
-                            <a href="/swagger" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-book"></i>
-                                Full Docs
-                            </a>
-                        </div>
+                <p>Access Office 365 and Windows release data programmatically through our free REST API via Azure API Management.</p>
+                <div class="mb-3">
+                    <div class="p-2 rounded mb-2" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <small class="text-muted">API Base URL</small>
+                        <div><code>https://api.office365versions.com</code></div>
                     </div>
-                    <div>
-                        <strong class="text-sm">Windows Releases Endpoints:</strong>
-                        <div class="d-flex gap-2 flex-wrap mt-1">
-                            <a href="/api/WindowsVersions/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                All Releases
-                            </a>
-                            <a href="/api/WindowsVersions/windows10/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                Windows 10
-                            </a>
-                            <a href="/api/WindowsVersions/windows11/releases" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-download"></i>
-                                Windows 11
-                            </a>
-                        </div>
+                    <div class="p-2 rounded mb-3" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <small class="text-muted">Public API Key</small>
+                        <div><code>1d55d59bc0c94895ab76348e1fb3a24e</code></div>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-page="/ApiDocs" class="btn btn-sm btn-primary">
+                            <i class="bi bi-book me-1"></i>API Documentation
+                        </a>
+                        <a href="/swagger" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-braces me-1"></i>Swagger UI
+                        </a>
                     </div>
                 </div>
             </div>
@@ -377,7 +735,44 @@
             </div>
         </div>
     </div>
-</div>
+
+    @if (Model.BuyMeACoffeeEnabled)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="bi bi-cup-hot"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title">Support the Project</h3>
+                            <p class="text-muted mb-0">Help keep this service free and up-to-date</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <p class="mb-2">This tracking service is <strong>free</strong> and <strong>ad-free</strong>, maintained by a solo developer in their spare time.</p>
+                                <ul class="list-unstyled small mb-0">
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Real-time data updates from Microsoft sources</li>
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Public REST API for automation</li>
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>No ads, no tracking, no paywalls</li>
+                                    <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Server costs & development time</li>
+                                </ul>
+                                <p class="small text-muted mt-2 mb-0">Your support helps cover hosting costs and keeps new features coming. Even $1 makes a difference!</p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <a href="@Model.BuyMeACoffeeUrl" target="_blank" rel="noopener" class="d-inline-block">
+                                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 50px; width: 180px;">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
 @section Scripts {
 <script type="text/javascript">
@@ -657,6 +1052,170 @@ $(document).ready(function() {
             .catch(error => { 
                 console.error('Error loading Windows data:', error);
             });
+
+        // Load Windows Server data
+        fetch('/api/WindowsVersions/servers/summary')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    return;
+                }
+
+                const setServerStat = (targetId, item) => {
+                    if (!item) return;
+                    const version = item.version || '-';
+                    const build = item.buildNumber || '';
+                    
+                    // Per Windows Server 2019 e 2016, mostra l'anno sopra e il build sotto (stessa dimensione)
+                    if (targetId === 'windows-server-2019' || targetId === 'windows-server-2016') {
+                        const year = targetId === 'windows-server-2019' ? '2019' : '2016';
+                        const buildHtml = build 
+                            ? `<div class="server-build-number">${build}</div>` 
+                            : '';
+                        document.getElementById(targetId).innerHTML = `${year}${buildHtml}`;
+                    } else {
+                        // Per 2022 e 2025, mantieni il formato attuale: version (build)
+                        const buildText = build ? ` (${build})` : '';
+                        document.getElementById(targetId).textContent = version + buildText;
+                    }
+                };
+
+                const byProduct = data.reduce((acc, item) => {
+                    if (item?.product) {
+                        acc[item.product.toLowerCase()] = item;
+                    }
+                    return acc;
+                }, {});
+
+                setServerStat('windows-server-2025', byProduct['windows server 2025']);
+                setServerStat('windows-server-2022', byProduct['windows server 2022']);
+                setServerStat('windows-server-2019', byProduct['windows server 2019']);
+                setServerStat('windows-server-2016', byProduct['windows server 2016']);
+            })
+            .catch(error => {
+                console.error('Error loading Windows Server data:', error);
+            });
+
+        // Load latest Windows updates for summary cards
+        loadLatestUpdates();
+    }
+
+    function loadLatestUpdates() {
+        // Load Windows 11 latest update
+        fetch('/api/WindowsVersions/windows11/releases')
+            .then(response => response.ok ? response.json() : [])
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    const latest = data[0]; // Assuming sorted by date desc
+                    updateSummaryCard('windows11-latest-update', latest, 'Windows 11');
+                }
+            })
+            .catch(error => console.error('Error loading Windows 11 updates:', error));
+
+        // Load Windows 10 latest update
+        fetch('/api/WindowsVersions/windows10/releases')
+            .then(response => response.ok ? response.json() : [])
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    const latest = data[0];
+                    updateSummaryCard('windows10-latest-update', latest, 'Windows 10');
+                }
+            })
+            .catch(error => console.error('Error loading Windows 10 updates:', error));
+
+        // Load Server updates
+        const serverVersions = [
+            { edition: 'server2025', name: 'Server 2025' },
+            { edition: 'server2022', name: 'Server 2022' },
+            { edition: 'server2019', name: 'Server 2019' },
+            { edition: 'server2016', name: 'Server 2016' }
+        ];
+
+        serverVersions.forEach(server => {
+            fetch(`/api/WindowsVersions/${server.edition}/releases`)
+                .then(response => response.ok ? response.json() : [])
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        const latest = data[0];
+                        updateSummaryCard(`${server.edition}-latest-update`, latest, server.name, true);
+                    }
+                })
+                .catch(error => console.error(`Error loading ${server.name} updates:`, error));
+        });
+    }
+
+    function updateSummaryCard(cardId, update, osName, isCompact = false) {
+        const card = document.getElementById(cardId);
+        if (!card || !update) return;
+
+        const dateEl = card.querySelector('.update-date');
+        const versionEl = card.querySelector('.update-version');
+        const kbEl = card.querySelector('.update-kb');
+        const typeEl = card.querySelector('.update-type');
+
+        // Format release date
+        if (update.releaseDate) {
+            const date = new Date(update.releaseDate);
+            if (!isNaN(date)) {
+                const formatted = date.toISOString().substring(0, 10);
+                const now = new Date();
+                const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+                
+                let dateClass = '';
+                if (diffDays <= 7) dateClass = 'text-success fw-bold';
+                else if (diffDays <= 30) dateClass = 'text-primary';
+                
+                dateEl.innerHTML = `<span class="${dateClass}">${formatted}</span>`;
+                
+                // Add tooltip with relative time
+                const relativeTime = diffDays === 0 ? 'today' : `${diffDays}d ago`;
+                dateEl.setAttribute('title', relativeTime);
+            }
+        }
+
+        // Set version/build
+        if (versionEl) {
+            const versionText = update.version || update.buildNumber || '-';
+            versionEl.innerHTML = `<strong>Build:</strong> ${versionText}`;
+        }
+
+        // Set KB number with link if available
+        if (kbEl) {
+            const kb = update.kb || update.kbNumber || update.kbArticle || '-';
+            if (kb !== '-' && kb.toLowerCase().startsWith('kb')) {
+                const kbNum = kb.replace(/^kb/i, '');
+                kbEl.innerHTML = `<strong>KB:</strong> <a href="https://support.microsoft.com/kb/${kbNum}" target="_blank" rel="noopener" class="kb-link">${kb}</a>`;
+            } else {
+                kbEl.innerHTML = `<strong>KB:</strong> ${kb}`;
+            }
+        }
+
+        // Set update type with icon
+        if (typeEl) {
+            const updateType = update.type || update.updateType || 'Update';
+            const isSecurity = update.isSecurityUpdate || updateType.toLowerCase().includes('security');
+            
+            let icon = 'bi-arrow-repeat';
+            let badgeClass = 'bg-secondary';
+            
+            if (isSecurity) {
+                icon = 'bi-shield-fill-check';
+                badgeClass = 'bg-danger';
+            } else if (updateType.toLowerCase().includes('cumulative')) {
+                icon = 'bi-collection';
+                badgeClass = 'bg-primary';
+            } else if (updateType.toLowerCase().includes('feature')) {
+                icon = 'bi-stars';
+                badgeClass = 'bg-info';
+            }
+            
+            typeEl.innerHTML = `<span class="badge ${badgeClass}"><i class="${icon} me-1"></i>${updateType}</span>`;
+        }
     }
     
     // Deep search function to find timestamp in any nested object
@@ -837,7 +1396,7 @@ $(document).ready(function() {
             } else {
                 // Fallback for unparseable dates
                 dateEl.textContent = 'Date format';
-                timeEl.textContent = 'unknown';
+                timeEl.textContent = 'error';
             }
         } 
         catch (e) {
@@ -951,6 +1510,15 @@ $(document).ready(function() {
     color: rgba(255, 255, 255, 0.65);
     text-transform: uppercase;
     letter-spacing: 0.4px;
+}
+
+/* Windows Server build number styling - stessa dimensione dell'anno */
+.server-build-number {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin-top: 0.1rem;
+    line-height: 1.2;
 }
 
 /* Responsive adjustments for smaller screens */
@@ -1244,36 +1812,140 @@ $(document).ready(function() {
         padding: 1rem;
     }
     
-    /* Responsive table adjustments */
-    @@media (max-width: 767.98px) {
-        .channel-version-col {
-            min-width: 180px;
-            width: 60%;
-        }
-        
-        /* Add spacing between channel and version when stacked */
-        .channel-tag + div {
-            margin-top: 0.5rem;
-        }
+    /* Updates Banner Styling */
+    .updates-banner {
+        margin: 2rem 0;
+        position: relative;
     }
-    
+
+    .updates-banner .modern-card {
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+        border: 1px solid rgba(13, 110, 253, 0.15);
+    }
+
+    .update-item {
+        padding: 0.5rem;
+    }
+
+    .update-item h5 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .update-item p {
+        line-height: 1.4;
+    }
+
+    /* Update Summary Cards */
+    .update-summary-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        transition: all 0.2s ease;
+        height: 100%;
+    }
+
+    .update-summary-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+
+    .update-summary-card.compact {
+        padding: 0.75rem;
+    }
+
+    .update-summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .update-os-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.375rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .update-os-badge i {
+        font-size: 1rem;
+    }
+
+    .update-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .update-summary-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .update-summary-body.compact {
+        gap: 0.3rem;
+    }
+
+    .update-version {
+        font-size: 0.9rem;
+        color: #495057;
+    }
+
+    .update-kb {
+        font-size: 0.9rem;
+        color: #495057;
+    }
+
+    .update-kb .kb-link {
+        color: #0d6efd;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .update-kb .kb-link:hover {
+        text-decoration: underline;
+    }
+
+    .update-type {
+        font-size: 0.85rem;
+    }
+
+    .update-type .badge {
+        font-size: 0.75rem;
+    }
+
     /* Other existing styles */
     .about-points li {position:relative;padding-left:1rem;margin-bottom:.4rem;}
     .about-points li:before {content:"•";position:absolute;left:0;color:var(--bs-primary,#0d6efd);}
-</style>
 
-<style>
-    /* Keyframes definition for pulse animation */
-    @@keyframes pulse-animation {
-        0% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-        }
-        70% {
-            box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-        }
+    /* Section Headings within cards */
+    .section-heading {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
     }
-</style>
+
+    /* Latest Updates Section spacing */
+    .latest-updates-section {
+        background: rgba(13, 110, 253, 0.03);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(13, 110, 253, 0.1);
+    }
+
+    /* Windows Metrics Cards */
 }

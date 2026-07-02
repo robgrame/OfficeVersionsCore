@@ -288,7 +288,7 @@
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" asp-page="/Windows/Index">
-                                        <i class="bi bi-house me-2"></i>Windows Overview
+                                        <i class="bi bi-house me-2"></i>Windows Client Overview
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -304,10 +304,44 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item" asp-page="/Windows/Releases">
-                                        <i class="bi bi-card-list me-2"></i>All Releases
+                                        <i class="bi bi-card-list me-2"></i>All Client Releases
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <span class="dropdown-item-text text-uppercase text-muted small">Windows Server</span>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Windows/ServerIndex">
+                                        <i class="bi bi-server me-2"></i>Windows Server
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Windows/Server2016">
+                                        <i class="bi bi-hdd-rack me-2"></i>Server 2016
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Windows/Server2019">
+                                        <i class="bi bi-hdd-rack me-2"></i>Server 2019
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Windows/Server2022">
+                                        <i class="bi bi-hdd-rack me-2"></i>Server 2022
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-page="/Windows/Server2025">
+                                        <i class="bi bi-hdd-rack me-2"></i>Server 2025
                                     </a>
                                 </li>
                             </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/ApiDocs">
+                                <i class="bi bi-code-square me-1"></i>API
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-page="/About">
@@ -339,7 +373,7 @@
                         *@
                         <li class="nav-item">
                             <a class="nav-link" href="/swagger" target="_blank">
-                                <i class="bi bi-code-square me-1"></i>API
+                                <i class="bi bi-braces me-1"></i>API Swagger
                             </a>
                         </li>
                     </ul>
@@ -371,6 +405,16 @@
                         <a asp-page="/Privacy">Privacy</a>
                         <a asp-page="/McpViaApim">MCP via APIM</a>
                         <a href="/swagger" target="_blank">API Docs</a>
+                        @{
+                            var buyMeACoffeeUrl = Configuration["BuyMeACoffee:Url"] ?? "https://buymeacoffee.com/office365versions";
+                            var buyMeACoffeeEnabled = Configuration.GetValue<bool>("BuyMeACoffee:Enabled", true);
+                        }
+                        @if (buyMeACoffeeEnabled)
+                        {
+                            <a href="@buyMeACoffeeUrl" target="_blank" rel="noopener" class="d-inline-flex align-items-center">
+                                <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 26px; width: 94px;">
+                            </a>
+                        }
                         @if (Environment.IsDevelopment())
                         {
                             <a asp-page="/CookieTest" class="text-warning">
@@ -386,9 +430,7 @@
                         All trademarks are property of their respective owners.
                     </p>
                     <p class="mb-1">
-                        &copy; @DateTime.Now.Year Office 365 Versions - Built with ❤️ for the IT community
-                    </p>
-                    <p class="mb-0">
+                        &copy; @DateTime.Now.Year - Office 365 Versions -
                         <small class="text-muted">
                             <i class="bi bi-code-slash me-1"></i>
                             <span title="Application version">v@(version)</span>
@@ -396,6 +438,12 @@
                             {
                                 <span class="badge bg-warning text-dark ms-2">
                                     <i class="bi bi-bug-fill me-1"></i>DEV
+                                </span>
+                            }
+                            else if (Environment.IsStaging())
+                            {
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="bi bi-bug-fill me-1"></i>BETA
                                 </span>
                             }
                             else
@@ -406,6 +454,15 @@
                             }
                         </small>
                     </p>
+                    <span class="d-flex align-items-center gap-3 flex-wrap justify-content-center mb-2">
+                        <span title="Hosted on Microsoft Azure">
+                            <img src="~/images/Azure-A.svg" alt="Azure" style="height:14px;width:auto;vertical-align:middle;" class="me-1" />Running on Azure
+                        </span>
+                        <span title="Source code on GitHub">
+                            <i class="bi bi-github me-1"></i><a href="https://github.com/rgp-net/Office365Versions.com" target="_blank" rel="noopener noreferrer" class="text-muted text-decoration-none">Coded with GitHub</a>
+                        </span>
+                        <span><i class="bi bi-heart-fill me-1 text-danger"></i>Made with passion for IT admins</span>
+                    </span>
                 </div>
             </div>
         </footer>

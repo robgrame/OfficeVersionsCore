@@ -8,6 +8,7 @@ namespace OfficeVersionsCore.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[ApiExplorerSettings(IgnoreApi = true)]  // Hide from Swagger documentation
 public class SeoController : ControllerBase
 {
     private readonly IGoogleSearchConsoleService _gscService;

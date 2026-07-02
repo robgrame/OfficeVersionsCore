@@ -1,0 +1,507 @@
+@page
+@model OfficeVersionsCore.Pages.ApiDocsModel
+@{
+    ViewData["Title"] = "API Documentation";
+    ViewData["Description"] = "Free REST API to access Microsoft 365 Apps, Windows Client and Windows Server version data programmatically. Get your API key and start integrating.";
+}
+
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content fade-in-up">
+            <h1 class="hero-title">
+                <i class="bi bi-code-square me-2"></i>Developer API
+            </h1>
+            <p class="hero-subtitle">
+                Access Microsoft 365 Apps, Windows Client and Windows Server release data through our free REST API
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+
+    <!-- API Key Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-key"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Your Free API Key</h3>
+                        <p class="text-muted mb-0">Use this key to authenticate your API requests</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="p-3 rounded" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <code id="api-key-display" style="font-size: 1.1rem; letter-spacing: 1px; color: #10b981;">
+                                @Model.PublicApiKey
+                            </code>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="copyApiKey()" id="copy-btn">
+                                <i class="bi bi-clipboard me-1"></i>Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-speedometer2 text-warning me-2"></i>
+                                    <div>
+                                        <strong>Rate Limit</strong>
+                                        <div class="small text-muted">5 requests / day</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-arrow-repeat text-info me-2"></i>
+                                    <div>
+                                        <strong>Quota Reset</strong>
+                                        <div class="small text-muted">Daily at midnight UTC</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-shield-check text-success me-2"></i>
+                                    <div>
+                                        <strong>Authentication</strong>
+                                        <div class="small text-muted">Header or query parameter</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Quick Start</h3>
+                        <p class="text-muted mb-0">Get up and running in seconds</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p><strong>Base URL:</strong> <code>https://api.office365versions.com</code></p>
+                    <p>Authenticate by including the subscription key in the <code>Ocp-Apim-Subscription-Key</code> header or as an <code>subscription-key</code> query parameter.</p>
+
+                    <h5 class="mt-4 mb-3">Example: Get latest Microsoft 365 Apps versions</h5>
+                    <div class="p-3 rounded mb-3" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <pre class="mb-0" style="color: #e2e8f0; overflow-x: auto;"><code><span style="color:#60a5fa;">curl</span> -H <span style="color:#fbbf24;">"Ocp-Apim-Subscription-Key: @Model.PublicApiKey"</span> \
+  <span style="color:#10b981;">https://api.office365versions.com/api/M365AppsReleases</span></code></pre>
+                            <button class="btn btn-sm btn-outline-secondary ms-2 flex-shrink-0" onclick="copyCurl('curl1')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">Example: Get Windows 11 releases</h5>
+                    <div class="p-3 rounded mb-3" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <pre class="mb-0" style="color: #e2e8f0; overflow-x: auto;"><code><span style="color:#60a5fa;">curl</span> -H <span style="color:#fbbf24;">"Ocp-Apim-Subscription-Key: @Model.PublicApiKey"</span> \
+  <span style="color:#10b981;">https://api.office365versions.com/api/WindowsVersions/windows11/releases</span></code></pre>
+                            <button class="btn btn-sm btn-outline-secondary ms-2 flex-shrink-0" onclick="copyCurl('curl2')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">Using query parameter (alternative)</h5>
+                    <div class="p-3 rounded" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <pre class="mb-0" style="color: #e2e8f0; overflow-x: auto;"><code><span style="color:#10b981;">https://api.office365versions.com/api/M365AppsReleases?subscription-key=@Model.PublicApiKey</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endpoints Reference -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-list-ul"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">API Endpoints</h3>
+                        <p class="text-muted mb-0">Complete reference of available endpoints</p>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <!-- M365 Apps -->
+                    <h4 class="mb-3">
+                        <i class="bi bi-file-earmark-text text-primary me-2"></i>Microsoft 365 Apps
+                    </h4>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/M365AppsReleases</code></td>
+                                    <td>Complete version data with metadata</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/M365AppsReleases/data</code></td>
+                                    <td>Version data array (DataTables compatible)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/M365AppsReleases/channel/{channel}</code></td>
+                                    <td>Versions for a specific channel</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/M365AppsReleases/channel/{channel}/latest</code></td>
+                                    <td>Latest version for a specific channel</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Windows Client -->
+                    <h4 class="mb-3">
+                        <i class="bi bi-windows text-info me-2"></i>Windows Client
+                    </h4>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions</code></td>
+                                    <td>All Windows versions data (Windows 10 &amp; 11)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/releases</code></td>
+                                    <td>All releases from both editions</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/latest-versions</code></td>
+                                    <td>Latest version and build for Windows 10 &amp; 11</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/windows10/releases</code></td>
+                                    <td>Windows 10 releases</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/windows11/releases</code></td>
+                                    <td>Windows 11 releases</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/windows10/version/{version}/releases</code></td>
+                                    <td>Windows 10 releases for a specific version (e.g., 22H2)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/windows11/version/{version}/releases</code></td>
+                                    <td>Windows 11 releases for a specific version (e.g., 24H2)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/{edition}/latest</code></td>
+                                    <td>Latest version for an edition (Windows10 or Windows11)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/{edition}/summary</code></td>
+                                    <td>Release summary with statistics</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/{edition}/recent</code></td>
+                                    <td>Recent updates (default: 10, use <code>?count=N</code>)</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/compare?version1=X&amp;version2=Y</code></td>
+                                    <td>Compare two Windows versions</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Windows Server -->
+                    <h4 class="mb-3">
+                        <i class="bi bi-server text-warning me-2"></i>Windows Server
+                    </h4>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/servers/summary</code></td>
+                                    <td>Summary with latest updates per server version</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/server/releases</code></td>
+                                    <td>All server releases combined</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/server2016/releases</code></td>
+                                    <td>Windows Server 2016 releases</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/server2019/releases</code></td>
+                                    <td>Windows Server 2019 releases</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/server2022/releases</code></td>
+                                    <td>Windows Server 2022 releases</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/server2025/releases</code></td>
+                                    <td>Windows Server 2025 releases</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/WindowsVersions/last-update</code></td>
+                                    <td>Last data refresh timestamp</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PowerShell & Code Examples -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-terminal"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">PowerShell</h3>
+                        <p class="text-muted mb-0">Example for IT admins</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="p-3 rounded" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <pre class="mb-0" style="color: #e2e8f0; overflow-x: auto; font-size: 0.85rem;"><code><span style="color:#60a5fa;">$headers</span> = @@{
+  <span style="color:#fbbf24;">"Ocp-Apim-Subscription-Key"</span> = <span style="color:#fbbf24;">"@Model.PublicApiKey"</span>
+}
+
+<span style="color:#818cf8;"># Get latest M365 Apps versions</span>
+<span style="color:#60a5fa;">$data</span> = Invoke-RestMethod `
+  -Uri <span style="color:#10b981;">"https://api.office365versions.com/api/M365AppsReleases"</span> `
+  -Headers <span style="color:#60a5fa;">$headers</span>
+
+<span style="color:#818cf8;"># Get Windows Server 2025 releases</span>
+<span style="color:#60a5fa;">$server</span> = Invoke-RestMethod `
+  -Uri <span style="color:#10b981;">"https://api.office365versions.com/api/WindowsVersions/server2025/releases"</span> `
+  -Headers <span style="color:#60a5fa;">$headers</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-braces"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Python</h3>
+                        <p class="text-muted mb-0">Example for automation</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="p-3 rounded" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                        <pre class="mb-0" style="color: #e2e8f0; overflow-x: auto; font-size: 0.85rem;"><code><span style="color:#c084fc;">import</span> <span style="color:#60a5fa;">requests</span>
+
+headers = {
+  <span style="color:#fbbf24;">"Ocp-Apim-Subscription-Key"</span>: <span style="color:#fbbf24;">"@Model.PublicApiKey"</span>
+}
+
+<span style="color:#818cf8;"># Get latest M365 Apps versions</span>
+r = requests.get(
+  <span style="color:#10b981;">"https://api.office365versions.com/api/M365AppsReleases"</span>,
+  headers=headers
+)
+data = r.json()
+
+<span style="color:#818cf8;"># Get Windows 11 releases</span>
+r = requests.get(
+  <span style="color:#10b981;">"https://api.office365versions.com/api/WindowsVersions/windows11/releases"</span>,
+  headers=headers
+)</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Limiting & Terms -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Rate Limits</h3>
+                        <p class="text-muted mb-0">Fair usage policy</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Limit</th>
+                                <th>Reset</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-success">Free</span></td>
+                                <td>5 requests / day</td>
+                                <td>Midnight UTC</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="small text-muted mb-0">
+                        When you exceed the daily limit, the API returns <code>429 Too Many Requests</code>.
+                        Response headers include <code>X-RateLimit-Limit</code> for tracking.
+                        Need more? <a asp-page="/Contact">Contact us</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="modern-card h-100">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Terms of Use</h3>
+                        <p class="text-muted mb-0">Guidelines and disclaimers</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>This API is provided <strong>as-is</strong> with no SLA guarantees</li>
+                        <li>Data is sourced from official Microsoft documentation</li>
+                        <li>Do not use for mission-critical production systems without caching</li>
+                        <li>We reserve the right to revoke keys that abuse the service</li>
+                        <li>Data is refreshed automatically every few hours</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Format -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-filetype-json"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Response Format</h3>
+                        <p class="text-muted mb-0">All responses are JSON</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h5>Success (HTTP 200)</h5>
+                            <div class="p-3 rounded" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                                <pre class="mb-0" style="color: #e2e8f0; font-size: 0.85rem;"><code>{
+  <span style="color:#fbbf24;">"lastUpdated"</span>: <span style="color:#10b981;">"2026-03-12T10:30:00Z"</span>,
+  <span style="color:#fbbf24;">"totalChannels"</span>: <span style="color:#60a5fa;">7</span>,
+  <span style="color:#fbbf24;">"channels"</span>: [ ... ]
+}</code></pre>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Rate Limited (HTTP 429)</h5>
+                            <div class="p-3 rounded" style="background: var(--bg-tertiary, #1a1d23); border: 1px solid var(--border-color, #2d3748);">
+                                <pre class="mb-0" style="color: #e2e8f0; font-size: 0.85rem;"><code>{
+  <span style="color:#fbbf24;">"statusCode"</span>: <span style="color:#60a5fa;">429</span>,
+  <span style="color:#fbbf24;">"message"</span>: <span style="color:#10b981;">"Rate limit is exceeded. 
+  Try again in 86400 seconds."</span>
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">
+                        For the complete interactive API specification, visit the
+                        <a href="/swagger" target="_blank">Swagger UI <i class="bi bi-box-arrow-up-right"></i></a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function copyApiKey() {
+            const key = document.getElementById('api-key-display').textContent.trim();
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Copied!';
+                btn.classList.replace('btn-outline-secondary', 'btn-outline-success');
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="bi bi-clipboard me-1"></i>Copy';
+                    btn.classList.replace('btn-outline-success', 'btn-outline-secondary');
+                }, 2000);
+            });
+        }
+    </script>
+}

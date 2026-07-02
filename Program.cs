@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi;
 using System.Reflection;
 using System.Threading.RateLimiting;
+using Azure.Identity;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 
 try
 {
@@ -31,6 +33,20 @@ if (!string.IsNullOrWhiteSpace(aiConnectionString))
     builder.Services.AddApplicationInsightsTelemetry(options =>
     {
         options.ConnectionString = aiConnectionString;
+        options.EnableAdaptiveSampling = true;
+    });
+
+    // Reduce telemetry volume — target max 5 items/sec per type
+    builder.Services.PostConfigure<Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration>(config =>
+    {
+        foreach (var processor in config.DefaultTelemetrySink.TelemetryProcessors)
+        {
+            if (processor is Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.AdaptiveSamplingTelemetryProcessor sampler)
+            {
+                sampler.MaxTelemetryItemsPerSecond = 5;
+                sampler.ExcludedTypes = "Event;Exception";
+            }
+        }
     });
 }
 else
@@ -48,6 +64,20 @@ builder.Host.UseSerilog((ctx, services, config) =>
         .Enrich.WithProperty("Application", "OfficeVersionsCore")
         .Enrich.WithProperty("Environment", ctx.HostingEnvironment.EnvironmentName)
         .Enrich.WithProperty("Version", "1.0.0");
+
+    // On Azure App Service, write logs to D:\home\LogFiles\Application\ so they appear in Log Stream.
+    // The HOME env var is always set by Azure App Service (e.g. D:\home).
+    var azureHome = System.Environment.GetEnvironmentVariable("HOME");
+    if (!string.IsNullOrEmpty(azureHome))
+    {
+        var azureLogPath = Path.Combine(azureHome, "LogFiles", "Application", "log-.log");
+        config.WriteTo.File(
+            azureLogPath,
+            rollingInterval: Serilog.RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}");
+        Console.WriteLine($"[STARTUP] Serilog file sink: {azureLogPath}");
+    }
 
     // Add Application Insights sink if running in Azure (non-Development)
     // Only add if Application Insights is properly configured
@@ -72,8 +102,54 @@ builder.Host.UseSerilog((ctx, services, config) =>
     }
 });
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+    if (Uri.TryCreate(builder.Configuration["AppConfig"], UriKind.Absolute, out var endpoint))
+    {
+        // Use Azure Active Directory authentication.
+        // The identity of this app should be assigned 'App Configuration Data Reader' or 'App Configuration Data Owner' role in App Configuration.
+        // For more information, please visit https://aka.ms/vs/azure-app-configuration/concept-enable-rbac
+        try
+        {
+            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            {
+                // Reduce timeout so startup doesn't hang for ~100s when identity is unavailable
+                Retry = { NetworkTimeout = TimeSpan.FromSeconds(10) }
+            });
+
+            // Determine the label for this application instance.
+            // Use APPCONFIG_LABEL env var if set, otherwise fall back to the environment name.
+            var appConfigLabel = builder.Configuration["AppConfigLabel"]
+                                 ?? builder.Environment.EnvironmentName;
+
+            builder.Configuration.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(endpoint, credential)
+                // 1. Load keys with no label (shared/common settings)
+                .Select(KeyFilter.Any, LabelFilter.Null)
+                // 2. Load keys with the app-specific label (overrides shared ones)
+                .Select(KeyFilter.Any, appConfigLabel)
+                .ConfigureRefresh(refresh =>
+                {
+                    // All configuration values will be refreshed if the sentinel key changes.
+                    refresh.Register("Office365Versions:Settings:Sentinel", "Office365Versions", refreshAll: true)
+                           .SetRefreshInterval(TimeSpan.FromMinutes(5));
+                })
+                // Resolve Key Vault references using the same credential
+                .ConfigureKeyVault(kv => kv.SetCredential(credential))
+                // Trim the app-specific prefix so keys map to standard config paths
+                .TrimKeyPrefix("Office365Versions:");
+            });
+            builder.Services.AddAzureAppConfiguration();
+            Console.WriteLine($"[STARTUP] Azure App Configuration: CONNECTED (label: {appConfigLabel})");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[STARTUP] Azure App Configuration: FAILED - {ex.Message}");
+            Console.WriteLine("[STARTUP] Continuing without Azure App Configuration (using local settings)");
+        }
+    }
+
+    // Add services to the container.
+    builder.Services.AddRazorPages();
 builder.Services.AddControllers()
     .AddXmlSerializerFormatters(); // Add XML support for Content Negotiation
 
@@ -102,6 +178,18 @@ builder.Services.AddMemoryCache();
 // Register cache service
 builder.Services.AddScoped<ICacheService, DistributedCacheService>();
 
+// Register Security Monitoring service (Singleton - tracks state across requests)
+builder.Services.AddSingleton<ISecurityService, SecurityService>();
+
+// Register Security Alert service (email + Telegram)
+builder.Services.AddSingleton<ISecurityAlertService, SecurityAlertService>();
+
+// Register the background service for periodic security analysis and alerting
+if (builder.Configuration.GetValue<bool>("SecurityMonitoring:Enabled", true))
+{
+    builder.Services.AddHostedService<SecurityMonitoringBackgroundService>();
+}
+
 // Register Google Search Console service
 builder.Services.AddScoped<IGoogleSearchConsoleService, GoogleSearchConsoleService>();
 
@@ -113,6 +201,9 @@ builder.Services.AddScoped<IOffice365Service, Office365Service>();
 
 // Register Windows versions service
 builder.Services.AddScoped<IWindowsVersionsService, WindowsVersionsService>();
+
+// Register Windows version mapper service
+builder.Services.AddScoped<IWindowsVersionMapper, WindowsVersionMapper>();
 
 // Register the background service for Office 365 version scraping
 // Only register if enabled in configuration
@@ -190,8 +281,9 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
 });
 
-// Add Rate Limiting for API endpoints (.NET 10 built-in)
-// Multiple policies for different use cases
+// Add Rate Limiting for endpoints (.NET 10 built-in)
+// API rate limiting is primarily handled by Azure API Management (APIM).
+// In-app rate limiting is kept for Razor Pages and as a secondary defense layer.
 builder.Services.AddRateLimiter(rateLimiterOptions =>
 {
     // Rejection behavior when limit is exceeded
@@ -216,16 +308,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         }, cancellationToken: cancellationToken);
     };
 
-    // 1. API - General rate limit (100 requests per minute)
-    rateLimiterOptions.AddFixedWindowLimiter(policyName: "api", options =>
-    {
-        options.PermitLimit = 100;
-        options.Window = TimeSpan.FromMinutes(1);
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 5;
-    });
-
-    // 2. API Strict - For expensive endpoints (20 requests per minute)
+    // API Strict - Secondary defense for expensive endpoints (20 requests per minute)
     rateLimiterOptions.AddFixedWindowLimiter(policyName: "api-strict", options =>
     {
         options.PermitLimit = 20;
@@ -234,27 +317,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         options.QueueLimit = 2;
     });
 
-    // 3. Sliding Window - More sophisticated rate limiting (150 requests per minute, distributed)
-    rateLimiterOptions.AddSlidingWindowLimiter(policyName: "api-sliding", options =>
-    {
-        options.PermitLimit = 150;
-        options.Window = TimeSpan.FromMinutes(1);
-        options.SegmentsPerWindow = 6; // Check every 10 seconds
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 5;
-    });
-
-    // 4. Token Bucket - For burst traffic (30 requests burst, refill 1 per 2 seconds)
-    rateLimiterOptions.AddTokenBucketLimiter(policyName: "api-burst", options =>
-    {
-        options.TokenLimit = 30;
-        options.ReplenishmentPeriod = TimeSpan.FromSeconds(2);
-        options.TokensPerPeriod = 1;
-        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 10;
-    });
-
-    // 5. Concurrency Limiter - For resource-intensive operations (max 10 concurrent)
+    // Concurrency Limiter - For resource-intensive operations (max 10 concurrent)
     rateLimiterOptions.AddConcurrencyLimiter(policyName: "api-concurrent", options =>
     {
         options.PermitLimit = 10;
@@ -262,7 +325,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         options.QueueLimit = 5;
     });
 
-    // 6. Razor Pages - Permissive (1000 requests per minute)
+    // Razor Pages - Permissive (1000 requests per minute)
     rateLimiterOptions.AddFixedWindowLimiter(policyName: "pages", options =>
     {
         options.PermitLimit = 1000;
@@ -271,7 +334,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         options.QueueLimit = 20;
     });
 
-    // Global per-IP rate limiting (50 requests per minute per IP)
+    // Global per-IP rate limiting (200 requests per minute per IP)
     rateLimiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
     {
         var ipAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault() 
@@ -355,25 +418,39 @@ if (app.Environment.IsDevelopment())
 app.Use(async (context, next) =>
 {
     // Strict-Transport-Security: Enforce HTTPS for 1 year
-    context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+    context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
     
     // X-Content-Type-Options: Prevent MIME type sniffing
-    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
     
     // X-Frame-Options: Prevent clickjacking
-    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers["X-Frame-Options"] = "DENY";
     
     // X-XSS-Protection: Enable browser XSS protection
-    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
     
     // Referrer-Policy: Control referrer information
-    context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     
     // Permissions-Policy: Control browser features
-    context.Response.Headers.Add("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
     
     await next();
 });
+
+// Apply Security Monitoring Middleware (IP blocking + suspicious request detection)
+// Must run early, before routing and static files
+if (builder.Configuration.GetValue<bool>("SecurityMonitoring:Enabled", true))
+{
+    app.UseMiddleware<SecurityMiddleware>();
+}
+
+// Apply API Gateway enforcement middleware
+// Blocks direct access to /api/* endpoints unless the request comes through APIM
+if (builder.Configuration.GetValue<bool>("ApiManagement:Enabled", false))
+{
+    app.UseMiddleware<ApiGatewayMiddleware>();
+}
 
 // Enable Response Compression
 app.UseResponseCompression();
@@ -391,6 +468,18 @@ app.UseRewriter(rewriteOptions);
 app.UseStaticFiles();
 
 app.UseCors();
+// Only use App Configuration middleware if it was successfully registered during startup
+try
+{
+    if (Uri.TryCreate(builder.Configuration["AppConfig"], UriKind.Absolute, out _))
+    {
+        app.UseAzureAppConfiguration();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[STARTUP] UseAzureAppConfiguration skipped: {ex.Message}");
+}
 app.UseRouting();
 
 app.UseAuthorization();
