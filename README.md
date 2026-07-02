@@ -8,9 +8,9 @@
 [![API Available](https://img.shields.io/badge/??_API-Available-success?style=for-the-badge)](https://www.office365versions.com/swagger)
 [![Privacy First](https://img.shields.io/badge/??_Privacy-GDPR_Compliant-green?style=for-the-badge)](https://www.office365versions.com/Privacy)
 
-**Stay up-to-date with the latest Microsoft 365 (Office) and Windows releases — all in one place!**
+**Stay up-to-date with the latest Microsoft 365 (Office) and Windows releases ï¿½ all in one place!**
 
-[?? Visit Site](https://www.office365versions.com) • [?? API Docs](https://www.office365versions.com/swagger) • [?? Contact Us](#-contact--support)
+[?? Visit Site](https://www.office365versions.com) ï¿½ [?? API Docs](https://www.office365versions.com/swagger) ï¿½ [?? Contact Us](#-contact--support)
 
 </div>
 
@@ -151,6 +151,22 @@ curl https://www.office365versions.com/api/M365AppsReleases
 # Get latest Windows versions
 curl https://www.office365versions.com/api/WindowsVersions/latest
 ```
+
+### ?? **MCP endpoint for AI clients**
+
+The website now exposes an HTTP-based MCP endpoint at `/mcp` that can be used by AI clients and exposed through Azure API Management.
+
+```bash
+# Discover the MCP server
+curl https://www.office365versions.com/mcp
+
+# Send a JSON-RPC MCP request
+curl -X POST https://www.office365versions.com/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+For APIM, import the OpenAPI definition from `/swagger/v1/mcp-openapi.json`, create an API that targets `/mcp`, and configure the backend to the App Service host.
 
 ---
 

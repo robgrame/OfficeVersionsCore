@@ -1,0 +1,51 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Office Versions MCP API",
+    "version": "1.0.0",
+    "description": "HTTP transport for the Office Versions MCP server. This definition is intended for API Management import and routing to the /mcp endpoint."
+  },
+  "servers": [
+    {
+      "url": "https://www.office365versions.com"
+    }
+  ],
+  "paths": {
+    "/mcp": {
+      "get": {
+        "summary": "Returns basic metadata for the MCP server",
+        "operationId": "getMcpServerInfo",
+        "responses": {
+          "200": {
+            "description": "Server metadata"
+          }
+        }
+      },
+      "post": {
+        "summary": "Handles MCP JSON-RPC requests",
+        "operationId": "postMcpRequest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MCP response"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
+  }
+}
