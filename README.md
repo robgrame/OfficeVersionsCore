@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # 📊 Office365Versions.com
 
@@ -186,6 +186,22 @@ curl https://www.office365versions.com/api/M365AppsReleases
 # Get latest Windows versions
 curl https://www.office365versions.com/api/WindowsVersions/latest
 ```
+
+### ?? **MCP endpoint for AI clients**
+
+The website now exposes an HTTP-based MCP endpoint at `/mcp` that can be used by AI clients and exposed through Azure API Management.
+
+```bash
+# Discover the MCP server
+curl https://www.office365versions.com/mcp
+
+# Send a JSON-RPC MCP request
+curl -X POST https://www.office365versions.com/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+For APIM, import the OpenAPI definition from `/swagger/v1/mcp-openapi.json`, create an API that targets `/mcp`, and configure the backend to the App Service host.
 
 ---
 

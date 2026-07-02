@@ -358,6 +358,11 @@
                                 <i class="bi bi-shield-lock me-1"></i>Privacy
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/McpViaApim">
+                                <i class="bi bi-cloud-arrow-up me-1"></i>MCP via APIM
+                            </a>
+                        </li>
                         @* Analytics page temporarily hidden *@
                         @*
                         <li class="nav-item">
@@ -398,6 +403,7 @@
                         <a asp-page="/About">About</a>
                         <a asp-page="/Contact">Contact</a>
                         <a asp-page="/Privacy">Privacy</a>
+                        <a asp-page="/McpViaApim">MCP via APIM</a>
                         <a href="/swagger" target="_blank">API Docs</a>
                         @{
                             var buyMeACoffeeUrl = Configuration["BuyMeACoffee:Url"] ?? "https://buymeacoffee.com/office365versions";
