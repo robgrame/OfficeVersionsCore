@@ -183,7 +183,7 @@ namespace OfficeVersionsCore.Controllers
             var windows10 = await _windowsVersionsService.GetLatestVersionAsync(WindowsEdition.Windows10);
             var windows11 = await _windowsVersionsService.GetLatestVersionAsync(WindowsEdition.Windows11);
 
-            var officeChannels = officeData?.Data?
+            var officeChannels = (officeData?.Data?
                 .GroupBy(v => v.Channel)
                 .Select(g => new
                 {
@@ -192,7 +192,7 @@ namespace OfficeVersionsCore.Controllers
                     latestBuild = g.OrderByDescending(v => v.LatestReleaseDate).FirstOrDefault()?.Build ?? "Unknown"
                 })
                 .OrderBy(x => x.channel)
-                .ToList() ?? new List<object>();
+                .ToList() ?? Enumerable.Empty<object>()).ToList();
 
             return WrapToolResult(new
             {
@@ -224,7 +224,7 @@ namespace OfficeVersionsCore.Controllers
             {
                 available = data?.Data?.Any() == true,
                 count = data?.Data?.Count ?? 0,
-                channels = data?.Data?
+                channels = (data?.Data?
                     .GroupBy(v => v.Channel)
                     .Select(g => new
                     {
@@ -233,7 +233,7 @@ namespace OfficeVersionsCore.Controllers
                         latestBuild = g.OrderByDescending(v => v.LatestReleaseDate).FirstOrDefault()?.Build ?? "Unknown"
                     })
                     .OrderBy(x => x.channel)
-                    .ToList() ?? new List<object>()
+                    .ToList() ?? Enumerable.Empty<object>()).ToList()
             });
         }
 
