@@ -15,7 +15,7 @@ namespace OfficeVersionsCore.Controllers
     [EnableRateLimiting("api")]
     public class McpController : ControllerBase
     {
-        private const string ProtocolVersion = "2025-03-26";
+        private const string ProtocolVersion = "2025-06-18";
         private const string ServerName = "officeversions-core-mcp";
         private const string ServerVersion = "1.0.0";
 
@@ -34,26 +34,14 @@ namespace OfficeVersionsCore.Controllers
         }
 
         /// <summary>
-        /// Returns basic metadata for the MCP server endpoint.
+        /// Streamable HTTP transport does not expose a server-initiated SSE stream on GET.
+        /// Per the MCP spec, return 405 Method Not Allowed for GET on the MCP endpoint.
         /// </summary>
         [HttpGet]
-        public ActionResult<object> GetServerInfo()
+        public IActionResult GetServerInfo()
         {
-            return Ok(new
-            {
-                name = ServerName,
-                version = ServerVersion,
-                protocol = "mcp-http",
-                endpoint = "/mcp",
-                capabilities = new[]
-                {
-                    "initialize",
-                    "ping",
-                    "tools/list",
-                    "tools/call"
-                },
-                tools = GetToolDefinitions()
-            });
+            Response.Headers.Allow = "POST";
+            return StatusCode(StatusCodes.Status405MethodNotAllowed);
         }
 
         /// <summary>
@@ -87,6 +75,13 @@ namespace OfficeVersionsCore.Controllers
                 var parameters = payload.Value.TryGetProperty("params", out var parametersElement)
                     ? parametersElement
                     : default;
+
+                // JSON-RPC notifications (no "id" member, e.g. notifications/initialized)
+                // must be accepted without a response body per the MCP Streamable HTTP transport.
+                if (!payload.Value.TryGetProperty("id", out _))
+                {
+                    return StatusCode(StatusCodes.Status202Accepted);
+                }
 
                 switch (method)
                 {
