@@ -20,23 +20,24 @@
                 <div class="privacy-section">
                     <h2><i class="bi bi-info-circle me-2"></i>Overview</h2>
                     <p>
-                        The Office Versions MCP server is exposed publicly through Azure API Management (APIM).
+                        The Office Versions MCP server is exposed publicly as a <strong>native Azure API Management MCP server</strong>.
                         APIM is the front door for the endpoint, adding subscription-key authentication, rate limiting,
-                        and observability without changing the backend implementation.
+                        and observability. The server exposes the Office 365 / Windows version data as Model Context Protocol
+                        <strong>tools</strong> that any MCP-compatible client (GitHub Copilot, Claude, ChatGPT, MCP Inspector, ...) can discover and call.
                     </p>
                     <div class="alert alert-info" role="alert">
                         <i class="bi bi-lightbulb me-2"></i>
-                        <strong>Tip:</strong> the OpenAPI definition is available at <a href="/swagger/v1/mcp-openapi.json" target="_blank">/swagger/v1/mcp-openapi.json</a>.
+                        <strong>Tip:</strong> tools are discoverable at runtime via the <code>tools/list</code> JSON-RPC method — no separate schema download is required.
                     </div>
                 </div>
 
                 <div class="privacy-section">
                     <h2><i class="bi bi-hdd-network me-2"></i>Public endpoint</h2>
-                    <p>The MCP server is reachable at the following APIM URL:</p>
+                    <p>The MCP server is reachable at the following APIM URL (Streamable HTTP transport):</p>
                     <pre><code>https://api.office365versions.com/office-mcp/api/mcp</code></pre>
                     <ul>
-                        <li><strong>GET</strong> — returns MCP server information.</li>
-                        <li><strong>POST</strong> — JSON-RPC 2.0 endpoint (<code>initialize</code>, <code>ping</code>, <code>tools/list</code>, <code>tools/call</code>).</li>
+                        <li><strong>POST</strong> — JSON-RPC 2.0 endpoint implementing the Model Context Protocol (<code>initialize</code>, <code>tools/list</code>, <code>tools/call</code>). Protocol version <code>2025-06-18</code>.</li>
+                        <li>Requests must include the header <code>Accept: application/json, text/event-stream</code>.</li>
                     </ul>
                 </div>
 
@@ -56,25 +57,46 @@
                 </div>
 
                 <div class="privacy-section">
-                    <h2><i class="bi bi-terminal me-2"></i>Example calls</h2>
-                    <p>Retrieve MCP server information:</p>
-                    <pre><code>curl https://api.office365versions.com/office-mcp/api/mcp \
-  -H "Ocp-Apim-Subscription-Key: ef386cc43d4b40278c78fb648b9cbc59"</code></pre>
+                    <h2><i class="bi bi-tools me-2"></i>Available tools</h2>
+                    <p>The server exposes the following MCP tools (call them with <code>tools/call</code>):</p>
+                    <ul>
+                        <li><code>get_m365_apps_releases</code> — all Microsoft 365 Apps releases across all update channels.</li>
+                        <li><code>get_m365_latest_by_channel</code> — latest Microsoft 365 Apps release for a channel (arg: <code>channel</code>).</li>
+                        <li><code>get_m365_by_channel</code> — Microsoft 365 Apps releases for a channel (arg: <code>channel</code>).</li>
+                        <li><code>get_windows_latest_versions</code> — latest versions for all Windows client and server editions.</li>
+                        <li><code>get_windows_edition_latest</code> — latest release for a specific Windows edition (arg: <code>edition</code>).</li>
+                        <li><code>get_windows_all_releases</code> — all Windows client and server releases.</li>
+                        <li><code>compare_windows_versions</code> — compare two Windows versions (args: <code>version1</code>, <code>version2</code>).</li>
+                        <li><code>get_windows_servers_summary</code> — summary of all Windows Server versions.</li>
+                        <li><code>get_windows11_releases</code> — all Windows 11 releases.</li>
+                        <li><code>get_windows10_releases</code> — all Windows 10 releases.</li>
+                    </ul>
+                </div>
 
+                <div class="privacy-section">
+                    <h2><i class="bi bi-terminal me-2"></i>Example calls</h2>
                     <p>List the available tools via JSON-RPC:</p>
                     <pre><code>curl -X POST https://api.office365versions.com/office-mcp/api/mcp \
   -H "Ocp-Apim-Subscription-Key: ef386cc43d4b40278c78fb648b9cbc59" \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</code></pre>
+
+                    <p>Call a tool (get the latest Windows versions):</p>
+                    <pre><code>curl -X POST https://api.office365versions.com/office-mcp/api/mcp \
+  -H "Ocp-Apim-Subscription-Key: ef386cc43d4b40278c78fb648b9cbc59" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_windows_latest_versions","arguments":{}}}'</code></pre>
                 </div>
 
                 <div class="privacy-section">
                     <h2><i class="bi bi-shield-check me-2"></i>Security and operational notes</h2>
                     <ul>
-                        <li>Protect the public endpoint with subscription keys, OAuth, or IP restrictions.</li>
-                        <li>Use APIM policies to add rate limiting and logging for MCP traffic.</li>
-                        <li>Keep the backend route at <code>/mcp</code> so the OpenAPI definition remains aligned with the implementation.</li>
-                        <li>Monitor the APIM and backend logs to confirm that JSON-RPC requests are being forwarded correctly.</li>
+                        <li>Access is protected by APIM subscription keys; unauthenticated requests return <code>HTTP 401</code>.</li>
+                        <li>The 50/day-per-IP quota and 20/min burst limit are enforced by an APIM product policy.</li>
+                        <li>Tools are generated natively by APIM from the Office Versions REST API operations — no custom MCP backend to maintain.</li>
+                        <li>Monitor APIM analytics to confirm that MCP tool invocations are routed and rate-limited correctly.</li>
                     </ul>
                 </div>
             </div>
