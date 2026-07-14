@@ -22,6 +22,7 @@ public class SecurityMonitoringBackgroundService : BackgroundService
     private readonly double _requestRateCritical;
     private readonly double _errorRateWarning;
     private readonly double _errorRateCritical;
+    private readonly long _errorRateMinRequests;
     private readonly int _max404PerMinute;
     private readonly int _max500PerMinute;
     private readonly int _maxAuthFailuresPer5Min;
@@ -48,6 +49,7 @@ public class SecurityMonitoringBackgroundService : BackgroundService
 
         _errorRateWarning = configuration.GetValue<double>("SecurityMonitoring:ErrorRate:WarningPercentage", 5.0);
         _errorRateCritical = configuration.GetValue<double>("SecurityMonitoring:ErrorRate:CriticalPercentage", 15.0);
+        _errorRateMinRequests = configuration.GetValue<long>("SecurityMonitoring:ErrorRate:MinRequestsForRateAlert", 100);
         _max404PerMinute = configuration.GetValue<int>("SecurityMonitoring:ErrorRate:Max404PerMinute", 50);
         _max500PerMinute = configuration.GetValue<int>("SecurityMonitoring:ErrorRate:Max500PerMinute", 10);
 
@@ -112,6 +114,13 @@ public class SecurityMonitoringBackgroundService : BackgroundService
         }
 
         // 2. Error rate checks
+        // Only evaluate the error-rate *percentage* when we have a statistically
+        // meaningful request volume. On low-traffic apps a couple of bot-driven
+        // 404s (e.g. probing /.env, /wp-login.php) out of a handful of requests
+        // would otherwise push the rate to 100% and spam alerts every cycle.
+        // Raw 404/500-per-minute thresholds below still catch real scanner floods.
+        if (metrics.TotalRequests >= _errorRateMinRequests)
+        {
         if (metrics.ErrorRatePercentage >= _errorRateCritical)
         {
             await RaiseAlertAsync(new SecurityAlert
@@ -131,6 +140,7 @@ public class SecurityMonitoringBackgroundService : BackgroundService
                 Message = $"Error rate is {metrics.ErrorRatePercentage:F1}% (threshold: {_errorRateWarning:F1}%). " +
                           $"404s: {metrics.Total404s}, 500s: {metrics.Total500s}."
             }, cancellationToken);
+        }
         }
 
         // 3. Raw 404/500 rate checks (per minute)
