@@ -1407,7 +1407,7 @@ namespace OfficeVersionsCore.Services
                     _logger.LogWarning("No versions parsed from {Url} for {Edition}. Writing HTML snapshot for diagnostics.", url, edition);
                     try
                     {
-                        var snapshotPath = Path.Combine(AppContext.BaseDirectory, $"{edition.ToString().ToLower()}-releaseinfo-snapshot.html");
+                        var snapshotPath = Path.Combine(AppContext.BaseDirectory, $"{GetEditionStorageKey(edition)}-releaseinfo-snapshot.html");
                         await File.WriteAllTextAsync(snapshotPath, html);
                         _logger.LogInformation("Saved HTML snapshot to {Path}", snapshotPath);
                     }
@@ -1734,7 +1734,7 @@ namespace OfficeVersionsCore.Services
                     ServicingChannel = u.ServicingChannel
                 }).ToList();
 
-                var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-updates.json";
+                var fileName = $"{_windowsStoragePath}/{GetEditionStorageKey(edition)}-updates.json";
                 var json = JsonSerializer.Serialize(processedUpdates, new JsonSerializerOptions { WriteIndented = true });
                 await _storageService.WriteAsync(fileName, json);
                 _logger.LogInformation("Saved {Count} updates for {Edition} to local storage", processedUpdates.Count, edition);
@@ -1761,11 +1761,33 @@ namespace OfficeVersionsCore.Services
             };
         }
 
+        /// <summary>
+        /// Returns a stable, lowercase storage key for an edition (e.g. "windows10").
+        /// Do NOT rely on <c>edition.ToString()</c> for storage filenames: under IL trimming /
+        /// certain publish configurations enum name metadata can be stripped, causing ToString()
+        /// to return the numeric value ("0", "1", ...) and silently splitting reads/writes across
+        /// different files. This explicit map keeps filenames deterministic.
+        /// </summary>
+        private static string GetEditionStorageKey(WindowsEdition edition)
+        {
+            return edition switch
+            {
+                WindowsEdition.Windows10 => "windows10",
+                WindowsEdition.Windows11 => "windows11",
+                WindowsEdition.WindowsServer2012R2 => "windowsserver2012r2",
+                WindowsEdition.WindowsServer2016 => "windowsserver2016",
+                WindowsEdition.WindowsServer2019 => "windowsserver2019",
+                WindowsEdition.WindowsServer2022 => "windowsserver2022",
+                WindowsEdition.WindowsServer2025 => "windowsserver2025",
+                _ => ((int)edition).ToString()
+            };
+        }
+
         private async Task SaveReleaseVersionsToStorageAsync(WindowsEdition edition, WindowsReleaseVersions releaseVersions)
         {
             try
             {
-                var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-versions.json";
+                var fileName = $"{_windowsStoragePath}/{GetEditionStorageKey(edition)}-versions.json";
                 var json = JsonSerializer.Serialize(releaseVersions, new JsonSerializerOptions { WriteIndented = true });
                 await _storageService.WriteAsync(fileName, json);
                 await UpdateLastUpdateTimeAsync();
@@ -1796,7 +1818,7 @@ namespace OfficeVersionsCore.Services
         {
             try
             {
-                var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-updates.json";
+                var fileName = $"{_windowsStoragePath}/{GetEditionStorageKey(edition)}-updates.json";
                 if (await _storageService.ExistsAsync(fileName))
                 {
                     var json = await _storageService.ReadAsync(fileName);
@@ -1815,7 +1837,7 @@ namespace OfficeVersionsCore.Services
         {
             try
             {
-                var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-versions.json";
+                var fileName = $"{_windowsStoragePath}/{GetEditionStorageKey(edition)}-versions.json";
                 if (await _storageService.ExistsAsync(fileName))
                 {
                     var json = await _storageService.ReadAsync(fileName);
@@ -1887,7 +1909,7 @@ namespace OfficeVersionsCore.Services
         {
             try
             {
-                var fileName = $"{_windowsStoragePath}/{edition.ToString().ToLower()}-feature-updates.json";
+                var fileName = $"{_windowsStoragePath}/{GetEditionStorageKey(edition)}-feature-updates.json";
                 if (await _storageService.ExistsAsync(fileName))
                 {
                     var json = await _storageService.ReadAsync(fileName);
