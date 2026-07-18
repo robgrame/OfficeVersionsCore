@@ -621,8 +621,33 @@ namespace OfficeVersionsCore.Services
                         .ToList()
                 };
 
+                // Safety guard: never overwrite previously stored data with an empty scrape result.
+                // Microsoft occasionally changes their page markup, which can make extraction yield
+                // zero items. Persisting that empty result would wipe the live feeds, so instead we
+                // keep the existing stored data and report failure for this cycle.
+                if (updates.Count == 0)
+                {
+                    _logger.LogWarning(
+                        "Scrape for {Edition} produced 0 updates (page markup may have changed); " +
+                        "keeping existing stored data instead of overwriting it.", edition);
+                    return false;
+                }
+
                 await SaveUpdatesToStorageAsync(edition, updates);
-                await SaveReleaseVersionsToStorageAsync(edition, grouped);
+
+                // Only overwrite stored release versions when we actually parsed some; an empty
+                // release list usually means the page structure changed rather than that there
+                // are genuinely no versions.
+                if (grouped.RegularVersions.Count > 0 || grouped.LtscVersions.Count > 0)
+                {
+                    await SaveReleaseVersionsToStorageAsync(edition, grouped);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Scrape for {Edition} produced 0 release versions; keeping existing stored versions.",
+                        edition);
+                }
 
                 _logger.LogInformation("Successfully scraped {UpdateCount} updates and {VersionCount} versions for {Edition}",
                     updates.Count, versions.Count, edition);
@@ -678,13 +703,16 @@ namespace OfficeVersionsCore.Services
             var result = new List<(HtmlNode, string)>();
             try
             {
-                var versionCategories = doc.DocumentNode.SelectNodes("//div[contains(@class, 'supLeftNavCategoryTitle')]");
+                // Microsoft support pages use 'supLeftNavCategoryTitle' historically and
+                // 'learnRenderLeftNavCategoryTitle' after their 2026 template change. Match both
+                // via the shared 'LeftNavCategoryTitle' substring so scraping survives the rename.
+                var versionCategories = doc.DocumentNode.SelectNodes("//div[contains(@class, 'LeftNavCategoryTitle')]");
 
                 if (versionCategories != null)
                 {
                     foreach (var categoryTitleDiv in versionCategories)
                     {
-                        var versionLink = categoryTitleDiv.SelectSingleNode(".//a[@class='supLeftNavLink']");
+                        var versionLink = categoryTitleDiv.SelectSingleNode(".//a[contains(@class, 'LeftNavLink')]");
                         if (versionLink != null)
                         {
                             string versionTitle = ExtractText(versionLink);
@@ -692,7 +720,7 @@ namespace OfficeVersionsCore.Services
                             var categoryContainer = categoryTitleDiv.ParentNode;
                             if (categoryContainer != null)
                             {
-                                var updatesList = categoryContainer.SelectSingleNode(".//ul[contains(@class, 'supLeftNavArticles')]");
+                                var updatesList = categoryContainer.SelectSingleNode(".//ul[contains(@class, 'LeftNavArticles')]");
                                 if (updatesList != null)
                                 {
                                     result.Add((updatesList, version));
@@ -706,12 +734,13 @@ namespace OfficeVersionsCore.Services
                 {
                     // Try to find the entire left navigation section
                     var leftNavSection = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'supLeftNav')]") ??
+                                         doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'learnRenderLeftNav')]") ??
                                          doc.DocumentNode.SelectSingleNode("//nav");
 
                     if (leftNavSection != null)
                     {
                         // Find all update article lists
-                        var articleLists = leftNavSection.SelectNodes(".//ul[contains(@class, 'supLeftNavArticles')]");
+                        var articleLists = leftNavSection.SelectNodes(".//ul[contains(@class, 'LeftNavArticles')]");
 
                         if (articleLists != null)
                         {
@@ -749,7 +778,7 @@ namespace OfficeVersionsCore.Services
             var updates = new List<WindowsUpdate>();
             try
             {
-                if (section.Name == "ul" && section.GetAttributeValue("class", string.Empty).Contains("supLeftNavArticles"))
+                if (section.Name == "ul" && section.GetAttributeValue("class", string.Empty).Contains("LeftNavArticles"))
                 {
                     updates.AddRange(ExtractUpdatesFromNavLinks(section, version, edition));
                     if (updates.Any()) return updates;
@@ -1063,7 +1092,7 @@ namespace OfficeVersionsCore.Services
             var updates = new List<WindowsUpdate>();
             try
             {
-                var updateLinks = updatesList.SelectNodes(".//li/a[@class='supLeftNavLink']"); 
+                var updateLinks = updatesList.SelectNodes(".//li/a[contains(@class, 'LeftNavLink')]"); 
                 if (updateLinks != null)
                 {
                     _logger.LogInformation("ExtractUpdatesFromNavLinks: Found {Count} update links for version {Version}", 
