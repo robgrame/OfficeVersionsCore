@@ -128,6 +128,49 @@
         </div>
     </div>
     
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="bi bi-globe2"></i>
+            </div>
+            <div>
+                <h2 class="card-title">Other Projects</h2>
+                <p class="text-muted mb-0">More projects by the same author</p>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="https://www.120mAGL.com" target="_blank" rel="noopener" class="text-decoration-none">
+                        <div class="p-3 rounded border text-center h-100 other-project-card">
+                            <div class="display-6 mb-2">🚁</div>
+                            <h5 class="mb-1">120mAGL.com</h5>
+                            <p class="text-muted small mb-0">EU Drone Regulations &amp; Flight Safety</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="https://www.ar00.space" target="_blank" rel="noopener" class="text-decoration-none">
+                        <div class="p-3 rounded border text-center h-100 other-project-card">
+                            <div class="display-6 mb-2">🚀</div>
+                            <h5 class="mb-1">ar00.space</h5>
+                            <p class="text-muted small mb-0">Space &amp; Technology</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="https://scienceforge.azurewebsites.net" target="_blank" rel="noopener" class="text-decoration-none">
+                        <div class="p-3 rounded border text-center h-100 other-project-card">
+                            <div class="display-6 mb-2">🔬</div>
+                            <h5 class="mb-1">AILove.study</h5>
+                            <p class="text-muted small mb-0">AI-Powered Science Learning Platform</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="modern-card">
         <div class="card-header">
             <div class="card-icon">
@@ -201,5 +244,20 @@
     .btn-modern:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .other-project-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .other-project-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+        border-color: var(--bs-primary, #0d6efd) !important;
+    }
+
+    .other-project-card h5 {
+        color: var(--bs-body-color, #212529);
     }
 </style>
